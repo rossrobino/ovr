@@ -15,7 +15,7 @@ It's designed for server-side rendering (SSR) where performance and Time-To-Firs
 
 ## Table of Contents
 
-- [JSX](#jsx) - Asynchronous `jsx` to HTML import source built for streaming by default
+- [JSX](#jsx) - Asynchronous JSX to HTML import source built for streaming by default
 - [Router](#router) - HTTP router built on the Fetch API
 - [Trie](#trie) - radix [trie](https://en.wikipedia.org/wiki/Radix_tree) data structure used within `Router`
 
@@ -44,49 +44,39 @@ Add the following to your `tsconfig.json` to enable the JSX transform:
 
 ### Usage
 
-Basic component with props:
+JSX evaluates to an `AsyncGenerator`, with this, the `Router` creates an in-order stream of components.
 
 ```tsx
+// Basic component with props
 const Component = (props: { foo: string }) => <div>{props.foo}</div>;
-```
 
-Components can be asynchronous, for example you can fetch directly in a component.
-
-```tsx
+// Components can be asynchronous, for example you can fetch directly in a component
 const Data = async () => {
 	const res = await fetch("...");
 	const data = await res.json();
 
 	return <div>{JSON.stringify(data)}</div>;
 };
-```
 
-`jsx` evaluates to an `AsyncGenerator`, with this, the `Router` creates an in-order stream of components.
-
-These two `Data` components `fetch` in parallel when this component is called, then they will stream in-order as soon as they are ready.
-
-```tsx
-const All = () => {
-	return (
-		<div>
-			<Component foo="bar" />
-
-			{/* Both Data components fetch in parallel, then stream in order */}
-			<Data />
-			<Data />
-		</div>
-	);
-};
-```
-
-Components can also be generators, `yield` values instead of `return`.
-
-```tsx
+// Components can also be generators, `yield` values instead of `return`
 async function* Generator() {
 	yield <p>start</p>;
 	await promise;
 	yield <p>after</p>;
 }
+
+const Page = () => {
+	return (
+		<div>
+			<Component foo="bar" />
+
+			{/* These three components `fetch` in parallel when this component is called, then they will stream in-order as soon as they are ready. */}
+			<Data />
+			<Data />
+			<Generator />
+		</div>
+	);
+};
 ```
 
 You can `return` or `yield` most data types from a component, they will be rendered as you might expect.
@@ -178,35 +168,22 @@ router.get("/api/:id", (c) => {
 
 ### Examples
 
-#### Basic
-
 ```ts
 router.get("/", (c) => c.text("Hello world"));
-```
 
-#### Param
-
-```ts
+// params
 router.post("/api/:id", (c) => {
 	// matches "/api/123"
-	c.param; // { id: "123" }
+	c.params; // { id: "123" }
 });
-```
 
-#### Wildcard
-
-Add an asterisk `*` to match all remaining segments in the route.
-
-```ts
+// Wildcard - add an asterisk `*` to match all remaining segments in the route
 router.get("/files/*", (c) => {
 	// c.params["*"] contains the matched wildcard path (e.g., "images/logo.png")
 	return c.text(`Serving file: ${c.params["*"]}`);
 });
-```
 
-#### Other or custom methods
-
-```ts
+// Other or custom methods
 router.on("METHOD", "/pattern", () => {
 	// ...
 });
@@ -222,9 +199,7 @@ router.get(
 	async (c, next) => {
 		// middleware
 		console.log("pre"); // 1
-
 		await next(); // calls the next middleware below
-
 		console.log("post"); // 3
 	},
 	(c) => {
