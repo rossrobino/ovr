@@ -30,17 +30,24 @@ For example, ovr will immediately send the `<head>` of your document for the bro
 
 > [!WARNING]
 >
-> `ovr` does not escape HTML automatically, use the `escape` function provided.
+> ovr does not escape HTML automatically, use the `escape` function provided.
 
 ### Configuration
 
-Add the following to your `tsconfig.json` to enable the JSX transform:
+Add the following to your `tsconfig.json` to enable the JSX transform,
 
 ```json
 {
 	"jsx": "react-jsx",
 	"jsxImportSource": "ovr"
 }
+```
+
+or use JSDoc comments within a module.
+
+```ts
+/** @jsx jsx */
+/** @jsxImportSource ovr */
 ```
 
 ### Usage
