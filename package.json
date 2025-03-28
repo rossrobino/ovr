@@ -1,0 +1,49 @@
+{
+	"name": "ovr",
+	"version": "0.0.2",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rossrobino/ovr.git"
+	},
+	"type": "module",
+	"types": "./dist/index.d.ts",
+	"main": "./dist/index.js",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./jsx-runtime": {
+			"types": "./dist/jsx-runtime.d.ts",
+			"default": "./dist/jsx-runtime.js"
+		},
+		"./jsx-dev-runtime": {
+			"types": "./dist/jsx-dev-runtime.d.ts",
+			"default": "./dist/jsx-dev-runtime.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"test": "vitest run",
+		"test:dev": "vitest",
+		"check": "tsc --noEmit",
+		"dev": "tsc --watch",
+		"build": "tsc",
+		"format": "prettier --write .",
+		"changeset": "changeset",
+		"version": "changeset version",
+		"release": "npm run build && changeset publish"
+	},
+	"devDependencies": {
+		"@changesets/cli": "^2.28.1",
+		"@robino/prettier": "^1.0.2",
+		"@robino/tsconfig": "^1.0.2",
+		"prettier": "^3.5.3",
+		"typescript": "^5.8.2",
+		"vitest": "^3.0.9"
+	},
+	"prettier": "@robino/prettier"
+}
