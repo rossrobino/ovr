@@ -1,8 +1,19 @@
 # ovr
 
-```bash
-npm i ovr
-```
+**ovr** is a lightweight toolkit for building fast, streaming web applications using asynchronous JSX and a modern Fetch API-based router.
+
+It's designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter. ovr evaluates components concurrently but streams the resulting HTML **in order**, allowing browsers to render content progressively as it arrives.
+
+## Features
+
+- **Asynchronous Streaming JSX**: Write components that perform async operations (like data fetching) directly. ovr handles concurrent evaluation and ordered streaming output.
+- **Improved Performance**: Delivers HTML faster to the client by streaming content as it becomes ready, improving perceived performance and TTFB.
+- **Fetch API Router**: A modern, flexible router built on the standard Fetch API Request and Response objects.
+- **Middleware Support**: Easily add cross-cutting concerns like authentication, logging, or data pre-fetching.
+- **Minimal & Platform Agnostic**: No client-side runtime by default and uses standard JavaScript/Web APIs, allowing it to run in Node.js, Deno, Bun, Cloudflare Workers, and other environments.
+- **Trie-Based Routing**: Efficient and fast route matching, supporting static paths, parameters, and wildcards with clear prioritization.
+
+## Table of Contents
 
 - [JSX](#jsx) - Asynchronous `jsx` to HTML import source built for streaming by default
 - [Router](#router) - HTTP router built on the Fetch API
@@ -10,9 +21,11 @@ npm i ovr
 
 ## JSX
 
-Write async `jsx` components and output an async generator of HTML.
+ovr provides an asynchronous JSX runtime designed for server-side rendering. Instead of building the entire HTML string in memory, it produces an `AsyncGenerator` that yields HTML chunks.
 
-This was written to be used for server-side templating if you don't want to add a larger UI framework. There are no JS runtime specific APIs used, so this package can be used anywhere.
+When you render multiple asynchronous components (e.g., components fetching data), ovr initiates their evaluation concurrently. As each component resolves, its corresponding HTML is generated.
+
+Crucially, ovr ensures that these HTML chunks are yielded in the original source order, even if components finish evaluating out of order. This allows the browser to start parsing and rendering the initial parts of your page while waiting for slower data fetches further down, significantly improving perceived load times.
 
 > [!WARNING]
 >
@@ -20,7 +33,7 @@ This was written to be used for server-side templating if you don't want to add 
 
 ### Configuration
 
-Add the following values to your `tsconfig.json`:
+Add the following to your `tsconfig.json` to enable the JSX transform:
 
 ```json
 {
@@ -31,7 +44,7 @@ Add the following values to your `tsconfig.json`:
 
 ### Usage
 
-Add props to a component.
+Basic component with props:
 
 ```tsx
 const Component = (props: { foo: string }) => <div>{props.foo}</div>;
@@ -57,6 +70,8 @@ const All = () => {
 	return (
 		<div>
 			<Component foo="bar" />
+
+			{/* Both Data components fetch in parallel, then stream in order */}
 			<Data />
 			<Data />
 		</div>
@@ -92,44 +107,6 @@ function* DataTypes() {
 	yield async () => "async"; // "async"
 }
 ```
-
-## Trie
-
-[Router](#router) is built using these trie `Node` and `Route` classes. You can build your own trie based router by importing them.
-
-The trie is forked and adapted from [memoirist](https://github.com/SaltyAom/memoirist) and [@medley/router](https://github.com/medleyjs/router).
-
-```ts
-import { Node, Route } from "ovr";
-
-// specify the type of the store in the generic
-const trie = new Node<string>();
-const route = new Route("/hello/:name", "store");
-
-trie.add(route);
-
-const match = trie.find("/hello/world"); // { route, params: { name: "world" } }
-```
-
-### Prioritization
-
-Given three routes are added in any order,
-
-```ts
-trie.add(new Route("/hello/world", "store"));
-trie.add(new Route("/hello/:name", "store"));
-trie.add(new Route("/hello/*", "store"));
-```
-
-The following pathnames would match the corresponding patterns.
-
-| pathname              | Route.pattern    |
-| --------------------- | ---------------- |
-| `"/hello/world"`      | `"/hello/world"` |
-| `"/hello/john"`       | `"/hello/:name"` |
-| `"/hello/john/smith"` | `"/hello/*"`     |
-
-More specific matches are prioritized. First, the static match is found, then the parametric, and finally the wildcard.
 
 ## Router
 
@@ -174,21 +151,28 @@ const router = new Router({
 
 ```ts
 router.get("/api/:id", (c) => {
-	// values
-	c.req; // Request
-	c.url; // URL
-	c.params; // type safe params: "/api/123" => { id: "123" }
-	c.route; // Matched Route
-	c.state; // whatever is returned from `config.start`, for example an auth helper or a key/value store
+	// Request Info
+	c.req; // The original Request object
+	c.url; // The parsed URL object
+	c.params; // Type-safe route parameters (e.g., { id: "123" })
+	c.route; // The matched Route object (contains pattern, store)
+	c.state; // State returned from `config.start` (e.g., { dbClient, user })
 
-	// methods
-	c.res; // create a response
-	c.html; // html helper
-	c.json; // json helper
-	c.text; // text helper
-	c.page; // create a page response with elements
-	c.head; // inject elements into head
-	c.layout; // add layout around the page
+	// Response Building Methods
+	c.res(body, init); // Generic response (like `new Response()`)
+	c.html(body, status); // Set HTML response
+	c.text(body, status); // Set plain text response
+	c.json(data, status); // Set JSON response
+	c.redirect(location, status); // Set redirect response
+
+	// JSX Page Building Methods (Leverages Streaming JSX)
+	c.head(<meta name="description" content="..."/>); // Add elements to <head>
+	c.layout(MainLayout); // Wrap page content with layout components
+	c.page(<UserProfilePage userId={c.params.id} />, 200); // Render JSX page, streaming enabled!
+
+	// Other Utilities
+	c.etag("content-to-hash"); // Generate and check ETag for caching
+	c.build(); // (Internal) Builds the final Response object
 });
 ```
 
@@ -214,8 +198,9 @@ router.post("/api/:id", (c) => {
 Add an asterisk `*` to match all remaining segments in the route.
 
 ```ts
-router.get("/wild/*", () => {
-	// matches "/wild/anything/..."
+router.get("/files/*", (c) => {
+	// c.params["*"] contains the matched wildcard path (e.g., "images/logo.png")
+	return c.text(`Serving file: ${c.params["*"]}`);
 });
 ```
 
@@ -294,3 +279,43 @@ hello.get("/world", (c) => c.text("hello world"));
 
 app.mount("/hello", hello); // creates route at "/hello/world"
 ```
+
+## Trie
+
+[Router](#router) is built using these trie `Node` and `Route` classes. You can build your own trie based router by importing them.
+
+The trie is forked and adapted from [memoirist](https://github.com/SaltyAom/memoirist) and [@medley/router](https://github.com/medleyjs/router).
+
+```ts
+import { Node, Route } from "ovr";
+
+// specify the type of the store in the generic
+const trie = new Node<string>();
+const route = new Route("/hello/:name", "store");
+
+trie.add(route);
+
+const match = trie.find("/hello/world"); // { route, params: { name: "world" } }
+```
+
+### Prioritization
+
+The trie prioritizes matches in this order: **Static > Parametric > Wildcard**.
+
+Given three routes are added in any order,
+
+```ts
+trie.add(new Route("/hello/world", "store"));
+trie.add(new Route("/hello/:name", "store"));
+trie.add(new Route("/hello/*", "store"));
+```
+
+The following pathnames would match the corresponding patterns.
+
+| pathname              | Route.pattern    |
+| --------------------- | ---------------- |
+| `"/hello/world"`      | `"/hello/world"` |
+| `"/hello/john"`       | `"/hello/:name"` |
+| `"/hello/john/smith"` | `"/hello/*"`     |
+
+More specific matches are prioritized. First, the static match is found, then the parametric, and finally the wildcard.
