@@ -168,7 +168,7 @@ router.get("/api/:id", (c) => {
 	// JSX Page Building Methods (Leverages Streaming JSX)
 	c.head(<meta name="description" content="..." />); // Add elements to <head>
 	c.layout(MainLayout); // Wrap page content with layout components
-	c.page(<UserProfilePage userId={c.params.id} />, 200); // Render JSX page, streaming enabled!
+	c.page(<UserProfilePage userId={c.params.id} />); // Render JSX page, streaming enabled!
 
 	// Other Utilities
 	c.etag("content-to-hash"); // Generate and check ETag for caching
@@ -178,10 +178,13 @@ router.get("/api/:id", (c) => {
 
 ### Examples
 
+#### Overview
+
 ```ts
+// Basic
 router.get("/", (c) => c.text("Hello world"));
 
-// params
+// Params
 router.post("/api/:id", (c) => {
 	// matches "/api/123"
 	c.params; // { id: "123" }
@@ -212,10 +215,7 @@ router.get(
 		await next(); // calls the next middleware below
 		console.log("post"); // 3
 	},
-	(c) => {
-		console.log("final"); // 2
-		c.text("hello world");
-	},
+	() => console.log("final"); // 2
 );
 ```
 
@@ -239,7 +239,7 @@ Use the `fetch` method to create a response,
 const res = await router.fetch(new Request("https://example.com/"));
 ```
 
-or use in an existing framework.
+or use in a framework.
 
 ```ts
 // next, sveltekit, astro...
