@@ -1,6 +1,6 @@
 export { Context } from "./router/context.js";
 export { Router, type Middleware, type Params } from "./router/index.js";
-export { Node, Route } from "./trie/index.js";
+export { Trie, Route } from "./trie/index.js";
 export { escape } from "./escape/index.js";
 export {
 	jsx,

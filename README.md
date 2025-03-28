@@ -267,15 +267,15 @@ app.mount("/hello", hello); // creates route at "/hello/world"
 
 ## Trie
 
-[Router](#router) is built using these trie `Node` and `Route` classes. You can build your own trie based router by importing them.
+[Router](#router) is built using these trie `Trie` and `Route` classes. You can build your own trie based router by importing them.
 
 The trie is forked and adapted from [memoirist](https://github.com/SaltyAom/memoirist) and [@medley/router](https://github.com/medleyjs/router).
 
 ```ts
-import { Node, Route } from "ovr";
+import { Trie, Route } from "ovr";
 
 // specify the type of the store in the generic
-const trie = new Node<string>();
+const trie = new Trie<string>();
 const route = new Route("/hello/:name", "store");
 
 trie.add(route);

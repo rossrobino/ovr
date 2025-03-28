@@ -1,4 +1,4 @@
-import { Node, Route } from "../trie/index.js";
+import { Trie, Route } from "../trie/index.js";
 import { Context } from "./context.js";
 
 export type Params = Record<string, string>;
@@ -52,7 +52,7 @@ type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 
 export class Router<State = null> {
 	/** Built tries per HTTP method */
-	#trieMap = new Map<Method, Node<Middleware<State, Params>[]>>();
+	#trieMap = new Map<Method, Trie<Middleware<State, Params>[]>>();
 
 	/** Added routes per HTTP method */
 	#routesMap = new Map<Method, Route<Middleware<State, Params>[]>[]>();
@@ -226,7 +226,7 @@ export class Router<State = null> {
 
 				if (routes) {
 					// build trie
-					trie = new Node<Middleware<State, Params>[]>();
+					trie = new Trie<Middleware<State, Params>[]>();
 					for (const route of routes) trie.add(route);
 					this.#trieMap.set(req.method, trie);
 				}

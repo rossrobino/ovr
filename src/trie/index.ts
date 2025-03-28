@@ -25,19 +25,19 @@ class ParamNode<Store> {
 	route: Route<Store> | null = null;
 
 	/** Static child node */
-	staticChild: Node<Store> | null = null;
+	staticChild: Trie<Store> | null = null;
 
 	constructor(name: string) {
 		this.name = name;
 	}
 }
 
-export class Node<Store> {
+export class Trie<Store> {
 	/** Unique segment of the pattern trie */
 	segment: string;
 
 	/** Static child node map, key is the first character in the segment */
-	staticMap: Map<number, Node<Store>> | null = null;
+	staticMap: Map<number, Trie<Store>> | null = null;
 
 	/** Parametric child node */
 	paramChild: ParamNode<Store> | null = null;
@@ -52,7 +52,7 @@ export class Node<Store> {
 	 * @param segment pattern segment
 	 * @param staticChildren static children nodes to add to staticMap
 	 */
-	constructor(segment = "/", staticChildren?: Node<Store>[]) {
+	constructor(segment = "/", staticChildren?: Trie<Store>[]) {
 		this.segment = segment;
 
 		if (staticChildren?.length) {
@@ -69,7 +69,7 @@ export class Node<Store> {
 	 * @returns a clone of the Node with a new segment
 	 */
 	clone(segment: string) {
-		const clone = new Node(segment);
+		const clone = new Trie(segment);
 
 		clone.staticMap = this.staticMap;
 		clone.paramChild = this.paramChild;
@@ -90,12 +90,12 @@ export class Node<Store> {
 	 */
 	fork(charIndex: number, segment: string) {
 		const existingChild = this.clone(this.segment.slice(charIndex)); // "posts/"
-		const newChild = new Node<Store>(segment.slice(charIndex)); // "movies/"
+		const newChild = new Trie<Store>(segment.slice(charIndex)); // "movies/"
 
 		Object.assign(
 			this,
 			// "api/" with the above as children
-			new Node(this.segment.slice(0, charIndex), [existingChild, newChild]),
+			new Trie(this.segment.slice(0, charIndex), [existingChild, newChild]),
 		);
 
 		return newChild;
@@ -111,7 +111,7 @@ export class Node<Store> {
 	split(segment: string) {
 		const secondHalf = this.clone(this.segment.slice(segment.length));
 
-		Object.assign(this, new Node(segment, [secondHalf]));
+		Object.assign(this, new Trie(segment, [secondHalf]));
 	}
 
 	/**
@@ -134,7 +134,7 @@ export class Node<Store> {
 	 * @returns this - the Node
 	 */
 	add(route: Route<Store>) {
-		let current: Node<Store> = this;
+		let current: Trie<Store> = this;
 		let pattern = route.pattern; // created to not modify the original
 
 		const endsWithWildcard = pattern.endsWith("*");
@@ -167,7 +167,7 @@ export class Node<Store> {
 
 				if (!paramChild.staticChild) {
 					// new - create node with the next static segment
-					current = paramChild.staticChild = new Node<Store>(staticSegment);
+					current = paramChild.staticChild = new Trie<Store>(staticSegment);
 					continue; // next segment - no need to check since it's new
 				}
 
@@ -209,7 +209,7 @@ export class Node<Store> {
 					}
 
 					// otherwise, add new staticChild
-					const staticChild = new Node<Store>(staticSegment.slice(charIndex));
+					const staticChild = new Trie<Store>(staticSegment.slice(charIndex));
 					current.staticMap.set(
 						staticSegment.charCodeAt(charIndex),
 						staticChild,

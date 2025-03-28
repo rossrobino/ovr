@@ -1,7 +1,7 @@
-import { Node, Route } from "./index.js";
+import { Trie, Route } from "./index.js";
 import { expect, test } from "vitest";
 
-const trie = new Node<string>()
+const trie = new Trie<string>()
 	.add(new Route("/", "/"))
 	.add(new Route("/static/static", "/static/static"))
 	.add(new Route("/static/:param", "/static/:param"))
