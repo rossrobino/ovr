@@ -7,17 +7,16 @@ It's designed for server-side rendering (SSR) where performance and Time-To-Firs
 ## Features
 
 - **Asynchronous Streaming JSX**: Write components that perform async operations (like data fetching) directly. ovr handles concurrent evaluation and ordered streaming output.
-- **Improved Performance**: Delivers HTML faster to the client by streaming content as it becomes ready, improving perceived performance and TTFB.
-- **Fetch API Router**: A modern, flexible router built on the standard Fetch API Request and Response objects.
-- **Middleware Support**: Easily add cross-cutting concerns like authentication, logging, or data pre-fetching.
-- **Minimal & Platform Agnostic**: No client-side runtime by default and uses standard JavaScript/Web APIs, allowing it to run in Node.js, Deno, Bun, Cloudflare Workers, and other environments.
-- **Trie-Based Routing**: Efficient and fast route matching, supporting static paths, parameters, and wildcards with clear prioritization.
+- **Performance Focused**: Deliver HTML faster to the client by streaming content as it becomes ready, improving performance and TTFB.
+- **Fetch API Router**: A modern, flexible router built on the standard Fetch API `Request` and `Response` objects.
+- **Minimal & Platform Agnostic**: Uses standard JavaScript/Web APIs, allowing it to run in Node.js, Deno, Bun, Cloudflare Workers, browsers, and other environments.
+- **[Trie](https://en.wikipedia.org/wiki/Radix_tree)-Based Routing**: Efficient and fast route matching, supporting static paths, parameters, and wildcards with clear prioritization. Performance does not degrade as you add more routes.
 
 ## Table of Contents
 
-- [JSX](#jsx) - Asynchronous JSX to HTML import source built for streaming by default
-- [Router](#router) - HTTP router built on the Fetch API
-- [Trie](#trie) - radix [trie](https://en.wikipedia.org/wiki/Radix_tree) data structure used within `Router`
+- [JSX](#jsx)
+- [Router](#router)
+- [Trie](#trie)
 
 ## JSX
 
@@ -26,6 +25,8 @@ ovr provides an asynchronous JSX runtime designed for server-side rendering. Ins
 When you render multiple asynchronous components (e.g., components fetching data), ovr initiates their evaluation concurrently. As each component resolves, its corresponding HTML is generated.
 
 Crucially, ovr ensures that these HTML chunks are yielded in the original source order, even if components finish evaluating out of order. This allows the browser to start parsing and rendering the initial parts of your page while waiting for slower data fetches further down, significantly improving perceived load times.
+
+For example, ovr will immediately send the `<head>` of your document for the browser to start requesting the linked assets. Then the rest of the page streams in as it becomes available.
 
 > [!WARNING]
 >
