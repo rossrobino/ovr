@@ -60,7 +60,7 @@ const Data = async () => {
 
 // Components can also be generators, `yield` values instead of `return`
 async function* Generator() {
-	yield <p>start</p>;
+	yield <p>start</p>; // streamed immediately
 	await promise;
 	yield <p>after</p>;
 }
@@ -72,9 +72,9 @@ const Page = () => {
 
 			{/* These three components `fetch` in parallel when this component is called. */}
 			{/* Then they will stream in order as soon as they are ready. */}
-			<Data />
-			<Data />
 			<Generator />
+			<Data />
+			<Data />
 		</div>
 	);
 };
