@@ -204,7 +204,7 @@ router.on("METHOD", "/pattern", () => {
 
 #### Middleware
 
-Add middleware to a route, the first middleware added to the route will be called, and the `next` middleware can be called within the first by using `await next()`.
+Add middleware to a route, the first middleware added to the route will be called, and the `next` middleware can be called within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
 
 ```ts
 router.get(
