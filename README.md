@@ -70,7 +70,8 @@ const Page = () => {
 		<div>
 			<Component foo="bar" />
 
-			{/* These three components `fetch` in parallel when this component is called, then they will stream in-order as soon as they are ready. */}
+			{/* These three components `fetch` in parallel when this component is called. */}
+			{/* Then they will stream in order as soon as they are ready. */}
 			<Data />
 			<Data />
 			<Generator />
