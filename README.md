@@ -137,6 +137,7 @@ const router = new Router({
 		// base HTML to inject head and body elements into, this is the default
 		c.base =
 			'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
+		// (these can be set in middleware as well)
 
 		// return state to use in middleware
 		return { foo: "bar" };
