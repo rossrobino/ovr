@@ -1,6 +1,18 @@
 # ovr
 
+```bash
+npm i ovr
+```
+
 **ovr** is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications using asynchronous JSX and a modern Fetch API-based router.
+
+```tsx
+async function* Component() {
+	yield <p>start</p>; // streamed immediately
+	await promise;
+	yield <p>after</p>;
+}
+```
 
 It's designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter. ovr evaluates components concurrently but streams the resulting HTML **in order**, allowing browsers to render content progressively as it arrives.
 
