@@ -40,10 +40,6 @@ Crucially, ovr ensures that these HTML chunks are yielded in the original source
 
 For example, ovr will immediately send the `<head>` of your document for the browser to start requesting the linked assets. Then the rest of the page streams in as it becomes available.
 
-> [!WARNING]
->
-> ovr does not escape HTML automatically, use the `escape` function provided.
-
 ### Configuration
 
 Add the following to your `tsconfig.json` to enable the JSX transform,
@@ -118,6 +114,10 @@ function* DataTypes() {
 	yield async () => "async"; // "async"
 }
 ```
+
+> [!WARNING]
+>
+> ovr does not escape HTML automatically, use the `escape` function provided.
 
 ## Router
 
