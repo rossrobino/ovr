@@ -149,7 +149,7 @@ const router = new Router({
 
 `Context` contains context for the current request.
 
-```ts
+```tsx
 router.get("/api/:id", (c) => {
 	// Request Info
 	c.req; // The original Request object
@@ -166,7 +166,7 @@ router.get("/api/:id", (c) => {
 	c.redirect(location, status); // Set redirect response
 
 	// JSX Page Building Methods (Leverages Streaming JSX)
-	c.head(<meta name="description" content="..."/>); // Add elements to <head>
+	c.head(<meta name="description" content="..." />); // Add elements to <head>
 	c.layout(MainLayout); // Wrap page content with layout components
 	c.page(<UserProfilePage userId={c.params.id} />, 200); // Render JSX page, streaming enabled!
 
