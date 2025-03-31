@@ -51,6 +51,9 @@ type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 	: never;
 
 export class Router<State = null> {
+	// allows for users to put other properties on the router
+	[key: string]: any;
+
 	/** Built tries per HTTP method */
 	#trieMap = new Map<Method, Trie<Middleware<State, Params>[]>>();
 
