@@ -1,5 +1,11 @@
 # ovr
 
+## 1.0.0
+
+### Major Changes
+
+- a99b756: release v1
+
 ## 0.1.1
 
 ### Patch Changes
