@@ -2,8 +2,11 @@
 import type { JSX, ElementProps } from "./index.js";
 
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
-type Attributes<T extends ElementProps = ElementProps> = Partial<{
-	children: JSX.Element;
+type Attributes<
+	T extends ElementProps = ElementProps,
+	Children = JSX.Element, // for void elements `undefined` is passed in here
+> = Partial<{
+	children: Children;
 	accesskey: string;
 	anchor: string;
 	autocapitalize: "on" | "off" | "characters" | "words" | "sentences";
@@ -149,11 +152,6 @@ type Attributes<T extends ElementProps = ElementProps> = Partial<{
 	ElementProps &
 	Partial<T>;
 
-type VoidAttributes<T extends ElementProps = ElementProps> = Omit<
-	Attributes<T>,
-	"children"
->;
-
 // have lots of values and shared by some elements but not global
 type SharedAttributes = {
 	autocomplete:
@@ -220,17 +218,20 @@ type AAttributes = Attributes<{
 	type: string;
 }>;
 
-type AreaAttributes = VoidAttributes<{
-	alt: string;
-	coords: "rect" | "circle" | "poly";
-	download: string | boolean;
-	href: string;
-	ping: string;
-	referrerpolicy: SharedAttributes["referrerpolicy"];
-	rel: AAttributes["rel"];
-	shape: "rect" | "circle" | "poly" | "default";
-	target: SharedAttributes["target"];
-}>;
+type AreaAttributes = Attributes<
+	{
+		alt: string;
+		coords: "rect" | "circle" | "poly";
+		download: string | boolean;
+		href: string;
+		ping: string;
+		referrerpolicy: SharedAttributes["referrerpolicy"];
+		rel: AAttributes["rel"];
+		shape: "rect" | "circle" | "poly" | "default";
+		target: SharedAttributes["target"];
+	},
+	never
+>;
 
 type AudioAttributes = Attributes<{
 	autoplay: boolean;
@@ -244,10 +245,13 @@ type AudioAttributes = Attributes<{
 	src: string;
 }>;
 
-type BaseAttributes = VoidAttributes<{
-	href: string;
-	target: SharedAttributes["target"];
-}>;
+type BaseAttributes = Attributes<
+	{
+		href: string;
+		target: SharedAttributes["target"];
+	},
+	undefined
+>;
 
 type BlockquoteAttributes = Attributes<{
 	cite: string;
@@ -302,9 +306,12 @@ type CanvasAttributes = Attributes<{
 	width: string;
 }>;
 
-type ColAttributes = VoidAttributes<{
-	span: string;
-}>;
+type ColAttributes = Attributes<
+	{
+		span: string;
+	},
+	undefined
+>;
 
 type ColgroupAttributes = Attributes<{
 	span: string;
@@ -328,12 +335,15 @@ type DialogAttributes = Attributes<{
 	open: boolean;
 }>;
 
-type EmbedAttributes = VoidAttributes<{
-	height: string;
-	src: string;
-	type: string;
-	width: string;
-}>;
+type EmbedAttributes = Attributes<
+	{
+		height: string;
+		src: string;
+		type: string;
+		width: string;
+	},
+	undefined
+>;
 
 type FieldsetAttributes = Attributes<{
 	disabled: boolean;
@@ -380,80 +390,86 @@ type IframeAttributes = Attributes<{
 	width: string;
 }>;
 
-type ImgAttributes = VoidAttributes<{
-	alt: string;
-	crossorigin: SharedAttributes["crossorigin"];
-	decoding: "sync" | "async" | "auto";
-	elementtiming: string;
-	fetchpriority: SharedAttributes["fetchpriority"];
-	height: string;
-	ismap: boolean;
-	loading: SharedAttributes["loading"];
-	referrerpolicy: SharedAttributes["referrerpolicy"];
-	sizes: string;
-	src: string;
-	srcset: string;
-	width: string;
-	usemap: string;
-}>;
+type ImgAttributes = Attributes<
+	{
+		alt: string;
+		crossorigin: SharedAttributes["crossorigin"];
+		decoding: "sync" | "async" | "auto";
+		elementtiming: string;
+		fetchpriority: SharedAttributes["fetchpriority"];
+		height: string;
+		ismap: boolean;
+		loading: SharedAttributes["loading"];
+		referrerpolicy: SharedAttributes["referrerpolicy"];
+		sizes: string;
+		src: string;
+		srcset: string;
+		width: string;
+		usemap: string;
+	},
+	undefined
+>;
 
-type InputAttributes = VoidAttributes<{
-	accept: string;
-	alt: string;
-	autocomplete: SharedAttributes["autocomplete"];
-	capture: string;
-	checked: boolean;
-	dirname: string;
-	disabled: boolean;
-	form: string;
-	formaction: string;
-	formenctype: SharedAttributes["enctype"];
-	formmethod: SharedAttributes["method"];
-	formnovalidate: boolean;
-	formtarget: SharedAttributes["target"];
-	height: string;
-	list: string;
-	max: string;
-	maxlength: string;
-	min: string;
-	minlength: string;
-	multiple: boolean;
-	name: string;
-	pattern: string;
-	placeholder: string;
-	popovertarget: string;
-	popovertargetaction: SharedAttributes["popovertargetaction"];
-	readonly: boolean;
-	required: boolean;
-	size: string;
-	src: string;
-	step: string;
-	type:
-		| "button"
-		| "checkbox"
-		| "color"
-		| "date"
-		| "datetime-local"
-		| "email"
-		| "file"
-		| "hidden"
-		| "image"
-		| "month"
-		| "number"
-		| "password"
-		| "radio"
-		| "range"
-		| "reset"
-		| "search"
-		| "submit"
-		| "tel"
-		| "text"
-		| "time"
-		| "url"
-		| "week";
-	value: string;
-	width: string;
-}>;
+type InputAttributes = Attributes<
+	{
+		accept: string;
+		alt: string;
+		autocomplete: SharedAttributes["autocomplete"];
+		capture: string;
+		checked: boolean;
+		dirname: string;
+		disabled: boolean;
+		form: string;
+		formaction: string;
+		formenctype: SharedAttributes["enctype"];
+		formmethod: SharedAttributes["method"];
+		formnovalidate: boolean;
+		formtarget: SharedAttributes["target"];
+		height: string;
+		list: string;
+		max: string;
+		maxlength: string;
+		min: string;
+		minlength: string;
+		multiple: boolean;
+		name: string;
+		pattern: string;
+		placeholder: string;
+		popovertarget: string;
+		popovertargetaction: SharedAttributes["popovertargetaction"];
+		readonly: boolean;
+		required: boolean;
+		size: string;
+		src: string;
+		step: string;
+		type:
+			| "button"
+			| "checkbox"
+			| "color"
+			| "date"
+			| "datetime-local"
+			| "email"
+			| "file"
+			| "hidden"
+			| "image"
+			| "month"
+			| "number"
+			| "password"
+			| "radio"
+			| "range"
+			| "reset"
+			| "search"
+			| "submit"
+			| "tel"
+			| "text"
+			| "time"
+			| "url"
+			| "week";
+		value: string;
+		width: string;
+	},
+	never
+>;
 
 type InsAttributes = Attributes<{
 	cite: string;
@@ -469,92 +485,98 @@ type LiAttributes = Attributes<{
 	value: string;
 }>;
 
-type LinkAttributes = VoidAttributes<{
-	as:
-		| "audio"
-		| "document"
-		| "embed"
-		| "fetch"
-		| "font"
-		| "image"
-		| "object"
-		| "script"
-		| "style"
-		| "track"
-		| "video"
-		| "worker";
-	blocking: SharedAttributes["blocking"];
-	crossorigin: SharedAttributes["crossorigin"];
-	disabled: boolean;
-	fetchpriority: SharedAttributes["fetchpriority"];
-	href: string;
-	hreflang: string;
-	imagesizes: string;
-	imagesrcset: string;
-	integrity: string;
-	media: string;
-	// not all the same options as others
-	referrerpolicy:
-		| "no-referrer"
-		| "no-referrer-when-downgrade"
-		| "origin"
-		| "origin-when-cross-origin"
-		| "unsafe-url";
-	// not all the same options as others
-	rel:
-		| "alternate"
-		| "author"
-		| "canonical"
-		| "dns-prefetch"
-		| "expect"
-		| "help"
-		| "icon"
-		| "license"
-		| "manifest"
-		| "me"
-		| "modulepreload"
-		| "next"
-		| "pingback"
-		| "preconnect"
-		| "prefetch"
-		| "preload"
-		| "prerender"
-		| "prev"
-		| "privacy-policy"
-		| "search"
-		| "stylesheet"
-		| "terms-of-service"
-		// allows multiple
-		| (string & {});
-	sizes: string;
-	type: string;
-}>;
+type LinkAttributes = Attributes<
+	{
+		as:
+			| "audio"
+			| "document"
+			| "embed"
+			| "fetch"
+			| "font"
+			| "image"
+			| "object"
+			| "script"
+			| "style"
+			| "track"
+			| "video"
+			| "worker";
+		blocking: SharedAttributes["blocking"];
+		crossorigin: SharedAttributes["crossorigin"];
+		disabled: boolean;
+		fetchpriority: SharedAttributes["fetchpriority"];
+		href: string;
+		hreflang: string;
+		imagesizes: string;
+		imagesrcset: string;
+		integrity: string;
+		media: string;
+		// not all the same options as others
+		referrerpolicy:
+			| "no-referrer"
+			| "no-referrer-when-downgrade"
+			| "origin"
+			| "origin-when-cross-origin"
+			| "unsafe-url";
+		// not all the same options as others
+		rel:
+			| "alternate"
+			| "author"
+			| "canonical"
+			| "dns-prefetch"
+			| "expect"
+			| "help"
+			| "icon"
+			| "license"
+			| "manifest"
+			| "me"
+			| "modulepreload"
+			| "next"
+			| "pingback"
+			| "preconnect"
+			| "prefetch"
+			| "preload"
+			| "prerender"
+			| "prev"
+			| "privacy-policy"
+			| "search"
+			| "stylesheet"
+			| "terms-of-service"
+			// allows multiple
+			| (string & {});
+		sizes: string;
+		type: string;
+	},
+	undefined
+>;
 
 type MapAttributes = Attributes<{
 	name: string;
 }>;
 
-type MetaAttributes = VoidAttributes<{
-	charset: "utf-8";
-	content: string;
-	"http-equiv":
-		| "content-security-policy"
-		| "content-type"
-		| "default-style"
-		| "x-ua-compatible"
-		| "refresh";
-	media: string;
-	name:
-		| "application-name"
-		| "author"
-		| "description"
-		| "generator"
-		| "keywords"
-		| "theme-color"
-		| "viewport"
-		// allow non-standard meta names
-		| (string & {});
-}>;
+type MetaAttributes = Attributes<
+	{
+		charset: "utf-8";
+		content: string;
+		"http-equiv":
+			| "content-security-policy"
+			| "content-type"
+			| "default-style"
+			| "x-ua-compatible"
+			| "refresh";
+		media: string;
+		name:
+			| "application-name"
+			| "author"
+			| "description"
+			| "generator"
+			| "keywords"
+			| "theme-color"
+			| "viewport"
+			// allow non-standard meta names
+			| (string & {});
+	},
+	undefined
+>;
 
 type MeterAttributes = Attributes<{
 	value: string;
@@ -636,15 +658,18 @@ type SlotAttributes = Attributes<{
 	name: string;
 }>;
 
-type SourceAttributes = VoidAttributes<{
-	type: string;
-	src: string;
-	srcset: string;
-	sizes: string;
-	media: string;
-	height: string;
-	width: string;
-}>;
+type SourceAttributes = Attributes<
+	{
+		type: string;
+		src: string;
+		srcset: string;
+		sizes: string;
+		media: string;
+		height: string;
+		width: string;
+	},
+	undefined
+>;
 
 type StyleAttributes = Attributes<{
 	blocking: SharedAttributes["blocking"];
@@ -692,13 +717,16 @@ type TimeAttributes = Attributes<{
 	datetime: string;
 }>;
 
-type TrackAttributes = VoidAttributes<{
-	default: boolean;
-	kind: "subtitles" | "captions" | "chapters" | "metadata";
-	label: string;
-	src: string;
-	srclang: string;
-}>;
+type TrackAttributes = Attributes<
+	{
+		default: boolean;
+		kind: "subtitles" | "captions" | "chapters" | "metadata";
+		label: string;
+		src: string;
+		srclang: string;
+	},
+	undefined
+>;
 
 type VideoAttributes = Attributes<{
 	autoplay: boolean;
@@ -730,7 +758,7 @@ export type Elements = Record<string, Attributes> & {
 	bdo: Attributes;
 	blockquote: BlockquoteAttributes;
 	body: BodyAttributes;
-	br: VoidAttributes;
+	br: Attributes<ElementProps, undefined>;
 	button: ButtonAttributes;
 	canvas: CanvasAttributes;
 	caption: Attributes;
@@ -764,7 +792,7 @@ export type Elements = Record<string, Attributes> & {
 	head: Attributes;
 	header: Attributes;
 	hgroup: Attributes;
-	hr: VoidAttributes;
+	hr: Attributes<ElementProps, undefined>;
 	html: HtmlAttributes;
 	iframe: IframeAttributes;
 	i: Attributes;
@@ -828,5 +856,5 @@ export type Elements = Record<string, Attributes> & {
 	ul: Attributes;
 	var: Attributes;
 	video: VideoAttributes;
-	wbr: VoidAttributes;
+	wbr: Attributes<ElementProps, undefined>;
 };

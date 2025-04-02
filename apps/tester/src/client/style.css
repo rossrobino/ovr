@@ -1,0 +1,10 @@
+@import "uico";
+
+@layer base {
+	:root {
+		color-scheme: light dark;
+	}
+	body {
+		margin: var(--size-4);
+	}
+}

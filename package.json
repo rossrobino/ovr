@@ -1,39 +1,21 @@
 {
-	"name": "ovr",
-	"description": "Asynchronous streaming server framework",
-	"version": "1.0.0",
+	"name": "ovr-monorepo",
+	"private": true,
+	"version": "0.0.0",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/rossrobino/ovr.git"
 	},
 	"type": "module",
-	"sideEffects": false,
-	"types": "./dist/index.d.ts",
-	"main": "./dist/index.js",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		},
-		"./jsx-runtime": {
-			"types": "./dist/jsx-runtime.d.ts",
-			"default": "./dist/jsx-runtime.js"
-		},
-		"./jsx-dev-runtime": {
-			"types": "./dist/jsx-dev-runtime.d.ts",
-			"default": "./dist/jsx-dev-runtime.js"
-		}
-	},
-	"files": [
-		"dist"
+	"workspaces": [
+		"apps/*",
+		"packages/*"
 	],
 	"scripts": {
 		"test": "vitest run",
 		"test:dev": "vitest",
-		"check": "tsc --noEmit",
-		"dev": "tsc --watch",
-		"build": "tsc",
+		"build": "npm run build -w ovr && npm run build -w tester",
 		"format": "prettier --write .",
 		"changeset": "changeset",
 		"version": "changeset version",
@@ -45,7 +27,7 @@
 		"@robino/tsconfig": "^1.0.2",
 		"prettier": "^3.5.3",
 		"typescript": "^5.8.2",
-		"vitest": "^3.0.9"
+		"vitest": "^3.1.1"
 	},
 	"prettier": "@robino/prettier"
 }

@@ -16,6 +16,8 @@ async function* Component() {
 
 It's designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter. ovr evaluates components concurrently but streams the resulting HTML **in order**, allowing browsers to render content progressively as it arrives.
 
+If you'd like to try it out for yourself, the easiest way is to run [`npm create domco`](https://github.com/rossrobino/domco) and select the `ovr` framework option.
+
 ## Features
 
 - **Asynchronous Streaming JSX**: Write components that perform async operations (like data fetching) directly. ovr handles concurrent evaluation and ordered streaming output.
