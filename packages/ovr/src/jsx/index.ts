@@ -26,7 +26,7 @@ export type ElementProps = Record<string, JSX.Element>;
 
 export type Props = Record<string, unknown>;
 
-export type FC<P = Props> = (props: P) => JSX.Element;
+export type FC<Props> = (props: Props) => JSX.Element;
 
 // https://developer.mozilla.org/en-US/docs/Glossary/Void_element#self-closing_tags
 const voidElements = new Set([
@@ -46,7 +46,7 @@ const voidElements = new Set([
 ]);
 
 /**
- * The main function of the jsx transform cycle, each time jsx is encountered
+ * The main function of the JSX transform cycle, each time JSX is encountered
  * it is passed into this function to be resolved.
  *
  * @param tag string or function that refers to the component or element type
@@ -54,7 +54,7 @@ const voidElements = new Set([
  * @returns an async generator that yields parts of HTML
  */
 export const jsx: {
-	(tag: FC, props: Props): Awaited<JSX.Element>;
+	(tag: FC<Props>, props: Props): Awaited<JSX.Element>;
 	(tag: string, props: ElementProps): Awaited<JSX.Element>;
 } = async function* (tag, props) {
 	if (typeof tag === "function") {
