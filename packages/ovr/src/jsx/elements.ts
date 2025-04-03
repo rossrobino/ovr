@@ -1,9 +1,9 @@
 // cspell: disable
-import type { JSX, ElementProps } from "./index.js";
+import type { JSX, Props } from "./index.js";
 
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 type Attributes<
-	T extends ElementProps = ElementProps,
+	P extends Props = Props,
 	Children = JSX.Element, // for void elements `undefined` is passed in here
 > = Partial<{
 	children: Children;
@@ -149,8 +149,8 @@ type Attributes<
 	"aria-relevant": "additions" | "all" | "removals" | "text" | "additions text";
 	"aria-roledescription": string;
 }> &
-	ElementProps &
-	Partial<T>;
+	Props &
+	Partial<P>;
 
 // have lots of values and shared by some elements but not global
 type SharedAttributes = {
@@ -758,7 +758,7 @@ export type Elements = Record<string, Attributes> & {
 	bdo: Attributes;
 	blockquote: BlockquoteAttributes;
 	body: BodyAttributes;
-	br: Attributes<ElementProps, undefined>;
+	br: Attributes<Props, undefined>;
 	button: ButtonAttributes;
 	canvas: CanvasAttributes;
 	caption: Attributes;
@@ -792,7 +792,7 @@ export type Elements = Record<string, Attributes> & {
 	head: Attributes;
 	header: Attributes;
 	hgroup: Attributes;
-	hr: Attributes<ElementProps, undefined>;
+	hr: Attributes<Props, undefined>;
 	html: HtmlAttributes;
 	iframe: IframeAttributes;
 	i: Attributes;
@@ -856,5 +856,5 @@ export type Elements = Record<string, Attributes> & {
 	ul: Attributes;
 	var: Attributes;
 	video: VideoAttributes;
-	wbr: Attributes<ElementProps, undefined>;
+	wbr: Attributes<Props, undefined>;
 };

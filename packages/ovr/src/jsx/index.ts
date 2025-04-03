@@ -22,8 +22,6 @@ export namespace JSX {
 	>;
 }
 
-export type ElementProps = Record<string, JSX.Element>;
-
 export type Props = Record<string, unknown>;
 
 export type FC<Props> = (props: Props) => JSX.Element;
@@ -53,15 +51,12 @@ const voidElements = new Set([
  * @param props object containing all the properties and attributes passed to the element or component
  * @returns an async generator that yields parts of HTML
  */
-export const jsx: {
-	(tag: FC<Props>, props: Props): Awaited<JSX.Element>;
-	(tag: string, props: ElementProps): Awaited<JSX.Element>;
-} = async function* (tag, props) {
+export async function* jsx(tag: FC<Props> | string, props: Props) {
 	if (typeof tag === "function") {
 		yield* toGenerator(tag(props));
 	} else {
 		// element
-		const { children, ...attrs } = props as ElementProps;
+		const { children, ...attrs } = props;
 
 		let attrStr = "";
 
@@ -92,7 +87,7 @@ export const jsx: {
 
 		yield `</${tag}>`;
 	}
-};
+}
 
 /**
  * jsx requires a `Fragment` export to resolve <></>
