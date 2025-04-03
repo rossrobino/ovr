@@ -4,6 +4,7 @@
 	:root {
 		color-scheme: light dark;
 	}
+
 	body {
 		margin: var(--size-4);
 	}
