@@ -130,14 +130,14 @@ export async function* toGenerator(
 			for (const children of element) generators.push(toGenerator(children));
 
 			const queue: string[] = new Array(generators.length).fill("");
-			const completed = new Set<number>();
+			const complete = new Set<number>();
 
 			let current = 0;
 			for await (const { index, value, done } of mergeAsyncIterables(
 				generators,
 			)) {
 				if (done) {
-					completed.add(index);
+					complete.add(index);
 
 					if (index === current) {
 						while (++current < generators.length) {
@@ -148,7 +148,7 @@ export async function* toGenerator(
 							}
 
 							// if it hasn't completed, stop iterating to the next
-							if (!completed.has(current)) break;
+							if (!complete.has(current)) break;
 						}
 					}
 				} else if (index === current) {
