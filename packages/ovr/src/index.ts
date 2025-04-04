@@ -1,4 +1,4 @@
-export { Loading } from "./components/loading.js";
+export { Suspense } from "./components/suspense.js";
 export { escape } from "./escape/index.js";
 export {
 	jsx,

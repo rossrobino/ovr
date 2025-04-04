@@ -1,4 +1,4 @@
-import * as loading from "./loading.js";
+import * as suspense from "./suspense.js";
 
-/** Head tags to inject for included components like `Loading`. */
-export const head = `<style>${loading.style}</style>`;
+/** Head tags to inject for included components. */
+export const head = `<style>${suspense.style}</style>`;

@@ -1,5 +1,5 @@
 import { html } from "client:page";
-import { Router, Loading } from "ovr";
+import { Router, Suspense } from "ovr";
 
 const app = new Router({
 	start(c) {
@@ -17,13 +17,25 @@ app.get("/", (c) =>
 		<main class="prose">
 			<h1>tester</h1>
 
-			<Loading fallback={<p>Loading...</p>}>
-				<Delay ms={500} />
-			</Loading>
-
-			<Loading fallback={<p>Loading...</p>}>
+			<Suspense
+				fallback={
+					<>
+						<p>Loading...</p>
+						<p>Loading...</p>
+					</>
+				}
+				after={
+					<>
+						<h2>After</h2>
+						<h2>After 2</h2>
+						<Suspense fallback={<p>Loading...</p>}>
+							<Delay ms={500} />
+						</Suspense>
+					</>
+				}
+			>
 				<Delay ms={1000} />
-			</Loading>
+			</Suspense>
 		</main>,
 	),
 );
