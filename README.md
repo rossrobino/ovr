@@ -214,6 +214,11 @@ router.get("/files/*", (c) => {
 router.on("METHOD", "/pattern", () => {
 	// ...
 });
+
+// Global middleware
+router.use(async (c) => {
+	// ...
+});
 ```
 
 #### Middleware

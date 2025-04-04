@@ -60,6 +60,9 @@ export class Router<State = null> {
 	/** Added routes per HTTP method */
 	#routesMap = new Map<Method, Route<Middleware<State, Params>[]>[]>();
 
+	/** Global middleware */
+	#use: Middleware<State, Params>[] = [];
+
 	#start?: Start<State>;
 	#trailingSlash: TrailingSlash;
 
@@ -89,6 +92,17 @@ export class Router<State = null> {
 		this.#trailingSlash = config.trailingSlash ?? "never";
 		this.#start = config.start;
 		this.fetch = this.fetch.bind(this);
+	}
+
+	/**
+	 * Add global middleware.
+	 *
+	 * @param middleware
+	 * @returns the router instance
+	 */
+	use(...middleware: Middleware<State, Params>[]) {
+		this.#use.push(...middleware);
+		return this;
 	}
 
 	/**
@@ -241,7 +255,9 @@ export class Router<State = null> {
 				if (match) {
 					Object.assign(c, match);
 
-					await this.#compose(match.route.store)(c, () => Promise.resolve());
+					await this.#compose([...this.#use, ...match.route.store])(c, () =>
+						Promise.resolve(),
+					);
 				}
 			}
 		} catch (error) {

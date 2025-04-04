@@ -82,6 +82,10 @@ test("context", () => {
 
 		c.page("page");
 	});
+
+	router.use(async (c, next) => {
+		await next();
+	});
 });
 
 test("GET /", async () => {
