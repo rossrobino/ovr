@@ -10,6 +10,7 @@
 	"type": "module",
 	"workspaces": [
 		"apps/*",
+		"bench",
 		"packages/*"
 	],
 	"scripts": {

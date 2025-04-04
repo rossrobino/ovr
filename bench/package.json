@@ -1,0 +1,10 @@
+{
+	"name": "bench",
+	"type": "module",
+	"scripts": {
+		"bench": "tsc && node dist/bench"
+	},
+	"devDependencies": {
+		"mitata": "^1.0.34"
+	}
+}
