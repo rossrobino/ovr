@@ -1,5 +1,11 @@
 # ovr
 
+## 1.2.0
+
+### Minor Changes
+
+- 926b0a7: feat: `Router.use` method to add global middleware
+
 ## 1.1.0
 
 ### Minor Changes
