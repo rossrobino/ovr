@@ -90,7 +90,7 @@ export async function* jsx(tag: FC<Props> | string, props: Props) {
 }
 
 /**
- * jsx requires a `Fragment` export to resolve <></>
+ * JSX requires a `Fragment` export to resolve <></>
  *
  * @param props containing `children` to render
  * @returns async generator that yields concatenated children
@@ -105,7 +105,7 @@ export async function* Fragment(
 
 /**
  * @param element
- * @returns async generator that yields concatenated children
+ * @yields Rendered strings of HTML as the `Element` resolves.
  */
 export async function* toGenerator(
 	element: JSX.Element,
