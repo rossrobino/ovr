@@ -163,7 +163,7 @@ export async function* toGenerator(
 }
 
 /**
- * Converts a `JSX.Element` into its fully concatenated string representation.
+ * Converts a `JSX.Element` into a fully concatenated string of HTML.
  *
  * > [!WARNING]
  * >
