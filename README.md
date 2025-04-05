@@ -105,10 +105,11 @@ function* DataTypes() {
 	yield null; // ""
 	yield undefined; // ""
 	yield false; // ""
+	yield true; // ""
+
 	yield "string"; // "string"
 	yield 0; // "0";
 	yield BigInt(9007199254740991); // "9007199254740991"
-	yield true; // "true"
 	yield { foo: "bar" }; // '{ "foo": "bar" }'
 	yield <p>jsx</p>; // "<p>jsx</p>"
 	yield ["any-", "iterable", 1, null]; // "any-iterable1"

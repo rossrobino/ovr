@@ -61,7 +61,7 @@ export async function* jsx(tag: FC<Props> | string, props: Props) {
 		let attrStr = "";
 
 		for (let key in attrs) {
-			const value = attrs[key];
+			const value = attrs[key]; // needs to come before reassigning keys
 
 			if (key === "className") key = "class";
 			else if (key === "htmlFor") key = "for";
@@ -113,8 +113,8 @@ export async function* toGenerator(
 	if (typeof element === "function") element = element();
 	if (element instanceof Promise) element = await element;
 
-	// undefined, null, or false should render ""
-	if (element == null || element === false) return;
+	// undefined, null, or boolean should not render
+	if (element == null || typeof element === "boolean") return;
 
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
