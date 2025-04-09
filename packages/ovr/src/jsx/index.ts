@@ -128,7 +128,7 @@ export async function* toGenerator(
 			const complete = new Set<number>();
 
 			let current = 0;
-			for await (const { index, result } of merge(generators)) {
+			for await (const { index, result } of merge(...generators)) {
 				if (result.done) {
 					complete.add(index);
 
