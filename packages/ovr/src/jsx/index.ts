@@ -1,5 +1,5 @@
 import type { Elements } from "./elements.js";
-import { mergeAsyncIter } from "./merge-async-iter.js";
+import { merge } from "./merge-async-iterables.js";
 
 type MaybePromise<T> = T | Promise<T>;
 type MaybeFunction<T> = T | (() => T);
@@ -128,8 +128,8 @@ export async function* toGenerator(
 			const complete = new Set<number>();
 
 			let current = 0;
-			for await (const { index, value, done } of mergeAsyncIter(generators)) {
-				if (done) {
+			for await (const { index, result } of merge(generators)) {
+				if (result.done) {
 					complete.add(index);
 
 					if (index === current) {
@@ -145,9 +145,9 @@ export async function* toGenerator(
 						}
 					}
 				} else if (index === current) {
-					yield value; // stream the current value directly
+					yield result.value; // stream the current value directly
 				} else {
-					queue[index] += value; // queue the value for later
+					queue[index] += result.value; // queue the value for later
 				}
 			}
 
