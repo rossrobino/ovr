@@ -1,5 +1,11 @@
 # ovr
 
+## 1.2.1
+
+### Patch Changes
+
+- b72bd26: fix: `true` should not render instead of rendering `"true"`
+
 ## 1.2.0
 
 ### Minor Changes
