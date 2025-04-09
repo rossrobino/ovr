@@ -18,12 +18,7 @@ app.get("/", (c) =>
 			<h1>tester</h1>
 
 			<Suspense
-				fallback={
-					<>
-						<p>Loading...</p>
-						<p>Loading...</p>
-					</>
-				}
+				fallback={<p>Loading...</p>}
 				after={
 					<>
 						<h2>After</h2>
