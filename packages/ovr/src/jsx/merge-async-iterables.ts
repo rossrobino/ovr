@@ -15,7 +15,7 @@ const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
  * @param iterables Resolved in parallel.
  * @yields `IteratorResult` and `index` of the resolved iterator.
  */
-export async function* merge<T, R>(...iterables: AsyncIterable<T, R>[]) {
+export async function* merge<T, R>(iterables: AsyncIterable<T, R>[]) {
 	const iterators = iterables.map((iter) => iter[Symbol.asyncIterator]());
 	const promises = iterators.map(next);
 
