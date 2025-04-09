@@ -223,7 +223,7 @@ export class Context<State, P extends Params> {
 
 		this.html(
 			new ReadableStream<string>({
-				start: async (c) => {
+				async start(c) {
 					for await (const value of toGenerator(elements)) c.enqueue(value);
 					c.close();
 				},

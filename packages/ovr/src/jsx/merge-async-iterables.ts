@@ -9,8 +9,7 @@ const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
  * Merges `AsyncIterable[]` into a single `AsyncGenerator`, resolving all in parallel.
  * The return of each `AsyncIterable` is yielded from the generator with `done: true`.
  *
- * Adapted from these stack overflow
- * [answers](https://stackoverflow.com/questions/50585456/how-can-i-interleave-merge-async-iterables).
+ * Adapted from [stack overflow answers](https://stackoverflow.com/questions/50585456).
  *
  * @param iterables Resolved in parallel.
  * @yields `IteratorResult` and `index` of the resolved iterator.
