@@ -95,11 +95,7 @@ export async function* jsx(tag: FC<Props> | string, props: Props) {
  * @param props containing `children` to render
  * @returns async generator that yields concatenated children
  */
-export async function* Fragment(
-	props: {
-		children?: JSX.Element;
-	} = {},
-) {
+export async function* Fragment(props: { children?: JSX.Element } = {}) {
 	yield* toGenerator(props.children);
 }
 

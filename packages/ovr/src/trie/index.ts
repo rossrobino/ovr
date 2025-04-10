@@ -250,10 +250,9 @@ export class Trie<Store> {
 	 * @param pathname Path to find
 	 * @returns `Route` and the matched `params` if found, otherwise `null`
 	 */
-	find(pathname: string): {
-		route: Route<Store>;
-		params: Record<string, string>;
-	} | null {
+	find(
+		pathname: string,
+	): { route: Route<Store>; params: Record<string, string> } | null {
 		if (
 			// too short
 			pathname.length < this.segment.length ||
@@ -265,17 +264,10 @@ export class Trie<Store> {
 
 		if (pathname === this.segment) {
 			// reached the end of the path
-			if (this.route)
-				return {
-					route: this.route,
-					params: {},
-				};
+			if (this.route) return { route: this.route, params: {} };
 
 			if (this.wildcardRoute)
-				return {
-					route: this.wildcardRoute,
-					params: { "*": "" },
-				};
+				return { route: this.wildcardRoute, params: { "*": "" } };
 
 			return null;
 		}

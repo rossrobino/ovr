@@ -47,10 +47,7 @@ For example, ovr will immediately send the `<head>` of your document for the bro
 Add the following to your `tsconfig.json` to enable the JSX transform,
 
 ```json
-{
-	"jsx": "react-jsx",
-	"jsxImportSource": "ovr"
-}
+{ "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "ovr" } }
 ```
 
 or use JSDoc comments within a module.

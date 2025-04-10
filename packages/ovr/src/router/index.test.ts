@@ -114,10 +114,7 @@ test("POST /post/", async () => {
 	body.append("key", "value");
 
 	const res = await router.fetch(
-		new Request("http://localhost:5173/post/", {
-			method: "post",
-			body,
-		}),
+		new Request("http://localhost:5173/post/", { method: "post", body }),
 	);
 
 	const json = await res.json();

@@ -246,16 +246,11 @@ type AudioAttributes = Attributes<{
 }>;
 
 type BaseAttributes = Attributes<
-	{
-		href: string;
-		target: SharedAttributes["target"];
-	},
+	{ href: string; target: SharedAttributes["target"] },
 	undefined
 >;
 
-type BlockquoteAttributes = Attributes<{
-	cite: string;
-}>;
+type BlockquoteAttributes = Attributes<{ cite: string }>;
 
 type BodyAttributes = Attributes<{
 	onafterprint: string;
@@ -306,42 +301,20 @@ type CanvasAttributes = Attributes<{
 	width: string;
 }>;
 
-type ColAttributes = Attributes<
-	{
-		span: string;
-	},
-	undefined
->;
+type ColAttributes = Attributes<{ span: string }, undefined>;
 
-type ColgroupAttributes = Attributes<{
-	span: string;
-}>;
+type ColgroupAttributes = Attributes<{ span: string }>;
 
-type DataAttributes = Attributes<{
-	value: string;
-}>;
+type DataAttributes = Attributes<{ value: string }>;
 
-type DelAttributes = Attributes<{
-	cite: string;
-	datetime: string;
-}>;
+type DelAttributes = Attributes<{ cite: string; datetime: string }>;
 
-type DetailsAttributes = Attributes<{
-	open: boolean;
-	name: string;
-}>;
+type DetailsAttributes = Attributes<{ open: boolean; name: string }>;
 
-type DialogAttributes = Attributes<{
-	open: boolean;
-}>;
+type DialogAttributes = Attributes<{ open: boolean }>;
 
 type EmbedAttributes = Attributes<
-	{
-		height: string;
-		src: string;
-		type: string;
-		width: string;
-	},
+	{ height: string; src: string; type: string; width: string },
 	undefined
 >;
 
@@ -373,9 +346,7 @@ type FormAttributes = Attributes<{
 	target: SharedAttributes["target"];
 }>;
 
-type HtmlAttributes = Attributes<{
-	xmlns: string;
-}>;
+type HtmlAttributes = Attributes<{ xmlns: string }>;
 
 type IframeAttributes = Attributes<{
 	allow: string;
@@ -471,19 +442,11 @@ type InputAttributes = Attributes<
 	never
 >;
 
-type InsAttributes = Attributes<{
-	cite: string;
-	datetime: string;
-}>;
+type InsAttributes = Attributes<{ cite: string; datetime: string }>;
 
-type LabelAttributes = Attributes<{
-	for: string;
-	htmlFor: string;
-}>;
+type LabelAttributes = Attributes<{ for: string; htmlFor: string }>;
 
-type LiAttributes = Attributes<{
-	value: string;
-}>;
+type LiAttributes = Attributes<{ value: string }>;
 
 type LinkAttributes = Attributes<
 	{
@@ -549,9 +512,7 @@ type LinkAttributes = Attributes<
 	undefined
 >;
 
-type MapAttributes = Attributes<{
-	name: string;
-}>;
+type MapAttributes = Attributes<{ name: string }>;
 
 type MetaAttributes = Attributes<
 	{
@@ -603,10 +564,7 @@ type OlAttributes = Attributes<{
 	type: "a" | "A" | "i" | "I" | "1";
 }>;
 
-type OptgroupAttributes = Attributes<{
-	disabled: boolean;
-	label: string;
-}>;
+type OptgroupAttributes = Attributes<{ disabled: boolean; label: string }>;
 
 type OptionAttributes = Attributes<{
 	disabled: boolean;
@@ -622,14 +580,9 @@ type OutputAttributes = Attributes<{
 	name: string;
 }>;
 
-type ProgressAttributes = Attributes<{
-	max: string;
-	value: string;
-}>;
+type ProgressAttributes = Attributes<{ max: string; value: string }>;
 
-type QAttributes = Attributes<{
-	cite: string;
-}>;
+type QAttributes = Attributes<{ cite: string }>;
 
 type ScriptAttributes = Attributes<{
 	async: boolean;
@@ -654,9 +607,7 @@ type SelectAttributes = Attributes<{
 	size: string;
 }>;
 
-type SlotAttributes = Attributes<{
-	name: string;
-}>;
+type SlotAttributes = Attributes<{ name: string }>;
 
 type SourceAttributes = Attributes<
 	{
@@ -713,9 +664,7 @@ type ThAttributes = Attributes<{
 	scope: "row" | "col" | "rowgroup" | "colgroup" | (string & {});
 }>;
 
-type TimeAttributes = Attributes<{
-	datetime: string;
-}>;
+type TimeAttributes = Attributes<{ datetime: string }>;
 
 type TrackAttributes = Attributes<
 	{
