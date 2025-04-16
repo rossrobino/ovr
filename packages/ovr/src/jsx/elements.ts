@@ -32,7 +32,7 @@ type Attributes<
 	lang: string;
 	nonce: string;
 	part: string;
-	popover: string;
+	popover: boolean | "auto" | "hint" | "manual";
 	// https://www.w3.org/TR/wai-aria-1.1/#role_definitions
 	role:
 		| "alert"
