@@ -1,5 +1,11 @@
 # ovr
 
+## 1.2.2
+
+### Patch Changes
+
+- 39bb91e: types: update `popover` attr type
+
 ## 1.2.1
 
 ### Patch Changes
