@@ -165,7 +165,10 @@ export class Context<State, P extends Params> {
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
 	text(body: BodyInit, status?: number) {
-		this.res(body, { status, headers: { "content-type": "text/html" } });
+		this.res(body, {
+			status,
+			headers: { "content-type": "text/plain; charset=utf-8" },
+		});
 	}
 
 	/**
