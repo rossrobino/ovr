@@ -1,5 +1,11 @@
 # ovr
 
+## 1.2.3
+
+### Patch Changes
+
+- 455e4cd: fix: text headers
+
 ## 1.2.2
 
 ### Patch Changes
