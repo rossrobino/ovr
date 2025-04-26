@@ -5,7 +5,7 @@ type MaybePromise<T> = T | Promise<T>;
 type MaybeFunction<T> = T | (() => T);
 
 export namespace JSX {
-	export type IntrinsicElements = Elements;
+	export interface IntrinsicElements extends Elements {}
 	export type Element = MaybeFunction<
 		MaybePromise<
 			| string
