@@ -1,5 +1,11 @@
 # ovr
 
+## 1.2.4
+
+### Patch Changes
+
+- 7093dbe: intrinsic element interface
+
 ## 1.2.3
 
 ### Patch Changes
