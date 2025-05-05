@@ -1,7 +1,7 @@
 {
 	"name": "ovr",
 	"description": "Asynchronous streaming server framework",
-	"version": "1.2.4",
+	"version": "1.3.0",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
