@@ -112,7 +112,7 @@ export class Router<State = null> {
 	 * @returns the router instance
 	 */
 	on<Pattern extends string>(
-		method: Method,
+		method: Method | Method[],
 		pattern: Pattern,
 		...middleware: Middleware<State, ExtractParams<Pattern>>[]
 	): this;
@@ -123,25 +123,30 @@ export class Router<State = null> {
 	 * @returns the router instance
 	 */
 	on<Patterns extends string[]>(
-		method: Method,
+		method: Method | Method[],
 		patterns: [...Patterns],
 		...middleware: Middleware<State, ExtractMultiParams<Patterns>>[]
 	): this;
 	on<PatternOrPatterns extends string | string[]>(
-		method: Method,
+		method: Method | Method[],
 		pattern: PatternOrPatterns,
 		...middleware: Middleware<State, Params>[]
 	) {
+		if (!Array.isArray(method)) method = [method];
+
 		let patterns: string[];
 		if (!Array.isArray(pattern)) patterns = [pattern];
 		else patterns = pattern;
 
 		for (const p of patterns) {
 			const route = new Route(p, middleware);
-			const routes = this.#routesMap.get(method);
 
-			if (routes) routes.push(route);
-			else this.#routesMap.set(method, [route]);
+			for (const m of method) {
+				const routes = this.#routesMap.get(m);
+
+				if (routes) routes.push(route);
+				else this.#routesMap.set(m, [route]);
+			}
 		}
 
 		return this;

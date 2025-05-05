@@ -86,6 +86,10 @@ test("context", () => {
 	router.use(async (c, next) => {
 		await next();
 	});
+
+	router.on(["POST", "GET"], "/multi-method", async (c) => {
+		return c.text(c.req.method);
+	});
 });
 
 test("GET /", async () => {
@@ -236,4 +240,11 @@ test("etag", async () => {
 	);
 	expect(etag.status).toBe(304);
 	expect(await etag.text()).toBe("");
+});
+
+test("multi-method", async () => {
+	const res = await get("/multi-method");
+	const text = await res.text();
+
+	expect(text).toBe("GET");
 });
