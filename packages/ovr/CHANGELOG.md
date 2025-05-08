@@ -1,5 +1,11 @@
 # ovr
 
+## 1.4.0
+
+### Minor Changes
+
+- 893f441: feat: add `context` async local storage function to get the context anywhere.
+
 ## 1.3.0
 
 ### Minor Changes
