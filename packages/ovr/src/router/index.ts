@@ -1,5 +1,6 @@
 import { Trie, Route } from "../trie/index.js";
 import { Context } from "./context.js";
+import { asyncLocalContext } from "./get-context.js";
 
 export type Params = Record<string, string>;
 
@@ -238,39 +239,41 @@ export class Router<State = null> {
 			this.#trailingSlash,
 		);
 
-		try {
-			if (this.#start) c.state = this.#start(c);
+		return asyncLocalContext.run(c as Context<unknown, Params>, async () => {
+			try {
+				if (this.#start) c.state = this.#start(c);
 
-			let trie = this.#trieMap.get(req.method);
+				let trie = this.#trieMap.get(req.method);
 
-			if (!trie) {
-				const routes = this.#routesMap.get(req.method);
+				if (!trie) {
+					const routes = this.#routesMap.get(req.method);
 
-				if (routes) {
-					// build trie
-					trie = new Trie<Middleware<State, Params>[]>();
-					for (const route of routes) trie.add(route);
-					this.#trieMap.set(req.method, trie);
+					if (routes) {
+						// build trie
+						trie = new Trie<Middleware<State, Params>[]>();
+						for (const route of routes) trie.add(route);
+						this.#trieMap.set(req.method, trie);
+					}
 				}
+
+				if (trie) {
+					const match = trie.find(c.url.pathname);
+
+					if (match) {
+						Object.assign(c, match);
+
+						await this.#compose([...this.#use, ...match.route.store])(c, () =>
+							Promise.resolve(),
+						);
+					}
+				}
+			} catch (error) {
+				if (c.error) c.error(c, error);
+				else throw error;
 			}
 
-			if (trie) {
-				const match = trie.find(c.url.pathname);
-
-				if (match) {
-					Object.assign(c, match);
-
-					await this.#compose([...this.#use, ...match.route.store])(c, () =>
-						Promise.resolve(),
-					);
-				}
-			}
-		} catch (error) {
-			if (c.error) c.error(c, error);
-			else throw error;
-		}
-
-		return c.build();
+			return c.build();
+		});
 	}
 
 	/**

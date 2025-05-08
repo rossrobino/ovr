@@ -11,5 +11,6 @@ export {
 	type JSX,
 } from "./jsx/index.js";
 export { Context } from "./router/context.js";
+export { context } from "./router/get-context.js";
 export { Router, type Middleware, type Params } from "./router/index.js";
 export { Trie, Route } from "./trie/index.js";

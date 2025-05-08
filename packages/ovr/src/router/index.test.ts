@@ -1,3 +1,4 @@
+import { context } from "./get-context.js";
 import { Router } from "./index.js";
 import { describe, expect, test } from "vitest";
 
@@ -34,7 +35,7 @@ test("context", () => {
 		)
 		.get("/api/:id/", (c) => {
 			expect(c.params.id).toBeDefined();
-			c.json(c.params);
+			context().json(c.params);
 		})
 		.get("/wild/*", (c) => {
 			expect(c.params["*"]).toBeDefined();
