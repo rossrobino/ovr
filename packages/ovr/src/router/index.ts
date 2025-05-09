@@ -239,7 +239,7 @@ export class Router<State = null> {
 			this.#trailingSlash,
 		);
 
-		return asyncLocalContext.run(c as Context<unknown, Params>, async () => {
+		return asyncLocalContext.run(c, async () => {
 			try {
 				if (this.#start) c.state = this.#start(c);
 
