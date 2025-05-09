@@ -1,4 +1,5 @@
 import { head } from "../components/index.js";
+import { hash } from "../hash/index.js";
 import { toGenerator, type JSX } from "../jsx/index.js";
 import type { Route } from "../trie/index.js";
 import type {
@@ -245,14 +246,7 @@ export class Context<State, P extends Params> {
 	 * @returns `true` if the etag matches, `false` otherwise
 	 */
 	etag(s: string) {
-		// Fast hashing algorithm http://www.cse.yorku.ca/~oz/hash.html
-		// Adapted from SvelteKit https://github.com/sveltejs/kit/blob/25d459104814b0c2dc6b4cf73b680378a29d8200/packages/kit/src/runtime/hash.js
-		let hash = 5381;
-
-		let i = s.length;
-		while (i) hash = (hash * 33) ^ s.charCodeAt(--i);
-
-		const etag = `"${(hash >>> 0).toString(36)}"`;
+		const etag = `"${hash(s)}"`;
 
 		this.headers.set("etag", etag);
 
