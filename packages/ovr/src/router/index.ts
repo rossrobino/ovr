@@ -232,7 +232,7 @@ export class Router<State = null> {
 	 * @param req [`Request` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
 	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
 	 */
-	async fetch(req: Request): Promise<Response> {
+	fetch(req: Request): Promise<Response> {
 		const c = new Context<State, Params>(
 			req,
 			new URL(req.url),
