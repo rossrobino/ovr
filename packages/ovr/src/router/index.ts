@@ -1,6 +1,6 @@
 import { Trie, Route } from "../trie/index.js";
 import { Context } from "./context.js";
-import { asyncLocalContext } from "./get-context.js";
+import { AsyncLocalStorage } from "node:async_hooks";
 
 export type Params = Record<string, string>;
 
@@ -61,6 +61,8 @@ export class Router<State = null> {
 	/** Added routes per HTTP method */
 	#routesMap = new Map<Method, Route<Middleware<State, Params>[]>[]>();
 
+	#asyncLocalStorage = new AsyncLocalStorage<Context<State, Params>>();
+
 	/** Global middleware */
 	#use: Middleware<State, Params>[] = [];
 
@@ -92,7 +94,9 @@ export class Router<State = null> {
 	) {
 		this.#trailingSlash = config.trailingSlash ?? "never";
 		this.#start = config.start;
+
 		this.fetch = this.fetch.bind(this);
+		this.context = this.context.bind(this);
 	}
 
 	/**
@@ -229,6 +233,39 @@ export class Router<State = null> {
 	}
 
 	/**
+	 * Call within the scope of a handler to get the current context.
+	 *
+	 * @returns The request context.
+	 *
+	 * @example
+	 *
+	 * ```ts
+	 * const app = new Router();
+	 *
+	 * const fn = () => {
+	 * 	const c = app.context();
+	 * 	// ...
+	 * }
+	 *
+	 * app.get("/", () => {
+	 * 	fn(); // OK
+	 * });
+	 *
+	 * fn() // Error - outside AsyncLocalStorage scope
+	 * ```
+	 */
+	context() {
+		const c = this.#asyncLocalStorage.getStore();
+
+		if (!c)
+			throw new Error(
+				"Context not set: Context can only be obtained within a handler.",
+			);
+
+		return c;
+	}
+
+	/**
 	 * @param req [`Request` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
 	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
 	 */
@@ -239,7 +276,7 @@ export class Router<State = null> {
 			this.#trailingSlash,
 		);
 
-		return asyncLocalContext.run(c as Context<unknown, Params>, async () => {
+		return this.#asyncLocalStorage.run(c, async () => {
 			try {
 				if (this.#start) c.state = this.#start(c);
 

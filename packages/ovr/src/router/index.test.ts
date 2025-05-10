@@ -1,21 +1,22 @@
-import { context } from "./get-context.js";
 import { Router } from "./index.js";
 import { describe, expect, test } from "vitest";
 
-const router = new Router({
+const app = new Router({
 	trailingSlash: "always",
 	start(c) {
 		return { foo: "bar" };
 	},
 });
 
+const { context } = app;
+
 const get = (pathname: string) =>
-	router.fetch(new Request("http://localhost:5173" + pathname));
+	app.fetch(new Request("http://localhost:5173" + pathname));
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 test("context", () => {
-	router
+	app
 		.get(
 			"/",
 			async (c, next) => {
@@ -42,7 +43,7 @@ test("context", () => {
 			c.json(c.params);
 		});
 
-	router.get(["/multi/:param/", "/pattern/:another/"], (c) => {
+	app.get(["/multi/:param/", "/pattern/:another/"], (c) => {
 		if ("param" in c.params) {
 			expect(c.params.param).toBeDefined();
 			c.text("multi");
@@ -52,12 +53,12 @@ test("context", () => {
 		}
 	});
 
-	router.post("/post/", async (c) => {
+	app.post("/post/", async (c) => {
 		const formData = await c.req.formData();
 		c.json(formData.get("key"));
 	});
 
-	router.get("/error/", (c) => {
+	app.get("/error/", (c) => {
 		c.error = (c, error) => {
 			expect(error).toBeInstanceOf(Error);
 			c.text((error as Error).message, 500);
@@ -66,7 +67,7 @@ test("context", () => {
 		throw new Error("An error occurred");
 	});
 
-	router.get("/page", (c) => {
+	app.get("/page", (c) => {
 		c.layout(function* ({ children }) {
 			yield "Layout";
 
@@ -84,11 +85,11 @@ test("context", () => {
 		c.page("page");
 	});
 
-	router.use(async (c, next) => {
+	app.use(async (c, next) => {
 		await next();
 	});
 
-	router.on(["POST", "GET"], "/multi-method", async (c) => {
+	app.on(["POST", "GET"], "/multi-method", async (c) => {
 		return c.text(c.req.method);
 	});
 });
@@ -118,7 +119,7 @@ test("POST /post/", async () => {
 	const body = new FormData();
 	body.append("key", "value");
 
-	const res = await router.fetch(
+	const res = await app.fetch(
 		new Request("http://localhost:5173/post/", { method: "post", body }),
 	);
 
