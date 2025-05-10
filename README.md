@@ -268,20 +268,6 @@ export const GET = router.fetch;
 export default router;
 ```
 
-### mount
-
-Mount routers onto another with a base pattern.
-
-```ts
-const app = new Router();
-
-const hello = new Router();
-
-hello.get("/world", (c) => c.text("hello world"));
-
-app.mount("/hello", hello); // creates route at "/hello/world"
-```
-
 ## Trie
 
 [Router](#router) is built using the `Trie` and `Route` classes. You can build your own trie based router by importing them.

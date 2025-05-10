@@ -208,31 +208,6 @@ export class Router<State = null> {
 	}
 
 	/**
-	 * @param basePattern pattern to mount the router to, each route will begin with this base
-	 * @param router sub-router to mount
-	 * @returns the base router instance
-	 */
-	mount(basePattern: string, router: Router<State>) {
-		if (basePattern.at(-1) === "/") basePattern = basePattern.slice(0, -1);
-
-		router.#routesMap.forEach((routes, method) => {
-			for (const route of routes) {
-				if (
-					this.#trailingSlash !== "always" &&
-					route.pattern === "/" &&
-					basePattern !== ""
-				) {
-					route.pattern = "";
-				}
-
-				this.on(method, basePattern + route.pattern, ...route.store);
-			}
-		});
-
-		return this;
-	}
-
-	/**
 	 * Call within the scope of a handler to get the current context.
 	 *
 	 * @returns The request context.
