@@ -1,5 +1,15 @@
 # ovr
 
+## 2.0.0
+
+### Major Changes
+
+- 772afad: removes `app.mount`
+
+  There were many features not supported when mounting a router to another. May revisit at some point.
+
+- 031942e: feat: adds `app.context()` with typed `State`, removes seperate `context()` function.
+
 ## 1.4.0
 
 ### Minor Changes
