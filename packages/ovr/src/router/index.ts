@@ -55,15 +55,16 @@ export class Router<State = null> {
 	// allows for users to put other properties on the router
 	[key: string]: any;
 
-	/** Built tries per HTTP method */
+	/** Built tries per HTTP method. */
 	#trieMap = new Map<Method, Trie<Middleware<State, Params>[]>>();
 
-	/** Added routes per HTTP method */
+	/** Added routes per HTTP method. */
 	#routesMap = new Map<Method, Route<Middleware<State, Params>[]>[]>();
 
+	/** Used to store context per request. */
 	#asyncLocalStorage = new AsyncLocalStorage<Context<State, Params>>();
 
-	/** Global middleware */
+	/** Global middleware. */
 	#use: Middleware<State, Params>[] = [];
 
 	#start?: Start<State>;
@@ -255,9 +256,11 @@ export class Router<State = null> {
 			try {
 				if (this.#start) c.state = this.#start(c);
 
+				// check to see if the method is already built
 				let trie = this.#trieMap.get(req.method);
 
 				if (!trie) {
+					// check if there are any routes with the method
 					const routes = this.#routesMap.get(req.method);
 
 					if (routes) {
