@@ -1,7 +1,7 @@
-import { Router } from "./index.js";
+import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
-const app = new Router({
+const app = new App({
 	trailingSlash: "always",
 	start(c) {
 		return { foo: "bar" };
@@ -160,7 +160,7 @@ describe("trailing slash", () => {
 	});
 
 	test("never", async () => {
-		const nev = new Router();
+		const nev = new App();
 		nev.get("/test", (c) => c.text("test"));
 
 		const res = await nev.fetch(new Request("http://localhost:5173/test/"));
@@ -170,7 +170,7 @@ describe("trailing slash", () => {
 	});
 
 	test("ignore", async () => {
-		const ignore = new Router({ trailingSlash: "ignore" });
+		const ignore = new App({ trailingSlash: "ignore" });
 		ignore.get("/nope", (c) => c.text("nope"));
 		ignore.get("/yup/", (c) => c.text("yup"));
 
@@ -190,29 +190,6 @@ describe("trailing slash", () => {
 	});
 });
 
-test("mount", async () => {
-	const base = new Router();
-	const sub = new Router();
-
-	sub.get("/", (c) => c.text("hello"));
-
-	sub.get("/world", (c) => c.text("hello world"));
-
-	base.mount("/hello", sub);
-
-	const hello = await base.fetch(new Request("http://localhost:5173/hello"));
-
-	expect(hello.status).toBe(200);
-	expect(await hello.text()).toBe("hello");
-
-	const world = await base.fetch(
-		new Request("http://localhost:5173/hello/world"),
-	);
-
-	expect(world.status).toBe(200);
-	expect(await world.text()).toBe("hello world");
-});
-
 test("html", async () => {
 	const res = await get("/page");
 	const text = await res.text();
@@ -221,7 +198,7 @@ test("html", async () => {
 });
 
 test("etag", async () => {
-	const r = new Router();
+	const r = new App();
 	r.get("/etag", (c) => {
 		const text = "hello world";
 		const matched = c.etag("hello");

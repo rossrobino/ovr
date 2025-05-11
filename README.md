@@ -29,7 +29,7 @@ If you'd like to try it out for yourself, the easiest way is to run [`npm create
 ## Table of Contents
 
 - [JSX](#jsx)
-- [Router](#router)
+- [App](#app)
 - [Trie](#trie)
 
 ## JSX
@@ -59,7 +59,7 @@ or use JSDoc comments within a module.
 
 ### Usage
 
-JSX evaluates to an `AsyncGenerator`, with this, the `Router` creates an in-order stream of components.
+JSX evaluates to an `AsyncGenerator`, with this, the `App` creates an in-order stream of components.
 
 ```tsx
 // Basic component with props
@@ -119,22 +119,22 @@ function* DataTypes() {
 >
 > ovr does not escape HTML automatically, use the `escape` function provided.
 
-## Router
+## App
 
 ```ts
-import { Router } from "ovr";
+import { App } from "ovr";
 
-const router = new Router();
+const app = new App();
 
-router.get("/", (c) => c.text("Hello world"));
+app.get("/", (c) => c.text("Hello world"));
 ```
 
 ### Configuration
 
-Optional configuration when creating the router.
+Optional configuration when creating the app.
 
 ```ts
-const router = new Router({
+const app = new App({
 	// redirect trailing slash preference
 	trailingSlash: "always",
 
@@ -162,7 +162,7 @@ const router = new Router({
 `Context` contains context for the current request.
 
 ```tsx
-router.get("/api/:id", (c) => {
+app.get("/api/:id", (c) => {
 	// Request Info
 	c.req; // The original Request object
 	c.url; // The parsed URL object
@@ -194,27 +194,27 @@ router.get("/api/:id", (c) => {
 
 ```ts
 // Basic
-router.get("/", (c) => c.text("Hello world"));
+app.get("/", (c) => c.text("Hello world"));
 
 // Params
-router.post("/api/:id", (c) => {
+app.post("/api/:id", (c) => {
 	// matches "/api/123"
 	c.params; // { id: "123" }
 });
 
 // Wildcard - add an asterisk `*` to match all remaining segments in the route
-router.get("/files/*", (c) => {
+app.get("/files/*", (c) => {
 	// c.params["*"] contains the matched wildcard path (e.g., "images/logo.png")
 	return c.text(`Serving file: ${c.params["*"]}`);
 });
 
 // Other or custom methods
-router.on("METHOD", "/pattern", () => {
+app.on("METHOD", "/pattern", () => {
 	// ...
 });
 
 // Global middleware
-router.use(async (c) => {
+app.use(async (c) => {
 	// ...
 });
 ```
@@ -224,7 +224,7 @@ router.use(async (c) => {
 Add middleware to a route, the first middleware added to the route will be called, and the `next` middleware can be called within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
 
 ```ts
-router.get(
+app.get(
 	"/multi",
 	async (c, next) => {
 		// middleware
@@ -243,7 +243,7 @@ router.get(
 Apply handlers to multiple patterns at once with type safe parameters.
 
 ```ts
-router.get(["/multi/:param", "/pattern/:another"], (c) => {
+app.get(["/multi/:param", "/pattern/:another"], (c) => {
 	c.param; // { param: string } | { another: string }
 });
 ```
@@ -253,24 +253,24 @@ router.get(["/multi/:param", "/pattern/:another"], (c) => {
 Use the `fetch` method to create a response,
 
 ```ts
-const res = await router.fetch(new Request("https://example.com/"));
+const res = await app.fetch(new Request("https://example.com/"));
 ```
 
 or use in a framework.
 
 ```ts
 // next, sveltekit, astro...
-export const GET = router.fetch;
+export const GET = app.fetch;
 ```
 
 ```ts
 // bun, deno, cloudflare...
-export default router;
+export default app;
 ```
 
 ## Trie
 
-[Router](#router) is built using the `Trie` and `Route` classes. You can build your own trie based router by importing them.
+[App](#app) is built using the `Trie` and `Route` classes. You can build your own trie based router by importing them.
 
 The trie is forked and adapted from [memoirist](https://github.com/SaltyAom/memoirist) and [@medley/router](https://github.com/medleyjs/router).
 

@@ -51,7 +51,7 @@ type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 		: ExtractParams<First> | ExtractMultiParams<Rest>
 	: never;
 
-export class Router<State = null> {
+export class App<State = null> {
 	// allows for users to put other properties on the router
 	[key: string]: any;
 
