@@ -1,6 +1,7 @@
 import { head } from "../components/index.js";
 import { hash } from "../hash/index.js";
 import { toGenerator, type JSX } from "../jsx/index.js";
+import { Memo } from "../memo/index.js";
 import type { Route } from "../trie/index.js";
 import type {
 	Middleware,
@@ -82,6 +83,9 @@ export class Context<State, P extends Params> {
 	#layouts: Layout[] = [];
 	#headElements: JSX.Element[] = [];
 	#trailingSlash: TrailingSlash;
+
+	#memo = new Memo();
+	memo = this.#memo.use;
 
 	constructor(req: Request, url: URL, trailingSlash: TrailingSlash) {
 		this.req = req;

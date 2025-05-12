@@ -8,12 +8,10 @@ const app = new App({
 	},
 });
 
-const { context } = app;
+const { context, memo } = app;
 
 const get = (pathname: string) =>
 	app.fetch(new Request("http://localhost:5173" + pathname));
-
-const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 test("context", () => {
 	app
@@ -85,12 +83,26 @@ test("context", () => {
 		c.page("page");
 	});
 
-	app.use(async (c, next) => {
+	app.use(async (_, next) => {
 		await next();
 	});
 
 	app.on(["POST", "GET"], "/multi-method", async (c) => {
 		return c.text(c.req.method);
+	});
+
+	app.get("/memo", (c) => {
+		let i = 0;
+
+		const add = memo((a: number, b: number) => {
+			i++;
+			return a + b;
+		});
+
+		add(1, 1);
+		add(1, 1);
+
+		expect(i).toBe(1);
 	});
 });
 
@@ -226,4 +238,8 @@ test("multi-method", async () => {
 	const text = await res.text();
 
 	expect(text).toBe("GET");
+});
+
+test("memo", async () => {
+	get("/memo");
 });

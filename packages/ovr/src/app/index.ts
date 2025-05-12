@@ -4,18 +4,18 @@ import { AsyncLocalStorage } from "node:async_hooks";
 
 export type Params = Record<string, string>;
 
-export type UnmatchedContext<State, P extends Params> = Omit<
-	Context<State, P>,
+export type UnmatchedContext<S, P extends Params> = Omit<
+	Context<S, P>,
 	"route"
 > &
-	Partial<Pick<Context<State, P>, "route">>;
+	Partial<Pick<Context<S, P>, "route">>;
 
-export type Start<State> = (
+export type Start<S> = (
 	context: Omit<UnmatchedContext<any, Params>, "state" | "route" | "params">,
-) => State;
+) => S;
 
-export type Middleware<State = null, P extends Params = Params> = (
-	context: Context<State, P>,
+export type Middleware<S = null, P extends Params = Params> = (
+	context: Context<S, P>,
 	next: () => Promise<void>,
 ) => any;
 
@@ -51,23 +51,23 @@ type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 		: ExtractParams<First> | ExtractMultiParams<Rest>
 	: never;
 
-export class App<State = null> {
+export class App<S = null> {
 	// allows for users to put other properties on the router
 	[key: string]: any;
 
 	/** Built tries per HTTP method. */
-	#trieMap = new Map<Method, Trie<Middleware<State, Params>[]>>();
+	#trieMap = new Map<Method, Trie<Middleware<S, Params>[]>>();
 
 	/** Added routes per HTTP method. */
-	#routesMap = new Map<Method, Route<Middleware<State, Params>[]>[]>();
+	#routesMap = new Map<Method, Route<Middleware<S, Params>[]>[]>();
 
 	/** Used to store context per request. */
-	#asyncLocalStorage = new AsyncLocalStorage<Context<State, Params>>();
+	#asyncLocalStorage = new AsyncLocalStorage<Context<S, Params>>();
 
 	/** Global middleware. */
-	#use: Middleware<State, Params>[] = [];
+	#use: Middleware<S, Params>[] = [];
 
-	#start?: Start<State>;
+	#start?: Start<S>;
 	#trailingSlash: TrailingSlash;
 
 	constructor(
@@ -90,14 +90,11 @@ export class App<State = null> {
 			 * @returns any state to access in middleware
 			 * @default null
 			 */
-			start?: Start<State>;
+			start?: Start<S>;
 		} = {},
 	) {
 		this.#trailingSlash = config.trailingSlash ?? "never";
 		this.#start = config.start;
-
-		this.fetch = this.fetch.bind(this);
-		this.context = this.context.bind(this);
 	}
 
 	/**
@@ -106,7 +103,7 @@ export class App<State = null> {
 	 * @param middleware
 	 * @returns the router instance
 	 */
-	use(...middleware: Middleware<State, Params>[]) {
+	use(...middleware: Middleware<S, Params>[]) {
 		this.#use.push(...middleware);
 		return this;
 	}
@@ -120,7 +117,7 @@ export class App<State = null> {
 	on<Pattern extends string>(
 		method: Method | Method[],
 		pattern: Pattern,
-		...middleware: Middleware<State, ExtractParams<Pattern>>[]
+		...middleware: Middleware<S, ExtractParams<Pattern>>[]
 	): this;
 	/**
 	 * @param method HTTP method
@@ -131,12 +128,12 @@ export class App<State = null> {
 	on<Patterns extends string[]>(
 		method: Method | Method[],
 		patterns: [...Patterns],
-		...middleware: Middleware<State, ExtractMultiParams<Patterns>>[]
+		...middleware: Middleware<S, ExtractMultiParams<Patterns>>[]
 	): this;
 	on<PatternOrPatterns extends string | string[]>(
 		method: Method | Method[],
 		pattern: PatternOrPatterns,
-		...middleware: Middleware<State, Params>[]
+		...middleware: Middleware<S, Params>[]
 	) {
 		if (!Array.isArray(method)) method = [method];
 
@@ -165,7 +162,7 @@ export class App<State = null> {
 	 */
 	get<Pattern extends string>(
 		pattern: Pattern,
-		...middleware: Middleware<State, ExtractParams<Pattern>>[]
+		...middleware: Middleware<S, ExtractParams<Pattern>>[]
 	): this;
 	/**
 	 * @param patterns array of route patterns
@@ -174,11 +171,11 @@ export class App<State = null> {
 	 */
 	get<Patterns extends string[]>(
 		patterns: [...Patterns],
-		...middleware: Middleware<State, ExtractMultiParams<Patterns>>[]
+		...middleware: Middleware<S, ExtractMultiParams<Patterns>>[]
 	): this;
 	get<PatternOrPatterns extends string | string[]>(
 		patternOrPatterns: PatternOrPatterns,
-		...middleware: Middleware<State, Params>[]
+		...middleware: Middleware<S, Params>[]
 	) {
 		return this.on("GET", patternOrPatterns as string, ...middleware);
 	}
@@ -190,7 +187,7 @@ export class App<State = null> {
 	 */
 	post<Pattern extends string>(
 		pattern: Pattern,
-		...middleware: Middleware<State, ExtractParams<Pattern>>[]
+		...middleware: Middleware<S, ExtractParams<Pattern>>[]
 	): this;
 	/**
 	 * @param patterns array of route patterns
@@ -199,11 +196,11 @@ export class App<State = null> {
 	 */
 	post<Patterns extends string[]>(
 		patterns: [...Patterns],
-		...middleware: Middleware<State, ExtractMultiParams<Patterns>>[]
+		...middleware: Middleware<S, ExtractMultiParams<Patterns>>[]
 	): this;
 	post<PatternOrPatterns extends string | string[]>(
 		patternOrPatterns: PatternOrPatterns,
-		...middleware: Middleware<State, Params>[]
+		...middleware: Middleware<S, Params>[]
 	) {
 		return this.on("POST", patternOrPatterns as string, ...middleware);
 	}
@@ -230,7 +227,7 @@ export class App<State = null> {
 	 * fn() // Error - outside AsyncLocalStorage scope
 	 * ```
 	 */
-	context() {
+	context = () => {
 		const c = this.#asyncLocalStorage.getStore();
 
 		if (!c)
@@ -239,14 +236,14 @@ export class App<State = null> {
 			);
 
 		return c;
-	}
+	};
 
 	/**
 	 * @param req [`Request` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
 	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
 	 */
-	fetch(req: Request): Promise<Response> {
-		const c = new Context<State, Params>(
+	fetch = (req: Request): Promise<Response> => {
+		const c = new Context<S, Params>(
 			req,
 			new URL(req.url),
 			this.#trailingSlash,
@@ -265,7 +262,7 @@ export class App<State = null> {
 
 					if (routes) {
 						// build trie
-						trie = new Trie<Middleware<State, Params>[]>();
+						trie = new Trie<Middleware<S, Params>[]>();
 						for (const route of routes) trie.add(route);
 						this.#trieMap.set(req.method, trie);
 					}
@@ -289,7 +286,7 @@ export class App<State = null> {
 
 			return c.build();
 		});
-	}
+	};
 
 	/**
 	 * Combines all middleware into a single function.
@@ -298,7 +295,7 @@ export class App<State = null> {
 	 * @param middleware
 	 * @returns single function middleware function
 	 */
-	#compose(middleware: Middleware<State, Params>[]): Middleware<State, Params> {
+	#compose(middleware: Middleware<S, Params>[]): Middleware<S, Params> {
 		return (c, next) => {
 			let index = -1;
 
@@ -317,4 +314,6 @@ export class App<State = null> {
 			return dispatch(0);
 		};
 	}
+
+	memo = <A extends any[], R>(fn: (...args: A) => R) => this.context().memo(fn);
 }
