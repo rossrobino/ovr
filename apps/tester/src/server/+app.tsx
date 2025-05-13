@@ -1,7 +1,7 @@
 import { html } from "client:page";
-import { Router, Suspense } from "ovr";
+import { App, Suspense } from "ovr";
 
-const app = new Router({
+const app = new App({
 	start(c) {
 		c.base = html;
 	},
