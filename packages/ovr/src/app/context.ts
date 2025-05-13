@@ -20,7 +20,7 @@ class TagNotFound extends Error {
 	}
 }
 
-export class Context<State, P extends Params> {
+export class Context<S, P extends Params> {
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request) */
 	req: Request;
 
@@ -32,7 +32,7 @@ export class Context<State, P extends Params> {
 	 *
 	 * @default null
 	 */
-	state: State = null as State;
+	state: S = null as S;
 
 	/**
 	 * Route pattern parameters
@@ -45,7 +45,7 @@ export class Context<State, P extends Params> {
 	params: P = {} as P; // set after match
 
 	/** The matched `Route` instance. */
-	route: Route<Middleware<State, P>[]> = undefined as any; // set after match
+	route: Route<Middleware<S, P>[]> = undefined as any; // set after match
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
 	body: BodyInit | null = null;
@@ -78,7 +78,7 @@ export class Context<State, P extends Params> {
 	 * @default null
 	 */
 	error:
-		| ((context: UnmatchedContext<State, Params>, error: unknown) => any)
+		| ((context: UnmatchedContext<S, Params>, error: unknown) => any)
 		| null = null;
 
 	#layouts: Layout[] = [];
@@ -104,7 +104,7 @@ export class Context<State, P extends Params> {
 	 * () => this.html("Not found", 404)
 	 * ```
 	 */
-	notFound(_context: UnmatchedContext<State, P>): any {
+	notFound(_context: UnmatchedContext<S, P>): any {
 		this.html("Not found", 404);
 	}
 
