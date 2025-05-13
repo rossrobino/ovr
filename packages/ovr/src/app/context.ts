@@ -321,8 +321,8 @@ export class Context<S, P extends Params> {
 		const c = asyncLocalStorage.getStore();
 
 		if (!c)
-			throw new Error(
-				"Context not set: Context can only be obtained within a handler.",
+			throw new ReferenceError(
+				"Context can only be obtained within a handler.",
 			);
 
 		return c;
