@@ -180,7 +180,13 @@ export class Context<S, P extends Params> {
 	 * Creates a redirect response.
 	 *
 	 * @param location redirect `Location` header
-	 * @param status defaults to [`302`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302)
+	 * @param status HTTP status code
+	 *
+	 * - [301 Moved Permanently](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/301)
+	 * - [302 Found](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) (default)
+	 * - [303 See Other](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/303)
+	 * - [307 Temporary Redirect](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/307)
+	 * - [308 Permanent Redirect](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/308)
 	 */
 	redirect(location: string | URL, status: 301 | 302 | 303 | 307 | 308 = 302) {
 		this.headers.set("location", location.toString());

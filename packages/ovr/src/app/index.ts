@@ -53,7 +53,7 @@ type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 	: never;
 
 export class App<S = null> {
-	// allows for users to put other properties on the router
+	// allows for users to put other properties on the app
 	[key: string]: any;
 
 	/** Built tries per HTTP method. */
@@ -99,7 +99,7 @@ export class App<S = null> {
 	 * Add global middleware.
 	 *
 	 * @param middleware
-	 * @returns the router instance
+	 * @returns the app instance
 	 */
 	use(...middleware: Middleware<S, Params>[]) {
 		this.#use.push(...middleware);
@@ -110,7 +110,7 @@ export class App<S = null> {
 	 * @param method HTTP method
 	 * @param pattern route pattern
 	 * @param middleware
-	 * @returns the router instance
+	 * @returns the app instance
 	 */
 	on<Pattern extends string>(
 		method: Method | Method[],
@@ -121,7 +121,7 @@ export class App<S = null> {
 	 * @param method HTTP method
 	 * @param patterns array of route patterns
 	 * @param middleware
-	 * @returns the router instance
+	 * @returns the app instance
 	 */
 	on<Patterns extends string[]>(
 		method: Method | Method[],
@@ -156,7 +156,7 @@ export class App<S = null> {
 	/**
 	 * @param pattern route pattern
 	 * @param middleware
-	 * @returns the router instance
+	 * @returns the app instance
 	 */
 	get<Pattern extends string>(
 		pattern: Pattern,
@@ -165,7 +165,7 @@ export class App<S = null> {
 	/**
 	 * @param patterns array of route patterns
 	 * @param middleware
-	 * @returns the router instance
+	 * @returns the app instance
 	 */
 	get<Patterns extends string[]>(
 		patterns: [...Patterns],
@@ -196,15 +196,19 @@ export class App<S = null> {
 		patterns: [...Patterns],
 		...middleware: Middleware<S, ExtractMultiParams<Patterns>>[]
 	): this;
+	/**
+	 * @param Form component returned from `form()`
+	 * @returns the app instance
+	 */
+	post(Form: PostFormComponent): this;
 	post<PatternOrPatterns extends string | string[]>(
-		patternOrPatterns: PatternOrPatterns,
+		patternOrForm: PatternOrPatterns | PostFormComponent,
 		...middleware: Middleware<S, Params>[]
-	) {
-		return this.on("POST", patternOrPatterns as string, ...middleware);
-	}
+	): this {
+		if (typeof patternOrForm === "function")
+			return this.post(patternOrForm.action, ...patternOrForm.middleware);
 
-	form(Form: PostFormComponent) {
-		return this.post(Form.action, Form.handler);
+		return this.on("POST", patternOrForm as string, ...middleware);
 	}
 
 	/**

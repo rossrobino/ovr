@@ -1,4 +1,4 @@
-import { CreateUser, CreateUserForm } from "./create-user";
+import { Component, Form } from "./form";
 import { html } from "client:page";
 import { App, Suspense } from "ovr";
 
@@ -13,33 +13,31 @@ const app = new App({
 	},
 });
 
-app.form(CreateUserForm);
+app.post(Form);
 
-app.get("/create-user", (c) => c.page(<CreateUser />));
+app.get("/form", (c) => c.page(<Component />));
 
-app.get("/", (c) =>
+app.get("/", (c) => {
 	c.page(
 		<main class="prose">
 			<h1>tester</h1>
 
-			<a href="/create-user">Create user</a>
+			<a href="/form">Form</a>
 
 			<Suspense
 				fallback={<p>Loading...</p>}
+				children={<Delay ms={1000} />}
 				after={
 					<>
 						<h2>After</h2>
-						<h2>After 2</h2>
 						<Suspense fallback={<p>Loading...</p>}>
 							<Delay ms={500} />
 						</Suspense>
 					</>
 				}
-			>
-				<Delay ms={1000} />
-			</Suspense>
+			/>
 		</main>,
-	),
-);
+	);
+});
 
 export default app;
