@@ -1,3 +1,4 @@
+import type { PostFormComponent } from "../components/form.js";
 import { Trie, Route } from "../trie/index.js";
 import { asyncLocalStorage } from "./async-local-storage.js";
 import { Context } from "./context.js";
@@ -200,6 +201,10 @@ export class App<S = null> {
 		...middleware: Middleware<S, Params>[]
 	) {
 		return this.on("POST", patternOrPatterns as string, ...middleware);
+	}
+
+	form(Form: PostFormComponent) {
+		return this.post(Form.action, Form.handler);
 	}
 
 	/**

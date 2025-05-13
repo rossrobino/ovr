@@ -1,4 +1,4 @@
-import { Context } from "./context.js";
+import { context } from "./async-local-storage.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
@@ -33,7 +33,7 @@ test("context", () => {
 		)
 		.get("/api/:id/", (c) => {
 			expect(c.params.id).toBeDefined();
-			Context.get().json(c.params);
+			context().json(c.params);
 		})
 		.get("/wild/*", (c) => {
 			expect(c.params["*"]).toBeDefined();

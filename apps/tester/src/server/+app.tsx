@@ -1,5 +1,11 @@
+import { CreateUser, CreateUserForm } from "./create-user";
 import { html } from "client:page";
 import { App, Suspense } from "ovr";
+
+async function* Delay(props: { ms: number }) {
+	await new Promise((res) => setTimeout(res, props.ms));
+	yield <p>{props.ms}</p>;
+}
 
 const app = new App({
 	start(c) {
@@ -7,15 +13,16 @@ const app = new App({
 	},
 });
 
-async function* Delay(props: { ms: number }) {
-	await new Promise((res) => setTimeout(res, props.ms));
-	yield <p>{props.ms}</p>;
-}
+app.form(CreateUserForm);
+
+app.get("/create-user", (c) => c.page(<CreateUser />));
 
 app.get("/", (c) =>
 	c.page(
 		<main class="prose">
 			<h1>tester</h1>
+
+			<a href="/create-user">Create user</a>
 
 			<Suspense
 				fallback={<p>Loading...</p>}
