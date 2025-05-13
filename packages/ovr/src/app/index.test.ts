@@ -1,3 +1,4 @@
+import { Context } from "./context.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
@@ -7,8 +8,6 @@ const app = new App({
 		return { foo: "bar" };
 	},
 });
-
-const { context, memo } = app;
 
 const get = (pathname: string) =>
 	app.fetch(new Request("http://localhost:5173" + pathname));
@@ -34,7 +33,7 @@ test("context", () => {
 		)
 		.get("/api/:id/", (c) => {
 			expect(c.params.id).toBeDefined();
-			context().json(c.params);
+			Context.get().json(c.params);
 		})
 		.get("/wild/*", (c) => {
 			expect(c.params["*"]).toBeDefined();
@@ -94,7 +93,7 @@ test("context", () => {
 	app.get("/memo", (c) => {
 		let i = 0;
 
-		const add = memo((a: number, b: number) => {
+		const add = c.memo((a: number, b: number) => {
 			i++;
 			return a + b;
 		});

@@ -3,6 +3,7 @@ import { hash } from "../hash/index.js";
 import { toGenerator, type JSX } from "../jsx/index.js";
 import { Memo } from "../memo/index.js";
 import type { Route } from "../trie/index.js";
+import { asyncLocalStorage } from "./async-local-storage.js";
 import type {
 	Middleware,
 	Params,
@@ -290,5 +291,38 @@ export class Context<State, P extends Params> {
 		if (!this.body && !this.status) this.notFound(this);
 
 		return new Response(this.body, this);
+	}
+
+	/**
+	 * Call within the scope of a handler to get the current context.
+	 *
+	 * @returns The request context.
+	 *
+	 * @example
+	 *
+	 * ```ts
+	 * const app = new Router();
+	 *
+	 * const fn = () => {
+	 * 	const c = app.context();
+	 * 	// ...
+	 * }
+	 *
+	 * app.get("/", () => {
+	 * 	fn(); // OK
+	 * });
+	 *
+	 * fn() // Error - outside AsyncLocalStorage scope
+	 * ```
+	 */
+	static get() {
+		const c = asyncLocalStorage.getStore();
+
+		if (!c)
+			throw new Error(
+				"Context not set: Context can only be obtained within a handler.",
+			);
+
+		return c;
 	}
 }

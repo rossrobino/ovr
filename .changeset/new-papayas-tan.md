@@ -2,4 +2,4 @@
 "ovr": major
 ---
 
-feat: adds `app.context()` with typed `State`, removes seperate `context()` function.
+feat: adds `Context.get`, removes separate `context()` function.

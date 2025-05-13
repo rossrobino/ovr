@@ -1,6 +1,6 @@
 import { Trie, Route } from "../trie/index.js";
+import { asyncLocalStorage } from "./async-local-storage.js";
 import { Context } from "./context.js";
-import { AsyncLocalStorage } from "node:async_hooks";
 
 export type Params = Record<string, string>;
 
@@ -60,9 +60,6 @@ export class App<S = null> {
 
 	/** Added routes per HTTP method. */
 	#routesMap = new Map<Method, Route<Middleware<S, Params>[]>[]>();
-
-	/** Used to store context per request. */
-	#asyncLocalStorage = new AsyncLocalStorage<Context<S, Params>>();
 
 	/** Global middleware. */
 	#use: Middleware<S, Params>[] = [];
@@ -206,39 +203,6 @@ export class App<S = null> {
 	}
 
 	/**
-	 * Call within the scope of a handler to get the current context.
-	 *
-	 * @returns The request context.
-	 *
-	 * @example
-	 *
-	 * ```ts
-	 * const app = new Router();
-	 *
-	 * const fn = () => {
-	 * 	const c = app.context();
-	 * 	// ...
-	 * }
-	 *
-	 * app.get("/", () => {
-	 * 	fn(); // OK
-	 * });
-	 *
-	 * fn() // Error - outside AsyncLocalStorage scope
-	 * ```
-	 */
-	context = () => {
-		const c = this.#asyncLocalStorage.getStore();
-
-		if (!c)
-			throw new Error(
-				"Context not set: Context can only be obtained within a handler.",
-			);
-
-		return c;
-	};
-
-	/**
 	 * @param req [`Request` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
 	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
 	 */
@@ -249,7 +213,7 @@ export class App<S = null> {
 			this.#trailingSlash,
 		);
 
-		return this.#asyncLocalStorage.run(c, async () => {
+		return asyncLocalStorage.run(c, async () => {
 			try {
 				if (this.#start) c.state = this.#start(c);
 
@@ -314,6 +278,4 @@ export class App<S = null> {
 			return dispatch(0);
 		};
 	}
-
-	memo = <A extends any[], R>(fn: (...args: A) => R) => this.context().memo(fn);
 }
