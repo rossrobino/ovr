@@ -301,10 +301,12 @@ export class Context<S, P extends Params> {
 	 * @example
 	 *
 	 * ```ts
+	 * import { Context } from "ovr";
+	 *
 	 * const app = new Router();
 	 *
 	 * const fn = () => {
-	 * 	const c = app.context();
+	 * 	const c = Context.get();
 	 * 	// ...
 	 * }
 	 *
