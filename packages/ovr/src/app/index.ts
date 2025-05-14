@@ -14,7 +14,7 @@ export type UnmatchedContext<P extends Params = Params> = Omit<
 export type Middleware<P extends Params = Params> = (
 	context: Context<P>,
 	next: () => Promise<void>,
-) => any;
+) => unknown;
 
 export type TrailingSlash = "always" | "never" | "ignore";
 
@@ -226,9 +226,24 @@ export class App {
 					if (match) {
 						Object.assign(c, match);
 
-						await this.#compose([...this.#use, ...match.route.store])(c, () =>
-							Promise.resolve(),
-						);
+						const middleware = [...this.#use, ...match.route.store];
+
+						// compose
+						let i = -1;
+						const dispatch = async (current: number): Promise<void> => {
+							if (current <= i) throw new Error("next() called multiple times");
+							i = current;
+
+							if (middleware[current]) {
+								const result = await middleware[current](c, () =>
+									dispatch(current + 1),
+								);
+
+								if (result) c.page(result);
+							}
+						};
+
+						await dispatch(0);
 					}
 				}
 			} catch (error) {
@@ -239,31 +254,4 @@ export class App {
 			return c.build();
 		});
 	};
-
-	/**
-	 * Combines all middleware into a single function.
-	 * Adapted from [koa-compose](https://github.com/koajs/compose/blob/master/index.js)
-	 *
-	 * @param middleware
-	 * @returns single function middleware function
-	 */
-	#compose(middleware: Middleware[]): Middleware {
-		return (c, next) => {
-			let index = -1;
-
-			const dispatch = async (i: number): Promise<void> => {
-				if (i <= index) throw new Error("next() called multiple times");
-
-				index = i;
-
-				const mw = i === middleware.length ? next : middleware[i];
-
-				if (!mw) return;
-
-				return mw(c, dispatch.bind(null, i + 1));
-			};
-
-			return dispatch(0);
-		};
-	}
 }

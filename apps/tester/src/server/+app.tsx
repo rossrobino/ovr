@@ -1,6 +1,6 @@
 import { Component, posted } from "./action";
 import { html } from "client:page";
-import { App, Suspense } from "ovr";
+import { App, Suspense, type Middleware } from "ovr";
 
 async function* Delay(props: { ms: number }) {
 	await new Promise((res) => setTimeout(res, props.ms));
@@ -16,10 +16,10 @@ app.use(async (c, next) => {
 
 app.post(posted);
 
-app.get("/action", (c) => c.page(<Component />));
+app.get("/action", () => <Component />);
 
-app.get("/", (c) => {
-	c.page(
+app.get("/", () => {
+	return (
 		<main class="prose">
 			<h1>tester</h1>
 
@@ -37,7 +37,7 @@ app.get("/", (c) => {
 					</>
 				}
 			/>
-		</main>,
+		</main>
 	);
 });
 
