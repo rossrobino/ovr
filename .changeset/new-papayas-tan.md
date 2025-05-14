@@ -2,9 +2,9 @@
 "ovr": minor
 ---
 
-feat: adds `form()` helper
+feat: adds `action` helper
 
-Create a JSX form and pass it into `app.post` to register a route automatically linked to the form's action.
+Create an action and pass it into `app.post` to register a route automatically linked to the `action.Form`.
 
 ```tsx
 // action.tsx
