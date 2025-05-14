@@ -5,18 +5,14 @@ import { Context } from "./context.js";
 
 export type Params = Record<string, string>;
 
-export type UnmatchedContext<S, P extends Params> = Omit<
-	Context<S, P>,
+export type UnmatchedContext<P extends Params = Params> = Omit<
+	Context<P>,
 	"route"
 > &
-	Partial<Pick<Context<S, P>, "route">>;
+	Partial<Pick<Context<P>, "route">>;
 
-export type Start<S> = (
-	context: Omit<UnmatchedContext<any, Params>, "state" | "route" | "params">,
-) => S;
-
-export type Middleware<S = null, P extends Params = Params> = (
-	context: Context<S, P>,
+export type Middleware<P extends Params = Params> = (
+	context: Context<P>,
 	next: () => Promise<void>,
 ) => any;
 
@@ -52,20 +48,19 @@ type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 		: ExtractParams<First> | ExtractMultiParams<Rest>
 	: never;
 
-export class App<S = null> {
+export class App {
 	// allows for users to put other properties on the app
 	[key: string]: any;
 
 	/** Built tries per HTTP method. */
-	#trieMap = new Map<Method, Trie<Middleware<S, Params>[]>>();
+	#trieMap = new Map<Method, Trie<Middleware[]>>();
 
 	/** Added routes per HTTP method. */
-	#routesMap = new Map<Method, Route<Middleware<S, Params>[]>[]>();
+	#routesMap = new Map<Method, Route<Middleware[]>[]>();
 
 	/** Global middleware. */
-	#use: Middleware<S, Params>[] = [];
+	#use: Middleware[] = [];
 
-	#start?: Start<S>;
 	#trailingSlash: TrailingSlash;
 
 	constructor(
@@ -80,19 +75,9 @@ export class App<S = null> {
 			 * @default "never"
 			 */
 			trailingSlash?: TrailingSlash;
-
-			/**
-			 * Runs before middleware, return a value to set the initial state.
-			 *
-			 * @param context request context
-			 * @returns any state to access in middleware
-			 * @default null
-			 */
-			start?: Start<S>;
 		} = {},
 	) {
 		this.#trailingSlash = config.trailingSlash ?? "never";
-		this.#start = config.start;
 	}
 
 	/**
@@ -101,7 +86,7 @@ export class App<S = null> {
 	 * @param middleware
 	 * @returns the app instance
 	 */
-	use(...middleware: Middleware<S, Params>[]) {
+	use(...middleware: Middleware[]) {
 		this.#use.push(...middleware);
 		return this;
 	}
@@ -115,7 +100,7 @@ export class App<S = null> {
 	on<Pattern extends string>(
 		method: Method | Method[],
 		pattern: Pattern,
-		...middleware: Middleware<S, ExtractParams<Pattern>>[]
+		...middleware: Middleware<ExtractParams<Pattern>>[]
 	): this;
 	/**
 	 * @param method HTTP method
@@ -126,12 +111,12 @@ export class App<S = null> {
 	on<Patterns extends string[]>(
 		method: Method | Method[],
 		patterns: [...Patterns],
-		...middleware: Middleware<S, ExtractMultiParams<Patterns>>[]
+		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
 	): this;
 	on<PatternOrPatterns extends string | string[]>(
 		method: Method | Method[],
 		pattern: PatternOrPatterns,
-		...middleware: Middleware<S, Params>[]
+		...middleware: Middleware[]
 	) {
 		if (!Array.isArray(method)) method = [method];
 
@@ -160,7 +145,7 @@ export class App<S = null> {
 	 */
 	get<Pattern extends string>(
 		pattern: Pattern,
-		...middleware: Middleware<S, ExtractParams<Pattern>>[]
+		...middleware: Middleware<ExtractParams<Pattern>>[]
 	): this;
 	/**
 	 * @param patterns array of route patterns
@@ -169,11 +154,11 @@ export class App<S = null> {
 	 */
 	get<Patterns extends string[]>(
 		patterns: [...Patterns],
-		...middleware: Middleware<S, ExtractMultiParams<Patterns>>[]
+		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
 	): this;
 	get<PatternOrPatterns extends string | string[]>(
 		patternOrPatterns: PatternOrPatterns,
-		...middleware: Middleware<S, Params>[]
+		...middleware: Middleware[]
 	) {
 		return this.on("GET", patternOrPatterns as string, ...middleware);
 	}
@@ -185,7 +170,7 @@ export class App<S = null> {
 	 */
 	post<Pattern extends string>(
 		pattern: Pattern,
-		...middleware: Middleware<S, ExtractParams<Pattern>>[]
+		...middleware: Middleware<ExtractParams<Pattern>>[]
 	): this;
 	/**
 	 * @param patterns array of route patterns
@@ -194,7 +179,7 @@ export class App<S = null> {
 	 */
 	post<Patterns extends string[]>(
 		patterns: [...Patterns],
-		...middleware: Middleware<S, ExtractMultiParams<Patterns>>[]
+		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
 	): this;
 	/**
 	 * @param action Result of `action()`
@@ -203,7 +188,7 @@ export class App<S = null> {
 	post(action: Action): this;
 	post<PatternOrPatterns extends string | string[]>(
 		patternOrAction: PatternOrPatterns | Action,
-		...middleware: Middleware<S, Params>[]
+		...middleware: Middleware[]
 	): this {
 		if (typeof patternOrAction === "object" && "id" in patternOrAction)
 			return this.post(patternOrAction.id, ...patternOrAction.middleware);
@@ -216,16 +201,10 @@ export class App<S = null> {
 	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
 	 */
 	fetch = (req: Request): Promise<Response> => {
-		const c = new Context<S, Params>(
-			req,
-			new URL(req.url),
-			this.#trailingSlash,
-		);
+		const c = new Context(req, new URL(req.url), this.#trailingSlash);
 
 		return asyncLocalStorage.run(c, async () => {
 			try {
-				if (this.#start) c.state = this.#start(c);
-
 				// check to see if the method is already built
 				let trie = this.#trieMap.get(req.method);
 
@@ -235,7 +214,7 @@ export class App<S = null> {
 
 					if (routes) {
 						// build trie
-						trie = new Trie<Middleware<S, Params>[]>();
+						trie = new Trie<Middleware[]>();
 						for (const route of routes) trie.add(route);
 						this.#trieMap.set(req.method, trie);
 					}
@@ -268,7 +247,7 @@ export class App<S = null> {
 	 * @param middleware
 	 * @returns single function middleware function
 	 */
-	#compose(middleware: Middleware<S, Params>[]): Middleware<S, Params> {
+	#compose(middleware: Middleware[]): Middleware {
 		return (c, next) => {
 			let index = -1;
 

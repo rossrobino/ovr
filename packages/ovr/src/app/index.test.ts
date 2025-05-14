@@ -2,12 +2,7 @@ import { context } from "./async-local-storage.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
-const app = new App({
-	trailingSlash: "always",
-	start(c) {
-		return { foo: "bar" };
-	},
-});
+const app = new App({ trailingSlash: "always" });
 
 const get = (pathname: string) =>
 	app.fetch(new Request("http://localhost:5173" + pathname));
@@ -17,13 +12,10 @@ test("context", () => {
 		.get(
 			"/",
 			async (c, next) => {
-				expect(c.state.foo).toBe("bar");
-				c.state.foo = "baz";
 				c.req.headers.set("hello", "world");
 				await next();
 			},
 			(c) => {
-				expect(c.state.foo).toBe("baz");
 				expect(c.url).toBeInstanceOf(URL);
 				expect(c.req).toBeInstanceOf(Request);
 				expect(c.req.headers.get("hello")).toBe("world");

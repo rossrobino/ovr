@@ -137,23 +137,21 @@ Optional configuration when creating the app.
 const app = new App({
 	// redirect trailing slash preference
 	trailingSlash: "always",
+});
 
-	// runs at the start of each request
-	start(c) {
-		// customize the not found response
-		c.notFound = (c) => c.res("custom", { status: 404 });
+// global middleware
+app.use(async (c, next) => {
+	// customize the not found response
+	c.notFound = (c) => c.res("custom", { status: 404 });
 
-		// add a global error handler
-		c.error = (c, error) => c.res(error.message, { status: 500 });
+	// add a global error handler
+	c.error = (c, error) => c.res(error.message, { status: 500 });
 
-		// base HTML to inject head and body elements into, this is the default
-		c.base =
-			'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
-		// (these can be set in middleware as well)
+	// base HTML to inject head and body elements into, this is the default
+	c.base =
+		'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
 
-		// return state to use in middleware
-		return { foo: "bar" };
-	},
+	await next();
 });
 ```
 
@@ -168,7 +166,6 @@ app.get("/api/:id", (c) => {
 	c.url; // The parsed URL object
 	c.params; // Type-safe route parameters (e.g., { id: "123" })
 	c.route; // The matched Route object (contains pattern, store)
-	c.state; // State returned from `config.start` (e.g., { dbClient, user })
 
 	// Response Building Methods
 	c.res(body, init); // Generic response (like `new Response()`)

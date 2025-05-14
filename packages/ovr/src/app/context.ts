@@ -19,19 +19,12 @@ class TagNotFound extends Error {
 	}
 }
 
-export class Context<S, P extends Params> {
+export class Context<P extends Params = Params> {
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request) */
 	req: Request;
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URL) */
 	url: URL;
-
-	/**
-	 * `state` returned from `config.start`, possibly modified by previous middleware.
-	 *
-	 * @default null
-	 */
-	state: S = null as S;
 
 	/**
 	 * Route pattern parameters
@@ -44,7 +37,7 @@ export class Context<S, P extends Params> {
 	params: P = {} as P; // set after match
 
 	/** The matched `Route` instance. */
-	route: Route<Middleware<S, P>[]> = undefined as any; // set after match
+	route: Route<Middleware<P>[]> = undefined as any; // set after match
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
 	body: BodyInit | null = null;
@@ -76,9 +69,7 @@ export class Context<S, P extends Params> {
 	 *
 	 * @default null
 	 */
-	error:
-		| ((context: UnmatchedContext<S, Params>, error: unknown) => any)
-		| null = null;
+	error: ((context: UnmatchedContext, error: unknown) => any) | null = null;
 
 	#layouts: Layout[] = [];
 	#headElements: JSX.Element[] = [];
@@ -103,7 +94,7 @@ export class Context<S, P extends Params> {
 	 * () => this.html("Not found", 404)
 	 * ```
 	 */
-	notFound(_context: UnmatchedContext<S, P>): any {
+	notFound(_context: UnmatchedContext<P>): any {
 		this.html("Not found", 404);
 	}
 

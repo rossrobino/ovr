@@ -7,7 +7,7 @@ export type Action = {
 	id: string;
 
 	/** POST middleware to run when action is called. */
-	middleware: Middleware<unknown, {}>[];
+	middleware: Middleware<{}>[];
 
 	/** `<form>` component with preset `method` and `action` attributes. */
 	Form: (
@@ -43,7 +43,7 @@ export type Action = {
  * app.post(posted)
  * ```
  */
-export const action = (...middleware: Middleware<unknown, {}>[]): Action => {
+export const action = (...middleware: Middleware<{}>[]): Action => {
 	const id = `/_action/${hash(middleware.join())}`;
 
 	return {

@@ -7,10 +7,11 @@ async function* Delay(props: { ms: number }) {
 	yield <p>{props.ms}</p>;
 }
 
-const app = new App({
-	start(c) {
-		c.base = html;
-	},
+const app = new App();
+
+app.use(async (c, next) => {
+	c.base = html;
+	await next();
 });
 
 app.post(posted);
