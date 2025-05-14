@@ -1,15 +1,15 @@
-import { form } from "ovr";
+import { action } from "ovr";
 
-export const Form = form((c) => {
+export const posted = action((c) => {
 	console.log("posted");
 	c.redirect("/", 303);
 });
 
 export const Component = () => {
 	return (
-		<Form>
-			<input type="text" />
+		<posted.Form>
+			<input />
 			<button>Submit</button>
-		</Form>
+		</posted.Form>
 	);
 };

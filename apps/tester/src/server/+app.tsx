@@ -1,4 +1,4 @@
-import { Component, Form } from "./form";
+import { Component, posted } from "./action";
 import { html } from "client:page";
 import { App, Suspense } from "ovr";
 
@@ -13,16 +13,16 @@ const app = new App({
 	},
 });
 
-app.post(Form);
+app.post(posted);
 
-app.get("/form", (c) => c.page(<Component />));
+app.get("/action", (c) => c.page(<Component />));
 
 app.get("/", (c) => {
 	c.page(
 		<main class="prose">
 			<h1>tester</h1>
 
-			<a href="/form">Form</a>
+			<a href="/action">Action</a>
 
 			<Suspense
 				fallback={<p>Loading...</p>}

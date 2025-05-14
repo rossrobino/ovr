@@ -1,5 +1,5 @@
-import type { PostFormComponent } from "../components/form.js";
 import { Trie, Route } from "../trie/index.js";
+import type { Action } from "./action.js";
 import { asyncLocalStorage } from "./async-local-storage.js";
 import { Context } from "./context.js";
 
@@ -197,18 +197,18 @@ export class App<S = null> {
 		...middleware: Middleware<S, ExtractMultiParams<Patterns>>[]
 	): this;
 	/**
-	 * @param Form component returned from `form()`
+	 * @param action Result of `action()`
 	 * @returns the app instance
 	 */
-	post(Form: PostFormComponent): this;
+	post(action: Action): this;
 	post<PatternOrPatterns extends string | string[]>(
-		patternOrForm: PatternOrPatterns | PostFormComponent,
+		patternOrAction: PatternOrPatterns | Action,
 		...middleware: Middleware<S, Params>[]
 	): this {
-		if (typeof patternOrForm === "function")
-			return this.post(patternOrForm.action, ...patternOrForm.middleware);
+		if (typeof patternOrAction === "object" && "id" in patternOrAction)
+			return this.post(patternOrAction.id, ...patternOrAction.middleware);
 
-		return this.on("POST", patternOrForm as string, ...middleware);
+		return this.on("POST", patternOrAction as string, ...middleware);
 	}
 
 	/**

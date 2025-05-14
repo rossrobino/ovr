@@ -7,27 +7,23 @@ feat: adds `form()` helper
 Create a JSX form and pass it into `app.post` to register a route automatically linked to the form's action.
 
 ```tsx
-import { form } from "ovr";
+// action.tsx
+import { action } from "ovr";
 
-export const Form = form((c) => {
+export const posted = action((c) => {
 	console.log("posted");
 	c.redirect("/", 303);
 });
 
 export const Component = () => {
 	return (
-		<Form>
-			<input type="text" />
+		<posted.Form>
+			<input />
 			<button>Submit</button>
-		</Form>
+		</posted.Form>
 	);
 };
-```
 
-```ts
-import { Form } from "./form";
-
-//...
-
-app.post(Form); // automatically registered to a unique route
+// app.tsx
+app.post(posted); // automatically registered to a unique pathname
 ```
