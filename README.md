@@ -218,6 +218,13 @@ app.use(async (c) => {
 
 #### Middleware
 
+| Middleware Return Value | Action                     |
+| ----------------------- | -------------------------- |
+| `Response`              | Passed into `context.res`  |
+| `ReadableStream`        | Assigned to `context.body` |
+| other truthy values     | Passed into `context.page` |
+| falsy values            | None                       |
+
 Add middleware to a route, the first middleware added to the route will be called, and the `next` middleware can be called within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
 
 ```ts

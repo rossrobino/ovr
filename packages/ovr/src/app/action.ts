@@ -30,17 +30,15 @@ export type Action = {
  * 	c.redirect("/", 303);
  * });
  *
- * export const Component = () => {
- * 	return (
- * 		<posted.Form>
- * 			<input />
- * 			<button>Submit</button>
- * 		</posted.Form>
- * 	);
- * };
+ * export const Component = () => (
+ * 	<posted.Form>
+ * 		<input />
+ * 		<button>Submit</button>
+ * 	</posted.Form>
+ * );
  *
  * // app.tsx
- * app.post(posted)
+ * app.post(posted); registers the action
  * ```
  */
 export const action = (...middleware: Middleware<{}>[]): Action => {

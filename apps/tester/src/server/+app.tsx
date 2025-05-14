@@ -1,6 +1,6 @@
 import { Component, posted } from "./action";
 import { html } from "client:page";
-import { App, Suspense, type Middleware } from "ovr";
+import { App, Suspense } from "ovr";
 
 async function* Delay(props: { ms: number }) {
 	await new Promise((res) => setTimeout(res, props.ms));

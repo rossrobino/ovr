@@ -123,7 +123,7 @@ export class Context<P extends Params = Params> {
 
 		if (init?.headers) {
 			for (const [name, value] of new Headers(init.headers)) {
-				this.headers.append(name, value);
+				this.headers.set(name, value);
 			}
 		}
 	}

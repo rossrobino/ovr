@@ -2,14 +2,12 @@ import { action } from "ovr";
 
 export const posted = action((c) => {
 	console.log("posted");
-	c.redirect("/", 303);
+	c.redirect("/");
 });
 
-export const Component = () => {
-	return (
-		<posted.Form>
-			<input />
-			<button>Submit</button>
-		</posted.Form>
-	);
-};
+export const Component = () => (
+	<posted.Form>
+		<input />
+		<button>Submit</button>
+	</posted.Form>
+);

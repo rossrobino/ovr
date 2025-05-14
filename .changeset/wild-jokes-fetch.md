@@ -2,4 +2,4 @@
 "ovr": major
 ---
 
-rename `Router` to `App`
+Renames `Router` to `App`

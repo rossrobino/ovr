@@ -239,7 +239,9 @@ export class App {
 									dispatch(current + 1),
 								);
 
-								if (result) c.page(result);
+								if (result instanceof Response) c.res(result.body, result);
+								else if (result instanceof ReadableStream) c.body = result;
+								else if (result) c.page(result);
 							}
 						};
 
