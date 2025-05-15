@@ -1,7 +1,8 @@
 import { Trie, Route } from "../trie/index.js";
-import type { Action } from "./action.js";
+import { Action } from "./action.js";
 import { asyncLocalStorage } from "./async-local-storage.js";
 import { Context } from "./context.js";
+import { Page } from "./page.js";
 
 export type Params = Record<string, string>;
 
@@ -30,7 +31,7 @@ type Method =
 	| "PATCH"
 	| (string & {});
 
-type ExtractParams<Pattern extends string = string> =
+export type ExtractParams<Pattern extends string = string> =
 	Pattern extends `${infer _Start}:${infer Param}/${infer Rest}`
 		? { [k in Param | keyof ExtractParams<Rest>]: string }
 		: Pattern extends `${infer _Start}:${infer Param}`
@@ -156,11 +157,19 @@ export class App {
 		patterns: [...Patterns],
 		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
 	): this;
+	/**
+	 * @param page
+	 * @returns the app instance
+	 */
+	get(page: Page): this;
 	get<PatternOrPatterns extends string | string[]>(
-		patternOrPatterns: PatternOrPatterns,
+		patternOrPage: PatternOrPatterns | Page,
 		...middleware: Middleware[]
 	) {
-		return this.on("GET", patternOrPatterns as string, ...middleware);
+		if (patternOrPage instanceof Page)
+			return this.get(patternOrPage.id, ...patternOrPage.middleware);
+
+		return this.on("GET", patternOrPage as string, ...middleware);
 	}
 
 	/**
@@ -190,7 +199,7 @@ export class App {
 		patternOrAction: PatternOrPatterns | Action,
 		...middleware: Middleware[]
 	): this {
-		if (typeof patternOrAction === "object" && "id" in patternOrAction)
+		if (patternOrAction instanceof Action)
 			return this.post(patternOrAction.id, ...patternOrAction.middleware);
 
 		return this.on("POST", patternOrAction as string, ...middleware);

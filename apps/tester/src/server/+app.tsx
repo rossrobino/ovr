@@ -1,4 +1,4 @@
-import { Component, posted } from "./action";
+import { page, action } from "./page";
 import { html } from "client:page";
 import { App, Suspense } from "ovr";
 
@@ -14,16 +14,15 @@ app.use(async (c, next) => {
 	await next();
 });
 
-app.post(posted);
-
-app.get("/action", () => <Component />);
+app.post(action);
+app.get(page);
 
 app.get("/", () => {
 	return (
 		<main class="prose">
 			<h1>tester</h1>
 
-			<a href="/action">Action</a>
+			<page.Link params={{ param: "action" }}>Action</page.Link>
 
 			<Suspense
 				fallback={<p>Loading...</p>}
