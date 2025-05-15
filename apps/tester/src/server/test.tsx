@@ -1,5 +1,4 @@
-import { Page } from "ovr";
-import { Action } from "ovr";
+import { Page, Action } from "ovr";
 
 export const action = new Action((c) => {
 	console.log("posted");
