@@ -1,18 +1,22 @@
 import { hash } from "../hash/index.js";
 import { jsx, type JSX } from "../jsx/index.js";
+import type { ExtractParams } from "../types/index.js";
 import type { Middleware } from "./index.js";
 
 type FormProps = Omit<JSX.IntrinsicElements["form"], "action" | "method">;
 
-export class Action {
-	id: string;
-	middleware: Middleware<{}>[];
+export class Action<Pattern extends string = string> {
+	/** Route pattern */
+	pattern: Pattern;
+
+	/** POST middleware */
+	middleware: Middleware<any>[];
 
 	/** `<form>` component with preset `method` and `action` attributes. */
 	Form: (props: FormProps) => AsyncGenerator<string, void, unknown>;
 
 	/**
-	 * @param middleware POST middleware handler
+	 * @param middleware POST middleware
 	 *
 	 * @example
 	 *
@@ -25,21 +29,40 @@ export class Action {
 	 * 	c.redirect("/", 303);
 	 * });
 	 *
-	 * export const Component = () => (
+	 * export const page = new Page("/", () => (
 	 * 	<action.Form>
 	 * 		<input />
 	 * 		<button>Submit</button>
 	 * 	</action.Form>
-	 * );
+	 * ));
 	 *
 	 * // app.tsx
-	 * app.post(action); registers the action
+	 * app.add(page, action); registers the action
 	 * ```
 	 */
-	constructor(...middleware: Middleware<{}>[]) {
-		this.id = `/_action/${hash(middleware.join())}`;
+	constructor(...middleware: Middleware<{}>[]);
+	/**
+	 * @param pattern Route pattern
+	 * @param middleware POST middleware
+	 */
+	constructor(
+		pattern: Pattern,
+		...middleware: Middleware<ExtractParams<Pattern>>[]
+	);
+	constructor(
+		patternOrMiddleware: Pattern | Middleware<ExtractParams<Pattern>>,
+		...middleware: Middleware<ExtractParams<Pattern>>[]
+	) {
 		this.middleware = middleware;
+
+		if (typeof patternOrMiddleware === "string") {
+			this.pattern = patternOrMiddleware;
+		} else {
+			this.middleware.unshift(patternOrMiddleware);
+			this.pattern = `/_action/${hash(this.middleware.join())}` as Pattern;
+		}
+
 		this.Form = (props) =>
-			jsx("form", { ...props, action: this.id, method: "post" });
+			jsx("form", { ...props, action: this.pattern, method: "post" });
 	}
 }

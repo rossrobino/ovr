@@ -14,7 +14,7 @@ export type Params = Record<string, string>;
 export type Middleware<P extends Params = Params> = (
 	context: Context<P>,
 	next: () => Promise<void>,
-) => unknown;
+) => any;
 
 export type TrailingSlash = "always" | "never" | "ignore";
 
@@ -32,7 +32,7 @@ type Method =
 
 export class App {
 	// allows for users to put other properties on the app
-	[key: string]: any;
+	[key: string | symbol | number]: any;
 
 	/** Built tries per HTTP method. */
 	#trieMap = new Map<Method, Trie<Middleware[]>>();
@@ -43,10 +43,11 @@ export class App {
 	/** Global middleware. */
 	#use: Middleware[] = [];
 
+	/** Trailing slash preference. */
 	#trailingSlash: TrailingSlash;
 
 	/** Stores context per request. */
-	static asyncLocalStorage = new AsyncLocalStorage<Context>();
+	static storage = new AsyncLocalStorage<Context>();
 
 	constructor(
 		config: {
@@ -66,17 +67,17 @@ export class App {
 	}
 
 	/**
-	 * @param routes Pages or Actions to add to the App
-	 * @returns the app instance
+	 * @param routes `Page`s or `Action`s to add to the `App`
+	 * @returns `App` instance
 	 */
 	add(...routes: DeepArray<Page | Action | Record<string, Page | Action>>[]) {
 		for (const route of routes) {
 			if (route instanceof Array) {
 				this.add(...route);
 			} else if (route instanceof Page) {
-				this.get(route.id, ...route.middleware);
+				this.get(route.pattern, ...route.middleware);
 			} else if (route instanceof Action) {
-				this.post(route.id, ...route.middleware);
+				this.post(route.pattern, ...route.middleware);
 			} else {
 				this.add(...Object.values(route));
 			}
@@ -89,7 +90,7 @@ export class App {
 	 * Add global middleware.
 	 *
 	 * @param middleware
-	 * @returns the app instance
+	 * @returns `App` instance
 	 */
 	use(...middleware: Middleware[]) {
 		this.#use.push(...middleware);
@@ -98,9 +99,9 @@ export class App {
 
 	/**
 	 * @param method HTTP method
-	 * @param pattern route pattern
+	 * @param pattern Route pattern
 	 * @param middleware
-	 * @returns the app instance
+	 * @returns `App` instance
 	 */
 	on<Pattern extends string>(
 		method: Method | Method[],
@@ -109,9 +110,9 @@ export class App {
 	): this;
 	/**
 	 * @param method HTTP method
-	 * @param patterns array of route patterns
+	 * @param patterns Array of route patterns
 	 * @param middleware
-	 * @returns the app instance
+	 * @returns `App` instance
 	 */
 	on<Patterns extends string[]>(
 		method: Method | Method[],
@@ -144,18 +145,18 @@ export class App {
 	}
 
 	/**
-	 * @param pattern route pattern
+	 * @param pattern Route pattern
 	 * @param middleware
-	 * @returns the app instance
+	 * @returns `App` instance
 	 */
 	get<Pattern extends string>(
 		pattern: Pattern,
 		...middleware: Middleware<ExtractParams<Pattern>>[]
 	): this;
 	/**
-	 * @param patterns array of route patterns
+	 * @param patterns Array of route patterns
 	 * @param middleware
-	 * @returns the app instance
+	 * @returns `App` instance
 	 */
 	get<Patterns extends string[]>(
 		patterns: [...Patterns],
@@ -169,7 +170,7 @@ export class App {
 	}
 
 	/**
-	 * @param pattern route pattern
+	 * @param pattern Route pattern
 	 * @param middleware
 	 * @returns the router instance
 	 */
@@ -178,7 +179,7 @@ export class App {
 		...middleware: Middleware<ExtractParams<Pattern>>[]
 	): this;
 	/**
-	 * @param patterns array of route patterns
+	 * @param patterns Array of route patterns
 	 * @param middleware
 	 * @returns the router instance
 	 */
@@ -200,7 +201,7 @@ export class App {
 	fetch = (req: Request): Promise<Response> => {
 		const c = new Context(req, new URL(req.url), this.#trailingSlash);
 
-		return App.asyncLocalStorage.run(c, async () => {
+		return App.storage.run(c, async () => {
 			try {
 				// check to see if the method is already built
 				let trie = this.#trieMap.get(req.method);
@@ -232,7 +233,7 @@ export class App {
 							i = current;
 
 							if (middleware[current]) {
-								const result = await middleware[current](c, () =>
+								const result: unknown = await middleware[current](c, () =>
 									dispatch(current + 1),
 								);
 

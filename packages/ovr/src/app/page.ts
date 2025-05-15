@@ -2,23 +2,26 @@ import { jsx, type JSX } from "../jsx/index.js";
 import type { ExtractParams } from "../types/index.js";
 import type { Middleware, Params } from "./index.js";
 
-type LinkProps<P extends Params> = Omit<JSX.IntrinsicElements["a"], "href"> &
+type AnchorProps<P extends Params> = Omit<JSX.IntrinsicElements["a"], "href"> &
 	(keyof P extends never ? { params?: never } : { params: P });
 
 export class Page<Pattern extends string = string> {
-	id: string;
+	/** Route pattern */
+	pattern: Pattern;
+
+	/** GET middleware */
 	middleware: Middleware<any>[];
 
 	/** `<a>` component with preset `href` attribute. */
-	Link: (
-		props: LinkProps<ExtractParams<Pattern>>,
+	Anchor: (
+		props: AnchorProps<ExtractParams<Pattern>>,
 	) => AsyncGenerator<string, void, unknown>;
 
 	#parts: string[];
 
 	/**
-	 * @param id route pattern
-	 * @param middleware GET middleware handler
+	 * @param pattern Route pattern
+	 * @param middleware GET middleware
 	 *
 	 * @example
 	 *
@@ -27,48 +30,56 @@ export class Page<Pattern extends string = string> {
 	 * import { Page } from "ovr";
 	 *
 	 * export const page = new Page("/", () => {
-	 * 	return <p>Hello world.</p>
+	 * 	return <p>Hello world</p>
 	 * });
 	 *
 	 * const Nav = () => {
-	 * 	return <page.Link>Link</page.Link>
+	 * 	return <page.Anchor>Home</page.Anchor>
 	 * }
 	 *
 	 * // app.tsx
-	 * app.get(page); registers the page
+	 * app.add(page); registers the page
 	 * ```
 	 */
 	constructor(
-		id: Pattern,
+		pattern: Pattern,
 		...middleware: Middleware<ExtractParams<Pattern>>[]
 	) {
-		this.id = id;
+		this.pattern = pattern;
 		this.middleware = middleware;
-		this.#parts = id.split("/");
-		this.Link = (props) => {
+		this.#parts = pattern.split("/");
+		this.Anchor = (props) => {
 			const { params = {}, ...rest } = props;
 
 			return jsx("a", {
-				...rest,
 				href: this.#insertParams(this.#parts, params),
+				...rest,
 			});
 		};
 	}
 
+	/**
+	 * @param parts Pattern parts
+	 * @param params Parameters to insert
+	 * @returns Resolved pathname with params
+	 */
 	#insertParams(parts: string[], params: Params): string {
 		return parts
 			.map((part) => {
 				if (part.startsWith(":")) {
 					const param = part.slice(1);
+
 					if (!(param in params))
 						throw new Error(
-							`Parameter "${param}" did not match pattern "${this.id}".`,
+							`Parameter "${param}" did not match pattern "${this.pattern}".`,
 						);
+
 					return params[param as keyof typeof params];
 				}
 
 				if (part === "*") {
 					if (!("*" in params)) throw new Error("No wildcard parameter found.");
+
 					return params["*"];
 				}
 

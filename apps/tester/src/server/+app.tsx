@@ -21,7 +21,7 @@ app.get("/", () => {
 		<main class="prose">
 			<h1>tester</h1>
 
-			<test.page.Link params={{ param: "action" }}>Action</test.page.Link>
+			<test.page.Anchor params={{ param: "action" }}>Action</test.page.Anchor>
 
 			<Suspense
 				fallback={<p>Loading...</p>}

@@ -448,7 +448,7 @@ type LabelAttributes = Attributes<{ for: string; htmlFor: string }>;
 
 type LiAttributes = Attributes<{ value: string }>;
 
-type LinkAttributes = Attributes<
+type AnchorAttributes = Attributes<
 	{
 		as:
 			| "audio"
@@ -696,8 +696,7 @@ type VideoAttributes = Attributes<{
 
 export type Elements =
 	// allows custom elements
-	Record<string, Attributes> &
-	{
+	Record<string, Attributes> & {
 		a: AAttributes;
 		abbr: Attributes;
 		address: Attributes;
@@ -755,7 +754,7 @@ export type Elements =
 		label: LabelAttributes;
 		legend: Attributes;
 		li: LiAttributes;
-		link: LinkAttributes;
+		link: AnchorAttributes;
 		main: Attributes;
 		map: MapAttributes;
 		mark: Attributes;

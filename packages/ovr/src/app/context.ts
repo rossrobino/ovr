@@ -295,7 +295,7 @@ export class Context<P extends Params = Params> {
 	/**
 	 * Call within the scope of a handler to get the current context.
 	 *
-	 * @returns The request context.
+	 * @returns Request context
 	 *
 	 * @example
 	 *
@@ -317,7 +317,7 @@ export class Context<P extends Params = Params> {
 	 * ```
 	 */
 	static get() {
-		const c = App.asyncLocalStorage.getStore();
+		const c = App.storage.getStore();
 
 		if (!c)
 			throw new ReferenceError(
