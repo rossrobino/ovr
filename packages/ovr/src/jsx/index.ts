@@ -1,8 +1,6 @@
+import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import type { Elements } from "./elements.js";
 import { merge } from "./merge-async-iterables.js";
-
-type MaybePromise<T> = T | Promise<T>;
-type MaybeFunction<T> = T | (() => T);
 
 export namespace JSX {
 	export interface IntrinsicElements extends Elements {}

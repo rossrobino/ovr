@@ -1,5 +1,6 @@
 import { jsx, type JSX } from "../jsx/index.js";
-import type { ExtractParams, Middleware, Params } from "./index.js";
+import type { ExtractParams } from "../types/index.js";
+import type { Middleware, Params } from "./index.js";
 
 type LinkProps<P extends Params> = Omit<JSX.IntrinsicElements["a"], "href"> &
 	(keyof P extends never ? { params?: never } : { params: P });

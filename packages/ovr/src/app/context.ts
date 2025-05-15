@@ -3,12 +3,15 @@ import { hash } from "../hash/index.js";
 import { toGenerator, type JSX } from "../jsx/index.js";
 import { Memo } from "../memo/index.js";
 import type { Route } from "../trie/index.js";
-import type {
-	Middleware,
-	Params,
-	TrailingSlash,
-	UnmatchedContext,
+import {
+	App,
+	type Middleware,
+	type Params,
+	type TrailingSlash,
 } from "./index.js";
+
+type UnmatchedContext<P extends Params = Params> = Omit<Context<P>, "route"> &
+	Partial<Pick<Context<P>, "route">>;
 
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
 
@@ -287,5 +290,40 @@ export class Context<P extends Params = Params> {
 		if (!this.body && !this.status) this.notFound(this);
 
 		return new Response(this.body, this);
+	}
+
+	/**
+	 * Call within the scope of a handler to get the current context.
+	 *
+	 * @returns The request context.
+	 *
+	 * @example
+	 *
+	 * ```ts
+	 * import { Context } from "ovr";
+	 *
+	 * const app = new Router();
+	 *
+	 * const fn = () => {
+	 * 	const c = Context.get();
+	 * 	// ...
+	 * }
+	 *
+	 * app.get("/", () => {
+	 * 	fn(); // OK
+	 * });
+	 *
+	 * fn() // ReferenceError - outside AsyncLocalStorage scope
+	 * ```
+	 */
+	static get() {
+		const c = App.asyncLocalStorage.getStore();
+
+		if (!c)
+			throw new ReferenceError(
+				"Context can only be obtained within a handler.",
+			);
+
+		return c;
 	}
 }

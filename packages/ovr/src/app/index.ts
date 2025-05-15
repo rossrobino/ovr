@@ -1,16 +1,15 @@
 import { Trie, Route } from "../trie/index.js";
+import type {
+	DeepArray,
+	ExtractMultiParams,
+	ExtractParams,
+} from "../types/index.js";
 import { Action } from "./action.js";
-import { asyncLocalStorage } from "./async-local-storage.js";
 import { Context } from "./context.js";
 import { Page } from "./page.js";
+import { AsyncLocalStorage } from "node:async_hooks";
 
 export type Params = Record<string, string>;
-
-export type UnmatchedContext<P extends Params = Params> = Omit<
-	Context<P>,
-	"route"
-> &
-	Partial<Pick<Context<P>, "route">>;
 
 export type Middleware<P extends Params = Params> = (
 	context: Context<P>,
@@ -31,26 +30,6 @@ type Method =
 	| "PATCH"
 	| (string & {});
 
-export type ExtractParams<Pattern extends string = string> =
-	Pattern extends `${infer _Start}:${infer Param}/${infer Rest}`
-		? { [k in Param | keyof ExtractParams<Rest>]: string }
-		: Pattern extends `${infer _Start}:${infer Param}`
-			? { [k in Param]: string }
-			: Pattern extends `${infer _Rest}*`
-				? { "*": string }
-				: {};
-
-type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
-	infer First extends string,
-	...infer Rest extends string[],
-]
-	? Rest["length"] extends 0
-		? ExtractParams<First>
-		: ExtractParams<First> | ExtractMultiParams<Rest>
-	: never;
-
-type DeepArray<T> = T | DeepArray<T>[];
-
 export class App {
 	// allows for users to put other properties on the app
 	[key: string]: any;
@@ -65,6 +44,9 @@ export class App {
 	#use: Middleware[] = [];
 
 	#trailingSlash: TrailingSlash;
+
+	/** Stores context per request. */
+	static asyncLocalStorage = new AsyncLocalStorage<Context>();
 
 	constructor(
 		config: {
@@ -218,7 +200,7 @@ export class App {
 	fetch = (req: Request): Promise<Response> => {
 		const c = new Context(req, new URL(req.url), this.#trailingSlash);
 
-		return asyncLocalStorage.run(c, async () => {
+		return App.asyncLocalStorage.run(c, async () => {
 			try {
 				// check to see if the method is already built
 				let trie = this.#trieMap.get(req.method);
