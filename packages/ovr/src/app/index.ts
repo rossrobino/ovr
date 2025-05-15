@@ -49,6 +49,8 @@ type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 		: ExtractParams<First> | ExtractMultiParams<Rest>
 	: never;
 
+type DeepArray<T> = T | DeepArray<T>[];
+
 export class App {
 	// allows for users to put other properties on the app
 	[key: string]: any;
@@ -79,6 +81,26 @@ export class App {
 		} = {},
 	) {
 		this.#trailingSlash = config.trailingSlash ?? "never";
+	}
+
+	/**
+	 * @param routes Pages or Actions to add to the App
+	 * @returns the app instance
+	 */
+	add(...routes: DeepArray<Page | Action | Record<string, Page | Action>>[]) {
+		for (const route of routes) {
+			if (route instanceof Array) {
+				this.add(...route);
+			} else if (route instanceof Page) {
+				this.get(route.id, ...route.middleware);
+			} else if (route instanceof Action) {
+				this.post(route.id, ...route.middleware);
+			} else {
+				this.add(...Object.values(route));
+			}
+		}
+
+		return this;
 	}
 
 	/**
@@ -157,19 +179,11 @@ export class App {
 		patterns: [...Patterns],
 		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
 	): this;
-	/**
-	 * @param page
-	 * @returns the app instance
-	 */
-	get(page: Page): this;
 	get<PatternOrPatterns extends string | string[]>(
-		patternOrPage: PatternOrPatterns | Page,
+		patternOrPatterns: PatternOrPatterns,
 		...middleware: Middleware[]
 	) {
-		if (patternOrPage instanceof Page)
-			return this.get(patternOrPage.id, ...patternOrPage.middleware);
-
-		return this.on("GET", patternOrPage as string, ...middleware);
+		return this.on("GET", patternOrPatterns as string, ...middleware);
 	}
 
 	/**
@@ -190,19 +204,11 @@ export class App {
 		patterns: [...Patterns],
 		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
 	): this;
-	/**
-	 * @param action Result of `action()`
-	 * @returns the app instance
-	 */
-	post(action: Action): this;
 	post<PatternOrPatterns extends string | string[]>(
-		patternOrAction: PatternOrPatterns | Action,
+		patternOrPatterns: PatternOrPatterns,
 		...middleware: Middleware[]
 	): this {
-		if (patternOrAction instanceof Action)
-			return this.post(patternOrAction.id, ...patternOrAction.middleware);
-
-		return this.on("POST", patternOrAction as string, ...middleware);
+		return this.on("POST", patternOrPatterns as string, ...middleware);
 	}
 
 	/**

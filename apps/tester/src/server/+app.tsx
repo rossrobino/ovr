@@ -1,4 +1,4 @@
-import { page, action } from "./page";
+import * as test from "./test";
 import { html } from "client:page";
 import { App, Suspense } from "ovr";
 
@@ -14,15 +14,14 @@ app.use(async (c, next) => {
 	await next();
 });
 
-app.post(action);
-app.get(page);
+app.add(test);
 
 app.get("/", () => {
 	return (
 		<main class="prose">
 			<h1>tester</h1>
 
-			<page.Link params={{ param: "action" }}>Action</page.Link>
+			<test.page.Link params={{ param: "action" }}>Action</test.page.Link>
 
 			<Suspense
 				fallback={<p>Loading...</p>}
