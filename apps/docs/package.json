@@ -10,6 +10,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@robino/md": "^3.2.6",
 		"ovr": "*",
 		"uico": "^0.10.1"
 	},

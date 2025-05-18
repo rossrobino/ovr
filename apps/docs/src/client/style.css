@@ -2,10 +2,22 @@
 
 @layer base {
 	:root {
-		color-scheme: light dark;
+		--shiki-foreground: var(--base-100);
+		--shiki-background: var(--base-900);
+		--shiki-token-constant: var(--base-50);
+		--shiki-token-string: var(--base-300);
+		--shiki-token-comment: var(--base-400);
+		--shiki-token-keyword: var(--base-400);
+		--shiki-token-parameter: var(--base-300);
+		--shiki-token-function: var(--base-300);
+		--shiki-token-string-expression: var(--base-200);
+		--shiki-token-punctuation: var(--base-500);
+		--shiki-token-link: var(--base-300);
 	}
 
-	body {
-		margin: var(--size-4);
+	main {
+		margin-inline: auto;
+		padding: var(--size-4);
+		max-width: 65ch;
 	}
 }
