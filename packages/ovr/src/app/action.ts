@@ -1,9 +1,14 @@
 import { hash } from "../hash/index.js";
 import { jsx, type JSX } from "../jsx/index.js";
+import { insertParams } from "../trie/index.js";
 import type { ExtractParams } from "../types/index.js";
-import type { Middleware } from "./index.js";
+import type { Middleware, Params } from "./index.js";
 
-type FormProps = Omit<JSX.IntrinsicElements["form"], "action" | "method">;
+type FormProps<P extends Params> = Omit<
+	JSX.IntrinsicElements["form"],
+	"action" | "method"
+> &
+	(keyof P extends never ? { params?: never } : { params: P });
 
 export class Action<Pattern extends string = string> {
 	/** Route pattern */
@@ -13,7 +18,11 @@ export class Action<Pattern extends string = string> {
 	middleware: Middleware<any>[];
 
 	/** `<form>` component with preset `method` and `action` attributes. */
-	Form: (props: FormProps) => AsyncGenerator<string, void, unknown>;
+	Form: (
+		props: FormProps<ExtractParams<Pattern>>,
+	) => AsyncGenerator<string, void, unknown>;
+
+	#parts: string[] = [];
 
 	/**
 	 * @param middleware POST middleware
@@ -62,7 +71,16 @@ export class Action<Pattern extends string = string> {
 			this.pattern = `/_action/${hash(this.middleware.join())}` as Pattern;
 		}
 
-		this.Form = (props) =>
-			jsx("form", { ...props, action: this.pattern, method: "post" });
+		this.#parts = this.pattern.split("/");
+
+		this.Form = (props) => {
+			const { params = {}, ...rest } = props;
+
+			return jsx("form", {
+				action: insertParams(this.#parts, params),
+				method: "post",
+				...rest,
+			});
+		};
 	}
 }

@@ -1,4 +1,5 @@
 import { jsx, type JSX } from "../jsx/index.js";
+import { insertParams } from "../trie/index.js";
 import type { ExtractParams } from "../types/index.js";
 import type { Middleware, Params } from "./index.js";
 
@@ -51,40 +52,7 @@ export class Page<Pattern extends string = string> {
 		this.Anchor = (props) => {
 			const { params = {}, ...rest } = props;
 
-			return jsx("a", {
-				href: this.#insertParams(this.#parts, params),
-				...rest,
-			});
+			return jsx("a", { href: insertParams(this.#parts, params), ...rest });
 		};
-	}
-
-	/**
-	 * @param parts Pattern parts
-	 * @param params Parameters to insert
-	 * @returns Resolved pathname with params
-	 */
-	#insertParams(parts: string[], params: Params): string {
-		return parts
-			.map((part) => {
-				if (part.startsWith(":")) {
-					const param = part.slice(1);
-
-					if (!(param in params))
-						throw new Error(
-							`Parameter "${param}" did not match pattern "${this.pattern}".`,
-						);
-
-					return params[param as keyof typeof params];
-				}
-
-				if (part === "*") {
-					if (!("*" in params)) throw new Error("No wildcard parameter found.");
-
-					return params["*"];
-				}
-
-				return part;
-			})
-			.join("/");
 	}
 }

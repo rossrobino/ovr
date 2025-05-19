@@ -1,3 +1,5 @@
+export type Params = Record<string, string>;
+
 export class Route<Store> {
 	/** Route pattern */
 	pattern: string;
@@ -250,9 +252,7 @@ export class Trie<Store> {
 	 * @param pathname Path to find
 	 * @returns `Route` and the matched `params` if found, otherwise `null`
 	 */
-	find(
-		pathname: string,
-	): { route: Route<Store>; params: Record<string, string> } | null {
+	find(pathname: string): { route: Route<Store>; params: Params } | null {
 		if (
 			// too short
 			pathname.length < this.segment.length ||
@@ -333,3 +333,30 @@ export class Trie<Store> {
 		return null;
 	}
 }
+
+/**
+ * @param parts Pattern parts
+ * @param params Parameters to insert
+ * @returns Resolved pathname with params
+ */
+export const insertParams = (parts: string[], params: Params): string =>
+	parts
+		.map((part) => {
+			if (part.startsWith(":")) {
+				const param = part.slice(1);
+
+				if (!(param in params))
+					throw new Error(`Parameter "${param}" did not match pattern..`);
+
+				return params[param as keyof typeof params];
+			}
+
+			if (part === "*") {
+				if (!("*" in params)) throw new Error("No wildcard parameter found.");
+
+				return params["*"];
+			}
+
+			return part;
+		})
+		.join("/");
