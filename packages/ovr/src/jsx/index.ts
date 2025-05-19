@@ -116,7 +116,10 @@ export async function* toGenerator(
 		} else if (Symbol.iterator in element) {
 			const generators: AsyncGenerator<string, void, unknown>[] = [];
 
-			for (const children of element) generators.push(toGenerator(children));
+			for (const children of element) {
+				// this is where to escape string children if added in the future
+				generators.push(toGenerator(children));
+			}
 
 			const queue: string[] = new Array(generators.length).fill("");
 			const complete = new Set<number>();
