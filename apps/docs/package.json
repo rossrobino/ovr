@@ -16,6 +16,7 @@
 	},
 	"devDependencies": {
 		"@domcojs/vercel": "^2.0.1",
+		"@robino/tsconfig": "^1.0.3",
 		"domco": "^4.1.1",
 		"vite": "^6.3.5"
 	}
