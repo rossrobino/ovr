@@ -1,4 +1,4 @@
-export { type JSX } from "./jsx/index.js";
+export { jsx, toGenerator, toString, type JSX } from "./jsx/index.js";
 export { Trie, Route } from "./trie/index.js";
 export { App, type Middleware, type Params } from "./app/index.js";
 export { Context } from "./app/context.js";
