@@ -1,9 +1,7 @@
+import * as home from "./home";
 import * as test from "./test";
-import { html as docsHtml, headings } from "@/content/docs.md";
 import { html } from "client:page";
-import { App, Suspense } from "ovr";
-
-const delay = () => new Promise((r) => setTimeout(r, 500));
+import { App } from "ovr";
 
 const app = new App();
 
@@ -12,23 +10,6 @@ app.use(async (c, next) => {
 	await next();
 });
 
-app.get("/", () => {
-	return (
-		<main>
-			<Suspense
-				children={async function* () {
-					yield "<h1>o";
-					await delay();
-					yield "v";
-					await delay();
-					yield "r</h1>";
-				}}
-				after={docsHtml}
-			/>
-		</main>
-	);
-});
-
-app.add(test);
+app.add(home, test);
 
 export default app;

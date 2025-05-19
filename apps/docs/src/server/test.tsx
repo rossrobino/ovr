@@ -1,5 +1,9 @@
-import { Delay } from "./delay";
 import { Page, Action, Suspense } from "ovr";
+
+async function Delay(props: { ms: number }) {
+	await new Promise((res) => setTimeout(res, props.ms));
+	return <p>{props.ms}</p>;
+}
 
 export const action = new Action((c) => {
 	console.log("posted");
@@ -11,7 +15,7 @@ export const test = new Page("/test", () => {
 		<main>
 			<h1>test</h1>
 
-			<actionPage.Anchor params={{ param: "action" }}>Action</actionPage.Anchor>
+			<actionPage.Anchor params={{ param: "param" }}>Action</actionPage.Anchor>
 
 			<Suspense
 				fallback={<p>Loading...</p>}
@@ -30,12 +34,12 @@ export const test = new Page("/test", () => {
 });
 
 export const actionPage = new Page("/test/action/:param", (c) => (
-	<div>
+	<main>
 		<actionPage.Anchor params={c.params}>Hello</actionPage.Anchor>
 
 		<action.Form>
 			<input />
 			<button>Submit</button>
 		</action.Form>
-	</div>
+	</main>
 ));

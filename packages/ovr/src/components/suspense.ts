@@ -20,7 +20,7 @@ export const style = /* css */ `l-f,l-c{display:contents}l-f:has(+*>l-c:not(:emp
  * </Suspense>
  * ```
  */
-export function Suspense(props: {
+export const Suspense = (props: {
 	/** Fallback to display while `children` are loading. */
 	fallback?: JSX.Element;
 
@@ -34,16 +34,18 @@ export function Suspense(props: {
 
 	/** Asynchronous element(s) to provide a fallback for. */
 	children?: JSX.Element;
-}): JSX.Element {
+}): JSX.Element => {
 	const wrap = props.after != null ? "a" : "w";
 
-	return [
-		"<l-f>",
-		props.fallback,
-		"</l-f><l-" + wrap + "><div>",
+	const suspense = [
+		"<l-" + wrap + "><div>",
 		props.after,
 		"</div><l-c>",
 		props.children,
 		"</l-c></l-" + wrap + ">",
 	];
-}
+
+	if (props.fallback) suspense.unshift("<l-f>", props.fallback, "</l-f>");
+
+	return suspense;
+};
