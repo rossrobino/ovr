@@ -15,4 +15,6 @@ app.use(async (c, next) => {
 
 app.add(home, test);
 
+app.prerender = [];
+
 export default app;
