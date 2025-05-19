@@ -1,5 +1,5 @@
 import { jsx, type JSX } from "../jsx/index.js";
-import { insertParams } from "../trie/index.js";
+import { insertParams } from "../trie/insert-params.js";
 import type { ExtractParams } from "../types/index.js";
 import type { Middleware, Params } from "./index.js";
 

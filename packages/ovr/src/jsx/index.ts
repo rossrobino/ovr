@@ -114,7 +114,7 @@ export async function* toGenerator(
 		if (Symbol.asyncIterator in element) {
 			for await (const children of element) yield* toGenerator(children);
 		} else if (Symbol.iterator in element) {
-			const generators: AsyncIterable<string>[] = [];
+			const generators: AsyncGenerator<string, void, unknown>[] = [];
 
 			for (const children of element) generators.push(toGenerator(children));
 

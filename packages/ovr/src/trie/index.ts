@@ -333,30 +333,3 @@ export class Trie<Store> {
 		return null;
 	}
 }
-
-/**
- * @param parts Pattern parts
- * @param params Parameters to insert
- * @returns Resolved pathname with params
- */
-export const insertParams = (parts: string[], params: Params): string =>
-	parts
-		.map((part) => {
-			if (part.startsWith(":")) {
-				const param = part.slice(1);
-
-				if (!(param in params))
-					throw new Error(`Parameter "${param}" did not match pattern..`);
-
-				return params[param as keyof typeof params];
-			}
-
-			if (part === "*") {
-				if (!("*" in params)) throw new Error("No wildcard parameter found.");
-
-				return params["*"];
-			}
-
-			return part;
-		})
-		.join("/");

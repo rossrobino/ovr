@@ -1,23 +1,13 @@
 import { html as docsHtml, headings } from "@/content/docs.md";
-import { Suspense, Page } from "ovr";
+import { Page } from "ovr";
 
 export const home = new Page("/", () => (
 	<main>
-		<Suspense
-			fallback={<h1>...</h1>}
-			children={async function* () {
-				yield "<h1>o";
-				await delay();
-				yield "v";
-				await delay();
-				yield "r</h1>";
-			}}
-			after={<Docs />}
-		/>
+		<h1>ovr</h1>
+		<Nav />
+		{docsHtml}
 	</main>
 ));
-
-const delay = () => new Promise((r) => setTimeout(r, 300));
 
 const Nav = () => (
 	<nav>
@@ -35,11 +25,4 @@ const Nav = () => (
 			})}
 		</ul>
 	</nav>
-);
-
-const Docs = () => (
-	<>
-		<Nav />
-		{docsHtml}
-	</>
 );

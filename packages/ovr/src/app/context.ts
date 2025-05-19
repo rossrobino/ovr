@@ -1,4 +1,3 @@
-import { head } from "../components/index.js";
 import { hash } from "../hash/index.js";
 import { toGenerator, type JSX } from "../jsx/index.js";
 import { Memo } from "../memo/index.js";
@@ -217,14 +216,18 @@ export class Context<P extends Params = Params> {
 		const elements: JSX.Element[] = this.base.split(headClose);
 		if (!elements[1]) throw new TagNotFound(headClose);
 
-		elements.splice(1, 0, this.#headElements, head + headClose);
+		elements.splice(1, 0, this.#headElements, headClose);
 
 		const bodyParts = (elements[3] as string).split(bodyClose);
 		if (!bodyParts[1]) throw new TagNotFound(bodyClose);
 
-		// https://bugs.webkit.org/show_bug.cgi?id=252413
-		// https://github.com/sveltejs/kit/issues/10315
-		bodyParts[0] += `<div aria-hidden=true style=position:absolute;width:0;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0>${"/".repeat(200)}</div>`;
+		const userAgent = this.req.headers.get("user-agent");
+		if (userAgent?.includes("Safari") && !userAgent.includes("Chrome")) {
+			// https://bugs.webkit.org/show_bug.cgi?id=252413
+			// https://github.com/sveltejs/kit/issues/10315
+			// https://github.com/remix-run/remix/issues/5804
+			bodyParts[0] += `<div aria-hidden=true style=position:absolute;width:0;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0>${"\u200b".repeat(200)}</div>`;
+		}
 
 		elements[3] = bodyParts[0];
 		elements.push(Page, bodyClose + bodyParts[1]);
