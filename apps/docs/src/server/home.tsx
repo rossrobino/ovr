@@ -1,13 +1,24 @@
 import { html as docsHtml, headings } from "@/content/docs.md";
 import { Page } from "ovr";
+import { name, description } from "ovr/package.json";
 
-export const home = new Page("/", () => (
-	<main>
-		<h1>ovr</h1>
-		<Nav />
-		{docsHtml}
-	</main>
-));
+export const home = new Page("/", (c) => {
+	c.head(
+		<>
+			<title>{name}</title>
+			<meta name="description" content={description} />
+		</>,
+	);
+
+	return (
+		<main>
+			<h1>{name}</h1>
+			<p>{description}</p>
+			<Nav />
+			{docsHtml}
+		</main>
+	);
+});
 
 const Nav = () => (
 	<nav>

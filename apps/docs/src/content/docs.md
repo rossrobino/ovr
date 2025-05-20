@@ -1,6 +1,6 @@
 ## Introduction
 
-**ovr** is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications using asynchronous JSX and a modern Fetch API-based router. It’s designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter. ovr evaluates components concurrently and streams the resulting HTML in order, so browsers can fetch critical assets and render content progressively as soon as it arrives.
+ovr is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications with asynchronous JSX and a modern Fetch API-based router. Designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter, ovr evaluates components concurrently and streams HTML in order by producing an `AsyncGenerator<string>` that feeds directly into the streamed response. This allows browsers to fetch critical assets and progressively render content as soon as it arrives, without buffering the entire HTML in memory.
 
 ```tsx
 import { App } from "ovr";
@@ -10,7 +10,7 @@ const app = new App();
 app.get("/", () => <p>hello world</p>);
 ```
 
-Rather than buffer the entire HTML in memory, ovr’s JSX transform produces an `AsyncGenerator<string>` that feeds a `ReadableStream`. For the simple paragraph above, ovr enqueues three chunks:
+For the paragraph above, ovr enqueues three chunks:
 
 ```ts
 "<p>"; // streamed immediately
@@ -243,6 +243,16 @@ app.get("/api/:id", (c) => {
 });
 ```
 
+Context can be acquired from anywhere within the scope of a request handler with the `Context.get` method. `get` uses `AsyncLocalStorage` under the hood.
+
+```tsx
+import { Context } from "ovr";
+
+function Component() {
+	const c = Context.get(); // current request context
+}
+```
+
 ### Middleware
 
 When multiple middleware handlers are added to a route, the first middleware added to the route will be called, and the `next` middleware can be dispatched within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
@@ -359,6 +369,50 @@ export default app;
 ```ts
 // next, sveltekit, astro...
 export const GET = app.fetch;
+```
+
+## Data fetching
+
+Since components are asynchronous, data can be fetched directly within a component or in a middleware handler.
+
+```tsx
+async function Username() {
+	const user = await getUser();
+
+	return <span>{user.name}<span>;
+}
+```
+
+### Memoization
+
+If you need to display `Username` in multiple locations, you need to ensure you aren't fetching the same data multiple times. ovr provides built in memoization on the request context you can utilize on any function to memoize it for the request.
+
+```tsx
+import { Context } from "ovr";
+
+async function Username() {
+	const c = Context.get();
+
+	const memoized = c.memo(getUser);
+
+	const user = await memoized();
+
+	return <span>{user.name}<span>;
+}
+```
+
+This will deduplicate multiple calls to the same function with the with the same arguments and cache the result.
+
+The `Memo` class can also be utilized outside of the application context if you need to cache across requests. Although, it's generally better to cache per request, especially for user specific information.
+
+```ts
+import { Memo } from "ovr";
+
+const memo = new Memo();
+
+const fn = memo.use(() => {
+	// ...
+});
 ```
 
 ## Trie

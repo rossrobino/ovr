@@ -1,6 +1,6 @@
 {
 	"name": "ovr",
-	"description": "Asynchronous streaming server framework",
+	"description": "Composable and Progressive Rendering",
 	"version": "1.4.0",
 	"license": "MIT",
 	"repository": {
@@ -16,6 +16,9 @@
 	"types": "./dist/index.d.ts",
 	"main": "./dist/index.js",
 	"exports": {
+		"./package.json": {
+			"default": "./package.json"
+		},
 		".": {
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
