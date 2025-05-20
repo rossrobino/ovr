@@ -1,16 +1,15 @@
-// Copied and adapted from https://github.com/sveltejs/svelte/blob/main/packages/svelte/src/escaping.js
-
 const attrRegex = /[&"<]/g;
 const contentRegex = /[&<]/g;
 
 /**
  * Escapes strings of HTML.
  *
- * @param v value to escape
- * @param attr set to `true` if the value is an attribute, otherwise it's a string of HTML content
- * @returns escaped string of HTML
+ * @param v Value to escape
+ * @param attr Set to `true` if the value is an attribute, otherwise it's a string of HTML content
+ * @returns Escaped string of HTML
  */
 export const escape = (v: unknown, attr?: boolean) => {
+	// copied and adapted from https://github.com/sveltejs/svelte/blob/main/packages/svelte/src/escaping.js
 	const s = String(v ?? "");
 	const regex = attr ? attrRegex : contentRegex;
 

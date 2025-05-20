@@ -10,8 +10,6 @@ const app = new App();
 app.get("/", () => <p>hello world</p>);
 ```
 
-### Streaming
-
 Rather than buffer the entire HTML in memory, ovr’s JSX transform produces an `AsyncGenerator<string>` that feeds a `ReadableStream`. For a simple paragraph ovr enqueues three chunks:
 
 ```ts
@@ -24,7 +22,8 @@ While this may seem trivial at first, consider when a child is asynchronous:
 
 ```tsx
 async function Username() {
-	const { user } = await getUser(); // slow...
+	const user = await getUser(); // slow...
+
 	return <span>{user.name}</span>;
 }
 
@@ -53,7 +52,7 @@ Browsers are built for streaming, they parse and paint as much of the HTML as po
 
 ovr's architecture gives you true streaming SSR and progressive rendering out of the box. No hydration bundle, no buffering---just HTML over the wire, as soon as it's ready.
 
-## Features
+### Features
 
 - **Asynchronous Streaming JSX**: Write components that perform async operations (like data fetching) directly. ovr handles concurrent evaluation and ordered streaming output.
 - **Type-safe**: ovr is written in TypeScript and supports type safe route patterns with parameters.

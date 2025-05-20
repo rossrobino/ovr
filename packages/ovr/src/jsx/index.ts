@@ -160,12 +160,13 @@ export async function* toGenerator(
 /**
  * Converts a `JSX.Element` into a fully concatenated string of HTML.
  *
- * > [!WARNING]
- * >
- * > This negates streaming benefits and buffers the result into a string.
+ * ### WARNING
+ *
+ * This negates streaming benefits and buffers the result into a string.
+ * Use `toGenerator` whenever possible.
  *
  * @param element
- * @returns A promise that resolves to the concatenated string.
+ * @returns A promise that resolves to the concatenated HTML.
  */
 export const toString = async (element: JSX.Element) => {
 	let buffer = "";
