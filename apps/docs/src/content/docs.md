@@ -1,6 +1,6 @@
 ## Introduction
 
-**ovr** is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications using asynchronous JSX and a modern Fetch API-based router. t’s designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter. ovr evaluates components concurrently and streams the resulting HTML in order, so browsers can fetch critical assets and render content progressively as soon as it arrives.
+**ovr** is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications using asynchronous JSX and a modern Fetch API-based router. It’s designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter. ovr evaluates components concurrently and streams the resulting HTML in order, so browsers can fetch critical assets and render content progressively as soon as it arrives.
 
 ```tsx
 import { App } from "ovr";
@@ -65,7 +65,7 @@ ovr's architecture gives you true streaming SSR and progressive rendering out of
 npm i ovr
 ```
 
-ovr can be used in any Fetch API compatible runtime. `app.fetch` takes a `Request` and returns a `Response`, you can use it as the fetch handler with any of the following tools and more.
+ovr can be used in any Fetch API compatible runtime via [`app.fetch`](#fetch).
 
 - [Vite + domco](https://github.com/rossrobino/domco) - `npm create domco` and select the `ovr` framework option.
 - [Bun HTTP server](https://bun.sh/docs/api/http)
