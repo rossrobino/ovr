@@ -5,10 +5,7 @@ import { App } from "ovr";
 
 const app = new App();
 
-app.use(async (c, next) => {
-	c.base = html;
-	await next();
-});
+app.base = html;
 
 app.add(home, test);
 
