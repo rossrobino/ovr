@@ -318,7 +318,7 @@ app.add(home); // registers the route
 
 #### Action
 
-There is also an `Action` helper that will create a `Form` element that can be used within other components.
+There is also an `Action` helper that will create a POST handler and a corresponding `Form` element that can be used within other components.
 
 ```tsx
 import { Action } from "ovr";
@@ -333,6 +333,16 @@ const action = new Action((c) => {
 app.add(action);
 
 <action.Form>...</action.Form>; // <form> with preset `method` and `action` attributes
+```
+
+ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
+
+You can also set the pattern manually:
+
+```tsx
+const action = new Action("/custom/pattern", (c) => {
+	// ...
+});
 ```
 
 ### fetch
