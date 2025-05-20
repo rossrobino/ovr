@@ -1,5 +1,35 @@
 # ovr
 
+## 2.0.0
+
+### Major Changes
+
+- b32c519: Changes `context()` to a static `get` method on `Context`
+- 772afad: removes `app.mount`
+
+  There were many features not supported when mounting a router to another. May revisit at some point.
+
+- 2d11a81: Moves `App` config out of the constructor to top level properties that are passed through to `Context`.
+- dc1425b: Removes `start`/`c.state` to simplify the API.
+
+  Use `app.use` to run global middleware instead.
+
+- 5642431: feat: Return `JSX.Element` or a `Response` from middleware
+
+  This is breaking, if you were returning something random from middleware before it will now be used.
+
+- bd8a561: Removes `Suspense` component - too hacky to use this css only implementation.
+- 78055a1: Renames `Router` to `App`
+
+### Minor Changes
+
+- 9edb66b: feat: add `Memo` - `context.memo` will memoize functions per request. Or use independently with `Memo.use`.
+- 031942e: feat: adds `Page` and `Action` helpers, and `app.add` register
+
+### Patch Changes
+
+- bd8a561: fix: only inject extra `<div>` for safari streaming bug if UA is safari
+
 ## 1.4.0
 
 ### Minor Changes
