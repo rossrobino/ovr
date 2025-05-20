@@ -356,7 +356,7 @@ const response = await app.fetch(new Request("https://example.com/"));
 The `fetch` method can easily be plugged into other tooling built on the Fetch API:
 
 ```ts
-// bun, deno, cloudflare...
+// bun, deno, cloudflare, domco...
 export default app;
 ```
 
@@ -367,7 +367,7 @@ export const GET = app.fetch;
 
 ## Trie
 
-[App](#app) is built using the `Trie` and `Route` classes. You can build your own trie based router by importing them.
+[App](#app) is built using the `Trie` and `Route` classes. You don't need to access these if you are using `App`, but you can build your own trie based router using them.
 
 The trie is forked and adapted from [memoirist](https://github.com/SaltyAom/memoirist) and [@medley/router](https://github.com/medleyjs/router).
 
