@@ -65,7 +65,7 @@ ovr's architecture gives you true streaming SSR and progressive rendering out of
 npm i ovr
 ```
 
-ovr can be used in any Fetch API compatible runtime via [`app.fetch`](#fetch).
+ovr can be used in many Fetch API compatible runtimes via [`app.fetch`](#fetch).
 
 - [Vite + domco](https://github.com/rossrobino/domco) - `npm create domco` and select the `ovr` framework option.
 - [Bun HTTP server](https://bun.sh/docs/api/http)
@@ -78,7 +78,7 @@ Add the following options to your `tsconfig.json` to enable the JSX transform:
 { "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "ovr" } }
 ```
 
-## Usage
+## JSX
 
 ```tsx
 // Basic component with props
@@ -165,7 +165,7 @@ app.base =
 
 ### Overview
 
-`App` API is inspired by and works similar to frameworks like [Hono](https://hono.dev/) or [Express](https://expressjs.com/). Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
+The `App` API is inspired by and works similar to frameworks like [Hono](https://hono.dev/) or [Express](https://expressjs.com/). Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
 
 ```tsx
 // API route
@@ -225,11 +225,11 @@ app.get("/api/:id", (c) => {
 	c.route; // Matched Route object (contains pattern, store)
 
 	// Response Building Methods
-	c.res(body, init); // Generic response (like `new Response()`)
 	c.html(body, status); // Set HTML response
 	c.text(body, status); // Set plain text response
 	c.json(data, status); // Set JSON response
 	c.redirect(location, status); // Set redirect response
+	c.res(body, init); // Generic response (like `new Response()`)
 
 	// JSX Page Building Methods (Leverages Streaming JSX)
 	c.head(<meta name="description" content="..." />); // Add elements to <head>
@@ -262,11 +262,52 @@ app.get(
 );
 ```
 
-`Context` is passed between between each middleware. After all the middleware have been run, the `Context` will `build` and return the final `Response`.
+The same `Context` is passed into each middleware. After all the middleware have been run, the `Context` will `build` and return the final `Response`.
+
+### Page
+
+ovr provides a `Page` helper that can be used to encapsulate routes and create links to them. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
+
+```tsx
+import { Page } from "ovr";
+
+const home = new Page("/", (c) => {
+	return <p>hello world</p>;
+});
+
+<home.Anchor>Home</home.Anchor>; // <a> tag with preset `href` attribute
+```
+
+### Action
+
+There is also an `Action` helper that will create a POST handler and a corresponding `Form` element that can be used within other components.
+
+```tsx
+import { Action } from "ovr";
+
+const action = new Action((c) => {
+	const data = await c.req.formData();
+	// ...
+
+	c.redirect("/", 303);
+})
+
+<action.Form>...</action.Form>; // <form> with preset `method` and `action` attributes
+```
+
+ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
+
+You can also set the pattern manually:
+
+```tsx
+const action = new Action("/custom/pattern", (c) => {
+	// ...
+});
+```
 
 ### add
 
-Use the `app.add` method to easily add a `Page` or `Action` to your application.
+Use the `add` method to register a `Page` or `Action` to your app.
 
 ```tsx
 app.add(page); // single
@@ -298,51 +339,6 @@ import * as home from "./home";
 // ...
 
 app.add(home); // adds all exports
-```
-
-#### Page
-
-ovr provides a `Page` helper that can be used to encapsulate routes and create links to them. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
-
-```tsx
-import { Page } from "ovr";
-
-const home = new Page("/", (c) => {
-	return <p>hello world</p>;
-});
-
-app.add(home); // registers the route
-
-<home.Anchor>Home</home.Anchor>; // <a> tag with preset `href` attribute
-```
-
-#### Action
-
-There is also an `Action` helper that will create a POST handler and a corresponding `Form` element that can be used within other components.
-
-```tsx
-import { Action } from "ovr";
-
-const action = new Action((c) => {
-	const data = await c.req.formData();
-	// ...
-
-	c.redirect("/", 303);
-})
-
-app.add(action);
-
-<action.Form>...</action.Form>; // <form> with preset `method` and `action` attributes
-```
-
-ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
-
-You can also set the pattern manually:
-
-```tsx
-const action = new Action("/custom/pattern", (c) => {
-	// ...
-});
 ```
 
 ### fetch
