@@ -1,6 +1,6 @@
 {
 	"name": "ovr",
-	"description": "Composable and Progressive Rendering",
+	"description": "Progressive HTML Rendering",
 	"version": "1.4.0",
 	"license": "MIT",
 	"repository": {

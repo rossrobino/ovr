@@ -1,6 +1,8 @@
 ## Introduction
 
-ovr is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications with asynchronous JSX and a modern Fetch API-based router. Designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter, ovr evaluates components concurrently and streams HTML in order by producing an `AsyncGenerator<string>` that feeds directly into the streamed response. This allows browsers to fetch critical assets and progressively render content as soon as it arrives, without buffering the entire HTML in memory.
+ovr is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications with asynchronous JSX and a modern Fetch API-based router.
+
+Designed to optimize performance and Time-To-First-Byte (TTFB), ovr evaluates components concurrently and streams HTML in order by producing an `AsyncGenerator<string>` that feeds directly into the streamed response. This allows browsers to fetch critical assets as soon as possible and progressively render content as it arrives.
 
 ```tsx
 import { App } from "ovr";
@@ -55,7 +57,7 @@ ovr's architecture gives you true streaming SSR and progressive rendering out of
 ### Features
 
 - **Asynchronous Streaming JSX**: Write components that perform async operations (like data fetching) directly. ovr handles concurrent evaluation and ordered streaming output.
-- **Type-safe**: ovr is written in TypeScript and supports type safe route patterns with parameters.
+- **Type Safety**: ovr is written in TypeScript and supports type safe route patterns with parameters.
 - **Built on the Fetch API**: A modern HTTP router built on the `Request` and `Response` objects.
 - **[Trie](https://en.wikipedia.org/wiki/Radix_tree)-Based Routing**: Efficient and fast route matching, supporting static paths, parameters, and wildcards. Performance does not degrade as you add more routes.
 
@@ -90,7 +92,7 @@ const Data = async () => {
 	const res = await fetch("...");
 	const data = await res.json();
 
-	return <div>{JSON.stringify(data)}</div>;
+	return <div>{data}</div>;
 };
 
 // Components can also be generators
@@ -243,7 +245,7 @@ app.get("/api/:id", (c) => {
 });
 ```
 
-Context can be acquired from anywhere within the scope of a request handler with the `Context.get` method. `get` uses `AsyncLocalStorage` under the hood.
+Context can be acquired from anywhere within the scope of a request handler with the `Context.get` method. `get` uses `AsyncLocalStorage` under the hood. This prevents you from having to prop drill the context to each component from the handler.
 
 ```tsx
 import { Context } from "ovr";
