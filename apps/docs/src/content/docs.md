@@ -2,17 +2,15 @@
 
 ovr is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications with asynchronous JSX and a modern Fetch API-based router.
 
-Designed to optimize performance and Time-To-First-Byte (TTFB), ovr evaluates components concurrently and streams HTML in order by producing an `AsyncGenerator<string>` that feeds directly into the streamed response. This allows browsers to fetch critical assets as soon as possible and progressively render content as it arrives.
+Designed to optimize performance and Time-To-First-Byte (TTFB), ovr evaluates components concurrently and streams HTML in order by producing an `AsyncGenerator<string>` that feeds directly into the streamed response.
 
 ```tsx
-import { App } from "ovr";
-
-const app = new App();
-
-app.get("/", () => <p>hello world</p>);
+function Component() {
+	return <p>hello world</p>;
+}
 ```
 
-For the paragraph above, ovr enqueues three chunks:
+For the paragraph above, ovr generates three strings:
 
 ```ts
 "<p>"; // streamed immediately
@@ -20,7 +18,7 @@ For the paragraph above, ovr enqueues three chunks:
 "</p>"; // last
 ```
 
-While this may seem trivial at first, consider when a child is asynchronous:
+While this is trivial for a paragraph, consider when a component is asynchronous:
 
 ```tsx
 async function Username() {
@@ -50,7 +48,7 @@ Instead of waiting for `getUser` to resolve before sending the entire component,
 "</p>";
 ```
 
-Browsers are built for streaming, they parse and paint as much of the HTML as possible as soon as it arrives. Most critically, the `<head>` of the document can be sent immediately to kick off the requests for any other required assets as soon as possible.
+Web browsers are built for streaming, they parse and paint HTML as it arrives. Most critically, the `<head>` of the document can be sent immediately to start the requests for linked assets (JavaScript, CSS, etc.) as soon as possible.
 
 ovr's architecture gives you true streaming SSR and progressive rendering out of the box. No hydration bundle, no buffering---just HTML over the wire, as soon as it's ready.
 
@@ -67,7 +65,7 @@ ovr's architecture gives you true streaming SSR and progressive rendering out of
 npm i ovr
 ```
 
-ovr can be used in many Fetch API compatible runtimes via [`app.fetch`](#fetch).
+ovr can be used in popular Fetch API compatible runtimes via [`app.fetch`](#fetch).
 
 - [Vite + domco](https://github.com/rossrobino/domco) - `npm create domco` and select the `ovr` framework option.
 - [Bun HTTP server](https://bun.sh/docs/api/http)
@@ -84,16 +82,18 @@ Add the following options to your `tsconfig.json` to enable the JSX transform:
 
 ```tsx
 // Basic component with props
-const Component = (props: { foo: string }) => <div>{props.foo}</div>;
+function Component(props: { foo: string }) {
+	return <div>{props.foo}</div>;
+}
 
 // Components can be asynchronous
 // for example you can `fetch` directly in a component
-const Data = async () => {
+async function Data() {
 	const res = await fetch("...");
 	const data = await res.json();
 
 	return <div>{data}</div>;
-};
+}
 
 // Components can also be generators
 async function* Generator() {
@@ -103,17 +103,19 @@ async function* Generator() {
 	yield <p>after</p>;
 }
 
-const Page = () => (
-	<>
-		<Component foo="bar" />
+function Page() {
+	return (
+		<main>
+			<Component foo="bar" />
 
-		{/* These three components await in parallel when this page is called. */}
-		{/* Then they will stream in order as soon as they are ready. */}
-		<Generator />
-		<Data />
-		<Data />
-	</>
-);
+			{/* These three components await in parallel when this page is called. */}
+			{/* Then they will stream in order as soon as they are ready. */}
+			<Generator />
+			<Data />
+			<Data />
+		</main>
+	);
+}
 ```
 
 You can `return` or `yield` most data types from a component, they will be rendered as you might expect:
@@ -148,14 +150,14 @@ const app = new App();
 
 ### Configuration
 
-These values can be customized after creating the `App`.
+The following values can be customized after creating the `App`.
 
 ```ts
 // redirect trailing slash preference - default is "always"
 app.trailingSlash = "always";
 
 // customize the not found response
-app.notFound = = (c) => c.html("Not found", 404);
+app.notFound = (c) => c.html("Not found", 404);
 
 // add an error handler
 app.error = (c, error) => c.html(error.message, { status: 500 });
@@ -167,7 +169,7 @@ app.base =
 
 ### Overview
 
-The `App` API is inspired by and works similar to frameworks like [Hono](https://hono.dev/) or [Express](https://expressjs.com/). Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
+The `App` API is inspired by and works similar to frameworks such as [Hono](https://hono.dev/) and [Express](https://expressjs.com/). Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
 
 ```tsx
 // API route
@@ -216,32 +218,34 @@ Here are the various actions that occur based on the return type of the handler.
 
 ### Context
 
-`Context` contains context for the current request.
+`Context` contains context for the current request and helpers to build a `Response`.
 
 ```tsx
 app.get("/api/:id", (c) => {
-	// Request Info
-	c.req; // Original Request object
-	c.url; // Parsed URL object
-	c.params; // Type-safe route parameters (e.g., { id: "123" })
-	c.route; // Matched Route object (contains pattern, store)
+	// Request info
+	c.req; // original Request
+	c.url; // parsed URL
+	c.params; // type-safe route parameters ({ id: "123" })
+	c.route; // matched Route (contains pattern, store)
 
-	// Response Building Methods
+	// Response building methods
 	c.html(body, status); // Set HTML response
 	c.text(body, status); // Set plain text response
 	c.json(data, status); // Set JSON response
 	c.redirect(location, status); // Set redirect response
 	c.res(body, init); // Generic response (like `new Response()`)
 
-	// JSX Page Building Methods (Leverages Streaming JSX)
-	c.head(<meta name="description" content="..." />); // Add elements to <head>
-	c.layout(Layout); // Wrap page content with layout components
-	c.page(<UserProfilePage userId={c.params.id} />); // Render JSX page, streaming enabled! (same as returning from handler)
+	// JSX page building methods (Leverages Streaming JSX)
+	c.head(<meta name="description" content="..." />); // add elements to <head>
+	c.layout(Layout); // wrap page content with layout components
+	c.page(<UserProfilePage userId={c.params.id} />); // stream JSX page (same as returning)
 
-	// Other Utilities
-	c.memo(fn); // Memoize a function to dedupe async operations and cache the results
-	c.etag("content-to-hash"); // Generate and check ETag for caching
-	c.build(); // (Internal) Builds the final Response object
+	// other utilities
+	c.memo(fn); // memoize a function to dedupe async operations and cache the results
+	c.etag("content-to-hash"); // generate and check ETag for caching
+
+	// internal
+	c.build(); // builds the final Response object
 });
 ```
 
@@ -257,20 +261,21 @@ function Component() {
 
 ### Middleware
 
-When multiple middleware handlers are added to a route, the first middleware added to the route will be called, and the `next` middleware can be dispatched within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
+When multiple middleware handlers are added to a route, the first middleware will be called, and the `next` middleware can be dispatched within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
 
 ```ts
 app.get(
 	"/multi",
 	async (c, next) => {
-		// middleware
-		console.log("pre"); // 1
+		console.log("1");
 
 		await next(); // dispatches the next middleware below
 
-		console.log("post"); // 3
+		console.log("3");
 	},
-	() => console.log("final"); // 2
+	() => {
+		console.log("2");
+	},
 );
 ```
 
@@ -278,7 +283,7 @@ The same `Context` is passed into each middleware. After all the middleware have
 
 ### Page
 
-ovr provides a `Page` helper that can be used to encapsulate routes and create links to them. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
+The `Page` helper encapsulates routes and creates links to them. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
 
 ```tsx
 import { Page } from "ovr";
@@ -299,6 +304,7 @@ import { Action } from "ovr";
 
 const action = new Action((c) => {
 	const data = await c.req.formData();
+
 	// ...
 
 	c.redirect("/", 303);
@@ -348,14 +354,12 @@ export const action = new Action((c) => {
 // app.tsx
 import * as home from "./home";
 
-// ...
-
 app.add(home); // adds all exports
 ```
 
 ### fetch
 
-Use the `fetch` method to create a `Response`,
+Use the `fetch` method to create a `Response`.
 
 ```ts
 const response = await app.fetch(new Request("https://example.com/"));
@@ -394,9 +398,7 @@ import { Context } from "ovr";
 
 async function Username() {
 	const c = Context.get();
-
 	const memoized = c.memo(getUser);
-
 	const user = await memoized();
 
 	return <span>{user.name}<span>;
@@ -405,16 +407,18 @@ async function Username() {
 
 This will deduplicate multiple calls to the same function with the with the same arguments and cache the result.
 
-The `Memo` class can also be utilized outside of the application context if you need to cache across requests. Although, it's generally better to cache per request, especially for user specific information.
+The `Memo` class can also be utilized outside of the application context if you need to cache across requests. Although, it's generally better to cache per request---especially for user specific or sensitive information.
 
 ```ts
 import { Memo } from "ovr";
 
 const memo = new Memo();
 
-const fn = memo.use(() => {
-	// ...
-});
+const add = memo.use((a: number, b: number) => a + b);
+
+fn(1, 2); // runs
+fn(1, 2); // cached
+fn(2, 3); // runs again, saves the new result separately
 ```
 
 ## Trie

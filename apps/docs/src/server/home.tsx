@@ -14,6 +14,9 @@ export const home = new Page("/", (c) => {
 		<main>
 			<h1>{name}</h1>
 			<p>{description}</p>
+			<p>
+				<a href="https://github.com/rossrobino/ovr">GitHub</a> | MIT License
+			</p>
 			<Nav />
 			{docsHtml}
 		</main>
