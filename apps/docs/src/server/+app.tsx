@@ -6,6 +6,7 @@ import { App } from "ovr";
 const app = new App();
 
 app.base = html;
+app.prerender = ["/"];
 
 app.add(home, test);
 
