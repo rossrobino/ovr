@@ -2,6 +2,8 @@
 
 @layer base {
 	:root {
+		--light-end: 0.002;
+
 		--shiki-foreground: var(--base-100);
 		--shiki-background: var(--base-900);
 		--shiki-token-constant: var(--base-50);

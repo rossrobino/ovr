@@ -2,7 +2,9 @@ import { Context } from "./context.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
-const app = new App({ trailingSlash: "always" });
+const app = new App();
+
+app.trailingSlash = "always";
 
 const get = (pathname: string) =>
 	app.fetch(new Request("http://localhost:5173" + pathname));
@@ -173,7 +175,9 @@ describe("trailing slash", () => {
 	});
 
 	test("ignore", async () => {
-		const ignore = new App({ trailingSlash: "ignore" });
+		const ignore = new App();
+		ignore.trailingSlash = "ignore";
+
 		ignore.get("/nope", (c) => c.text("nope"));
 		ignore.get("/yup/", (c) => c.text("yup"));
 

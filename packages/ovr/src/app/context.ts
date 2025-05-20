@@ -4,13 +4,12 @@ import { Memo } from "../memo/index.js";
 import type { Route } from "../trie/index.js";
 import {
 	App,
+	type ErrorHandler,
 	type Middleware,
+	type NotFoundHandler,
 	type Params,
 	type TrailingSlash,
 } from "./index.js";
-
-type UnmatchedContext<P extends Params = Params> = Omit<Context<P>, "route"> &
-	Partial<Pick<Context<P>, "route">>;
 
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
 
@@ -50,54 +49,39 @@ export class Context<P extends Params = Params> {
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers) */
 	headers = new Headers();
 
-	/**
-	 * Base HTML to inject the `head` and `page` elements into.
-	 *
-	 * @default
-	 *
-	 * ```html
-	 * <!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>
-	 * ```
-	 */
-	base =
-		'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
-
-	/**
-	 * Assign a handler to run when an `Error` is thrown.
-	 *
-	 * If not set, `Error` will be thrown. This might be desired
-	 * if your server already includes error handling. Set in `config.start`
-	 * to handle errors globally.
-	 *
-	 * @default null
-	 */
-	error: ((context: UnmatchedContext, error: unknown) => any) | null = null;
-
 	#layouts: Layout[] = [];
+
 	#headElements: JSX.Element[] = [];
+
 	#trailingSlash: TrailingSlash;
 
+	/** Passed from `app.base` */
+	base: string;
+
+	/** Passed from `app.error` */
+	error: ErrorHandler<P>;
+
+	/** Passed from `app.notFound` */
+	notFound: NotFoundHandler<P>;
+
 	#memo = new Memo();
+
 	memo = this.#memo.use;
 
-	constructor(req: Request, url: URL, trailingSlash: TrailingSlash) {
+	constructor(
+		req: Request,
+		url: URL,
+		trailingSlash: TrailingSlash,
+		base: string,
+		error: ErrorHandler<P>,
+		notFound: NotFoundHandler<P>,
+	) {
 		this.req = req;
 		this.url = url;
 		this.#trailingSlash = trailingSlash;
-	}
-
-	/**
-	 * Middleware to run when no `body` or `status` has been set on the `context`.
-	 * Set to a new function to override the default.
-	 *
-	 * @default
-	 *
-	 * ```ts
-	 * () => this.html("Not found", 404)
-	 * ```
-	 */
-	notFound(_context: UnmatchedContext<P>): any {
-		this.html("Not found", 404);
+		this.base = base;
+		this.error = error;
+		this.notFound = notFound;
 	}
 
 	/**

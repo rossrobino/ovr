@@ -1,10 +1,6 @@
-```bash
-npm i ovr
-```
+## Introduction
 
-## Overview
-
-**ovr** is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications using asynchronous JSX and a modern Fetch API-based router.
+**ovr** is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications using asynchronous JSX and a modern Fetch API-based router. t’s designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter. ovr evaluates components concurrently and streams the resulting HTML in order, so browsers can fetch critical assets and render content progressively as soon as it arrives.
 
 ```tsx
 import { App } from "ovr";
@@ -14,35 +10,61 @@ const app = new App();
 app.get("/", () => <p>hello world</p>);
 ```
 
-ovr is designed for server-side rendering (SSR) where performance and Time-To-First-Byte (TTFB) matter. ovr evaluates components concurrently but streams the resulting HTML **in order**, allowing browsers to fetch critical assets quickly and render content progressively as it arrives.
+### Streaming
+
+Rather than buffer the entire HTML in memory, ovr’s JSX transform produces an `AsyncGenerator<string>` that feeds a `ReadableStream`. For a simple paragraph ovr enqueues three chunks:
+
+```ts
+"<p>"; // streamed immediately
+"hello world"; // next
+"</p>"; // last
+```
+
+While this may seem trivial at first, consider when a child is asynchronous:
 
 ```tsx
-async function* Component() {
-	yield <p>start</p>; // streamed immediately
-	await promise;
-	yield <p>later</p>;
+async function Username() {
+	const { user } = await getUser(); // slow...
+	return <span>{user.name}</span>;
+}
+
+function Component() {
+	return (
+		<p>
+			Hello, <Username />.
+		</p>
+	);
 }
 ```
+
+Instead of waiting for `getUser` to resolve before sending the entire component, ovr will send what it has immediately and stream the rest as it becomes available.
+
+```ts
+"<p>";
+"Hello, "; // before getUser() resolves
+// await getUser()...
+"<span>";
+"Username";
+"</span>";
+"</p>";
+```
+
+Browsers are built for streaming, they parse and paint as much of the HTML as possible as soon as it arrives. Most critically, the `<head>` of the document can be sent immediately to kick off the requests for any other required assets as soon as possible.
+
+ovr's architecture gives you true streaming SSR and progressive rendering out of the box. No hydration bundle, no buffering---just HTML over the wire, as soon as it's ready.
 
 ## Features
 
 - **Asynchronous Streaming JSX**: Write components that perform async operations (like data fetching) directly. ovr handles concurrent evaluation and ordered streaming output.
-- **Performance Focused**: Deliver HTML faster to the client by streaming content as it becomes ready, improving performance and TTFB.
-- **Minimal & Platform Agnostic**: Uses standard JavaScript/Web APIs, allowing it to run in Node.js, Deno, Bun, Cloudflare Workers, and more.
-- **Fetch API Router**: A modern, flexible router built on the standard Fetch API `Request` and `Response` objects.
-- **[Trie](https://en.wikipedia.org/wiki/Radix_tree)-Based Routing**: Efficient and fast route matching, supporting static paths, parameters, and wildcards with clear prioritization. Performance does not degrade as you add more routes.
-
-## JSX
-
-ovr provides an asynchronous JSX runtime designed for server-side rendering. Instead of buffering the entire HTML string in memory, it produces an `AsyncGenerator` that yields HTML chunks.
-
-When you render multiple asynchronous components (e.g., components fetching data), ovr initiates their evaluation concurrently. As each component resolves, its corresponding HTML is generated.
-
-ovr ensures that these HTML chunks are yielded in the original order, even if components finish evaluating out of order. This allows the browser to start parsing and rendering the initial parts of your page while waiting for slower data fetches further down, significantly improving perceived load times. This all takes place without any client-side JavaScript, streaming the HTML in-order by default.
-
-For example, ovr will immediately send the `<head>` of your document for the browser to start requesting the linked assets. Then the rest of the page streams in as it becomes available.
+- **Type-safe**: ovr is written in TypeScript and supports type safe route patterns with parameters.
+- **Built on the Fetch API**: A modern HTTP router built on the `Request` and `Response` objects.
+- **[Trie](https://en.wikipedia.org/wiki/Radix_tree)-Based Routing**: Efficient and fast route matching, supporting static paths, parameters, and wildcards. Performance does not degrade as you add more routes.
 
 ## Get started
+
+```bash
+npm i ovr
+```
 
 ovr can be used in any Fetch API compatible runtime. `app.fetch` takes a `Request` and returns a `Response`, you can use it as the fetch handler with any of the following tools and more.
 
@@ -58,8 +80,6 @@ Add the following options to your `tsconfig.json` to enable the JSX transform:
 ```
 
 ## Usage
-
-JSX evaluates to an `AsyncGenerator`, with this, the `App` creates an in-order stream of components.
 
 ```tsx
 // Basic component with props
@@ -95,7 +115,7 @@ const Page = () => (
 );
 ```
 
-You can `return` or `yield` most data types from a component, they will be rendered as you might expect.
+You can `return` or `yield` most data types from a component, they will be rendered as you might expect:
 
 ```tsx
 function* DataTypes() {
@@ -115,9 +135,9 @@ function* DataTypes() {
 }
 ```
 
-> [!WARNING]
->
-> ovr does not escape HTML automatically, use the `escape` function provided.
+## Escaping
+
+ovr does not escape HTML automatically, use the `escape` function provided.
 
 ## App
 
@@ -134,25 +154,20 @@ app.get("/", (c) => c.text("Hello world"));
 Optional configuration when creating the app.
 
 ```ts
-const app = new App({
-	// redirect trailing slash preference
-	trailingSlash: "always",
-});
+const app = new App();
 
-// global middleware
-app.use(async (c, next) => {
-	// customize the not found response
-	c.notFound = (c) => c.res("custom", { status: 404 });
+// redirect trailing slash preference - default is "always"
+app.trailingSlash = "always";
 
-	// add a global error handler
-	c.error = (c, error) => c.res(error.message, { status: 500 });
+// customize the not found response
+app.notFound = (c) => c.res("custom", { status: 404 });
 
-	// base HTML to inject head and body elements into, this is the default
-	c.base =
-		'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
+// add an error handler
+app.error = (c, error) => c.res(error.message, { status: 500 });
 
-	await next();
-});
+// base HTML to inject head and body elements into, this is the default
+app.base =
+	'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
 ```
 
 ### Context
@@ -191,7 +206,7 @@ app.get("/api/:id", (c) => {
 #### Overview
 
 ```tsx
-// Basic
+// API route
 app.get("/", (c) => c.text("Hello world"));
 
 // Return JSX as a streamed HTML response
@@ -205,12 +220,16 @@ app.post("/api/:id", (c) => {
 
 // Wildcard - add an asterisk `*` to match all remaining segments in the route
 app.get("/files/*", (c) => {
-	// c.params["*"] contains the matched wildcard path (e.g., "images/logo.png")
-	return c.text(`Serving file: ${c.params["*"]}`);
+	c.params["*"]; // matched wildcard path (e.g., "images/logo.png")
+});
+
+// Multiple patterns
+app.get(["/multi/:param", "/pattern/:another"], (c) => {
+	c.param; // { param: string } | { another: string }
 });
 
 // Other or custom methods
-app.on("METHOD", "/pattern", () => {
+app.on("METHOD", "/pattern", (c) => {
 	// ...
 });
 
@@ -220,12 +239,14 @@ app.use(async (c) => {
 });
 ```
 
-| Return Value        | Action                     |
-| ------------------- | -------------------------- |
-| `Response`          | Passed into `context.res`  |
-| `ReadableStream`    | Assigned to `context.body` |
-| other truthy values | Passed into `context.page` |
-| falsy values        | None                       |
+Here are the various actions that occur based on the return type of the handler.
+
+| Return Value                             | Action                     |
+| ---------------------------------------- | -------------------------- |
+| `Response`                               | Passed into `context.res`  |
+| `ReadableStream`                         | Assigned to `context.body` |
+| Other truthy values (JSX, strings, etc.) | Passed into `context.page` |
+| Falsy values                             | None                       |
 
 #### Middleware
 
@@ -246,16 +267,6 @@ app.get(
 
 `Context` is passed between between each middleware that is stored in the matched `Route`. After all the handlers have been run, the `Context` will `build` and return the final response.
 
-#### Multiple patterns
-
-Apply handlers to multiple patterns at once with type safe parameters.
-
-```ts
-app.get(["/multi/:param", "/pattern/:another"], (c) => {
-	c.param; // { param: string } | { another: string }
-});
-```
-
 ### fetch
 
 Use the `fetch` method to create a response,
@@ -264,16 +275,16 @@ Use the `fetch` method to create a response,
 const res = await app.fetch(new Request("https://example.com/"));
 ```
 
-or use in a framework.
-
-```ts
-// next, sveltekit, astro...
-export const GET = app.fetch;
-```
+The `fetch` method can easily be plugged into other tooling built on the Fetch API:
 
 ```ts
 // bun, deno, cloudflare...
 export default app;
+```
+
+```ts
+// next, sveltekit, astro...
+export const GET = app.fetch;
 ```
 
 ## Trie

@@ -30,6 +30,18 @@ type Method =
 	| "PATCH"
 	| (string & {});
 
+type UnmatchedContext<P extends Params = Params> = Omit<Context<P>, "route"> &
+	// route might be defined
+	Partial<Pick<Context<P>, "route">>;
+
+export type ErrorHandler<P extends Params = Params> =
+	| ((context: UnmatchedContext<P>, error: unknown) => any)
+	| null;
+
+export type NotFoundHandler<P extends Params = Params> = (
+	context: UnmatchedContext<P>,
+) => any;
+
 export class App {
 	// allows for users to put other properties on the app
 	[key: string | symbol | number]: any;
@@ -43,28 +55,54 @@ export class App {
 	/** Global middleware. */
 	#use: Middleware[] = [];
 
-	/** Trailing slash preference. */
-	#trailingSlash: TrailingSlash;
+	/**
+	 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
+	 * - `"always"` - Not found requests without a trailing slash will be redirected to the same path with a trailing slash
+	 * - `"ignore"` - no redirects (not recommended, bad for SEO)
+	 *
+	 * [Trailing Slash for Frameworks by Bjorn Lu](https://bjornlu.com/blog/trailing-slash-for-frameworks)
+	 *
+	 * @default "never"
+	 */
+	trailingSlash: TrailingSlash = "never";
+
+	/**
+	 * Base HTML to inject the `head` and `page` elements into.
+	 *
+	 * @default
+	 *
+	 * ```html
+	 * <!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>
+	 * ```
+	 */
+	base =
+		'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
+
+	/**
+	 * Assign a handler to run when an `Error` is thrown.
+	 *
+	 * If not set, `Error` will be thrown. This might be desired
+	 * if your server already includes error handling. Set in `config.start`
+	 * to handle errors globally.
+	 *
+	 * @default null
+	 */
+	error: ErrorHandler = null;
+
+	/**
+	 * Middleware to run when no `body` or `status` has been set on the `context`.
+	 * Set to a new function to override the default.
+	 *
+	 * @default
+	 *
+	 * ```ts
+	 * (c) => c.html("Not found", 404)
+	 * ```
+	 */
+	notFound: NotFoundHandler = (c) => c.html("Not found", 404);
 
 	/** Stores context per request. */
 	static storage = new AsyncLocalStorage<Context>();
-
-	constructor(
-		config: {
-			/**
-			 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
-			 * - `"always"` - Not found requests without a trailing slash will be redirected to the same path with a trailing slash
-			 * - `"ignore"` - no redirects (not recommended, bad for SEO)
-			 *
-			 * [Trailing Slash for Frameworks by Bjorn Lu](https://bjornlu.com/blog/trailing-slash-for-frameworks)
-			 *
-			 * @default "never"
-			 */
-			trailingSlash?: TrailingSlash;
-		} = {},
-	) {
-		this.#trailingSlash = config.trailingSlash ?? "never";
-	}
 
 	/**
 	 * @param routes `Page`s or `Action`s to add to the `App`
@@ -199,7 +237,14 @@ export class App {
 	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
 	 */
 	fetch = (req: Request): Promise<Response> => {
-		const c = new Context(req, new URL(req.url), this.#trailingSlash);
+		const c = new Context(
+			req,
+			new URL(req.url),
+			this.trailingSlash,
+			this.base,
+			this.error,
+			this.notFound,
+		);
 
 		return App.storage.run(c, async () => {
 			try {
