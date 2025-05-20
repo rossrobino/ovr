@@ -201,6 +201,8 @@ app.use(async (c) => {
 });
 ```
 
+### Return values
+
 Here are the various actions that occur based on the return type of the handler.
 
 | Return Value                             | Action                     |
@@ -231,7 +233,7 @@ app.get("/api/:id", (c) => {
 
 	// JSX Page Building Methods (Leverages Streaming JSX)
 	c.head(<meta name="description" content="..." />); // Add elements to <head>
-	c.layout(MainLayout); // Wrap page content with layout components
+	c.layout(Layout); // Wrap page content with layout components
 	c.page(<UserProfilePage userId={c.params.id} />); // Render JSX page, streaming enabled! (same as returning from handler)
 
 	// Other Utilities
@@ -243,7 +245,7 @@ app.get("/api/:id", (c) => {
 
 ### Middleware
 
-When multiple middleware handlers are added to a route, the first middleware added to the route will be called, and the `next` middleware can be called within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
+When multiple middleware handlers are added to a route, the first middleware added to the route will be called, and the `next` middleware can be dispatched within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
 
 ```ts
 app.get(
@@ -251,7 +253,9 @@ app.get(
 	async (c, next) => {
 		// middleware
 		console.log("pre"); // 1
+
 		await next(); // dispatches the next middleware below
+
 		console.log("post"); // 3
 	},
 	() => console.log("final"); // 2
@@ -262,7 +266,7 @@ app.get(
 
 ### add
 
-You can use the `app.add` method to easily add a `Page` or `Action` to your application.
+Use the `app.add` method to easily add a `Page` or `Action` to your application.
 
 ```tsx
 app.add(page); // single
@@ -270,6 +274,30 @@ app.add(page, action); // multiple
 app.add({ page, action }); // object
 app.add([page, action]); // array
 // any combination of these also works
+```
+
+This makes it easy to create a module of pages and actions, and add them all at once.
+
+```tsx
+// home.tsx
+import { Page, Action } from "ovr";
+
+export const page = new Page("/", (c) => {
+	// ...
+});
+
+export const action = new Action((c) => {
+	// ...
+});
+```
+
+```tsx
+// app.tsx
+import * as home from "./home";
+
+// ...
+
+app.add(home); // adds all exports
 ```
 
 #### Page
