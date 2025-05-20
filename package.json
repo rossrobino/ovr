@@ -3,6 +3,7 @@
 	"private": true,
 	"version": "0.0.0",
 	"license": "MIT",
+	"packageManager": "npm@11.3.0",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/rossrobino/ovr.git"
@@ -13,9 +14,11 @@
 		"packages/*"
 	],
 	"scripts": {
+		"dev": "turbo dev",
+		"check": "turbo check",
 		"test": "vitest run",
 		"test:dev": "vitest",
-		"build": "npm run build -w ovr && npm run build -w docs",
+		"build": "turbo build",
 		"format": "prettier --write .",
 		"changeset": "changeset",
 		"version": "changeset version",
@@ -26,6 +29,7 @@
 		"@robino/prettier": "^2.0.0",
 		"@robino/tsconfig": "^1.0.3",
 		"prettier": "^3.5.3",
+		"turbo": "^2.5.3",
 		"typescript": "^5.8.3",
 		"vitest": "^3.1.3"
 	},
