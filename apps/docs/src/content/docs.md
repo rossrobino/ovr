@@ -165,7 +165,7 @@ app.base =
 
 ### Overview
 
-`App` works similar to frameworks like Hono or express. Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
+`App` API is inspired by and works similar to frameworks like [Hono](https://hono.dev/) or [Express](https://expressjs.com/). Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
 
 ```tsx
 // API route
@@ -232,7 +232,7 @@ app.get("/api/:id", (c) => {
 	// JSX Page Building Methods (Leverages Streaming JSX)
 	c.head(<meta name="description" content="..." />); // Add elements to <head>
 	c.layout(MainLayout); // Wrap page content with layout components
-	c.page(<UserProfilePage userId={c.params.id} />); // Render JSX page, streaming enabled!
+	c.page(<UserProfilePage userId={c.params.id} />); // Render JSX page, streaming enabled! (same as returning from handler)
 
 	// Other Utilities
 	c.memo(fn); // Memoize a function to dedupe async operations and cache the results
