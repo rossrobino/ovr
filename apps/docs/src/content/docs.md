@@ -10,7 +10,7 @@ const app = new App();
 app.get("/", () => <p>hello world</p>);
 ```
 
-Rather than buffer the entire HTML in memory, ovr’s JSX transform produces an `AsyncGenerator<string>` that feeds a `ReadableStream`. For a simple paragraph ovr enqueues three chunks:
+Rather than buffer the entire HTML in memory, ovr’s JSX transform produces an `AsyncGenerator<string>` that feeds a `ReadableStream`. For the simple paragraph above, ovr enqueues three chunks:
 
 ```ts
 "<p>"; // streamed immediately
