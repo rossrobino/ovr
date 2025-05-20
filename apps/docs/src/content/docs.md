@@ -134,75 +134,38 @@ function* DataTypes() {
 }
 ```
 
-## Escaping
-
-ovr does not escape HTML automatically, use the `escape` function provided.
-
 ## App
+
+To start using ovr, create a new `App` instance:
 
 ```ts
 import { App } from "ovr";
 
 const app = new App();
-
-app.get("/", (c) => c.text("Hello world"));
 ```
 
 ### Configuration
 
-Optional configuration when creating the app.
+These values can be customized after creating the `App`.
 
 ```ts
-const app = new App();
-
 // redirect trailing slash preference - default is "always"
 app.trailingSlash = "always";
 
 // customize the not found response
-app.notFound = (c) => c.res("custom", { status: 404 });
+app.notFound = = (c) => c.html("Not found", 404);
 
 // add an error handler
-app.error = (c, error) => c.res(error.message, { status: 500 });
+app.error = (c, error) => c.html(error.message, { status: 500 });
 
-// base HTML to inject head and body elements into, this is the default
+// base HTML to inject elements into, this is the default---must include <head> and <body> tags
 app.base =
 	'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
 ```
 
-### Context
+### Overview
 
-`Context` contains context for the current request.
-
-```tsx
-app.get("/api/:id", (c) => {
-	// Request Info
-	c.req; // Original Request object
-	c.url; // Parsed URL object
-	c.params; // Type-safe route parameters (e.g., { id: "123" })
-	c.route; // Matched Route object (contains pattern, store)
-
-	// Response Building Methods
-	c.res(body, init); // Generic response (like `new Response()`)
-	c.html(body, status); // Set HTML response
-	c.text(body, status); // Set plain text response
-	c.json(data, status); // Set JSON response
-	c.redirect(location, status); // Set redirect response
-
-	// JSX Page Building Methods (Leverages Streaming JSX)
-	c.head(<meta name="description" content="..." />); // Add elements to <head>
-	c.layout(MainLayout); // Wrap page content with layout components
-	c.page(<UserProfilePage userId={c.params.id} />); // Render JSX page, streaming enabled!
-
-	// Other Utilities
-	c.memo(fn); // Memoize a function to dedupe async operations and cache the results
-	c.etag("content-to-hash"); // Generate and check ETag for caching
-	c.build(); // (Internal) Builds the final Response object
-});
-```
-
-### Examples
-
-#### Overview
+`App` works similar to frameworks like Hono or express. Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
 
 ```tsx
 // API route
@@ -247,9 +210,40 @@ Here are the various actions that occur based on the return type of the handler.
 | Other truthy values (JSX, strings, etc.) | Passed into `context.page` |
 | Falsy values                             | None                       |
 
-#### Middleware
+### Context
 
-Add middleware to a route, the first middleware added to the route will be called, and the `next` middleware can be called within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
+`Context` contains context for the current request.
+
+```tsx
+app.get("/api/:id", (c) => {
+	// Request Info
+	c.req; // Original Request object
+	c.url; // Parsed URL object
+	c.params; // Type-safe route parameters (e.g., { id: "123" })
+	c.route; // Matched Route object (contains pattern, store)
+
+	// Response Building Methods
+	c.res(body, init); // Generic response (like `new Response()`)
+	c.html(body, status); // Set HTML response
+	c.text(body, status); // Set plain text response
+	c.json(data, status); // Set JSON response
+	c.redirect(location, status); // Set redirect response
+
+	// JSX Page Building Methods (Leverages Streaming JSX)
+	c.head(<meta name="description" content="..." />); // Add elements to <head>
+	c.layout(MainLayout); // Wrap page content with layout components
+	c.page(<UserProfilePage userId={c.params.id} />); // Render JSX page, streaming enabled!
+
+	// Other Utilities
+	c.memo(fn); // Memoize a function to dedupe async operations and cache the results
+	c.etag("content-to-hash"); // Generate and check ETag for caching
+	c.build(); // (Internal) Builds the final Response object
+});
+```
+
+### Middleware
+
+When multiple middleware handlers are added to a route, the first middleware added to the route will be called, and the `next` middleware can be called within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
 
 ```ts
 app.get(
@@ -257,21 +251,68 @@ app.get(
 	async (c, next) => {
 		// middleware
 		console.log("pre"); // 1
-		await next(); // calls the next middleware below
+		await next(); // dispatches the next middleware below
 		console.log("post"); // 3
 	},
 	() => console.log("final"); // 2
 );
 ```
 
-`Context` is passed between between each middleware that is stored in the matched `Route`. After all the handlers have been run, the `Context` will `build` and return the final response.
+`Context` is passed between between each middleware. After all the middleware have been run, the `Context` will `build` and return the final `Response`.
+
+### add
+
+You can use the `app.add` method to easily add a `Page` or `Action` to your application.
+
+```tsx
+app.add(page); // single
+app.add(page, action); // multiple
+app.add({ page, action }); // object
+app.add([page, action]); // array
+// any combination of these also works
+```
+
+#### Page
+
+ovr provides a `Page` helper that can be used to encapsulate routes and create links to them. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
+
+```tsx
+import { Page } from "ovr";
+
+const home = new Page("/", (c) => {
+	return <p>hello world</p>;
+});
+
+app.add(home); // registers the route
+
+<home.Anchor>Home</home.Anchor>; // <a> tag with preset `href` attribute
+```
+
+#### Action
+
+There is also an `Action` helper that will create a `Form` element that can be used within other components.
+
+```tsx
+import { Action } from "ovr";
+
+const action = new Action((c) => {
+	const data = await c.req.formData();
+	// ...
+
+	c.redirect("/", 303);
+})
+
+app.add(action);
+
+<action.Form>...</action.Form>; // <form> with preset `method` and `action` attributes
+```
 
 ### fetch
 
-Use the `fetch` method to create a response,
+Use the `fetch` method to create a `Response`,
 
 ```ts
-const res = await app.fetch(new Request("https://example.com/"));
+const response = await app.fetch(new Request("https://example.com/"));
 ```
 
 The `fetch` method can easily be plugged into other tooling built on the Fetch API:
@@ -308,7 +349,7 @@ const match = trie.find("/hello/world"); // { route, params: { name: "world" } }
 
 The trie prioritizes matches in this order: **Static > Parametric > Wildcard**.
 
-Given three routes are added in any order,
+Given three routes are added in any order:
 
 ```ts
 trie.add(new Route("/hello/world", "store"));
@@ -316,7 +357,7 @@ trie.add(new Route("/hello/:name", "store"));
 trie.add(new Route("/hello/*", "store"));
 ```
 
-The following pathnames would match the corresponding patterns.
+The following pathnames would match the corresponding patterns:
 
 | pathname              | Route.pattern    |
 | --------------------- | ---------------- |
@@ -325,9 +366,3 @@ The following pathnames would match the corresponding patterns.
 | `"/hello/john/smith"` | `"/hello/*"`     |
 
 More specific matches are prioritized. First, the static match is found, then the parametric, and finally the wildcard.
-
-## Helpers
-
-### Page
-
-### Action
