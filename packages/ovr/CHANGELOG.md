@@ -1,5 +1,11 @@
 # ovr
 
+## 2.0.1
+
+### Patch Changes
+
+- 678d183: fix: don't yield empty strings
+
 ## 2.0.0
 
 ### Major Changes
