@@ -23,7 +23,6 @@ While this is trivial for a paragraph, consider when a component is asynchronous
 ```tsx
 async function Username() {
 	const user = await getUser(); // slow...
-
 	return <span>{user.name}</span>;
 }
 

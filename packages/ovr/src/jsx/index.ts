@@ -56,7 +56,7 @@ export async function* jsx(tag: FC<Props> | string, props: Props) {
 		// element
 		const { children, ...attrs } = props;
 
-		let attrStr = "";
+		const attrParts: string[] = [];
 
 		for (let key in attrs) {
 			const value = attrs[key]; // needs to come before reassigning keys
@@ -66,18 +66,18 @@ export async function* jsx(tag: FC<Props> | string, props: Props) {
 
 			if (value === true) {
 				// just put the key without the value
-				attrStr += ` ${key}`;
+				attrParts.push(` ${key}`);
 			} else if (
 				typeof value === "string" ||
 				typeof value === "number" ||
 				typeof value === "bigint"
 			) {
-				attrStr += ` ${key}=${JSON.stringify(value)}`;
+				attrParts.push(` ${key}=${JSON.stringify(value)}`);
 			}
 			// otherwise, don't include the attribute
 		}
 
-		yield `<${tag}${attrStr}>`;
+		yield `<${tag}${attrParts.join("")}>`;
 
 		if (voidElements.has(tag)) return;
 
@@ -107,8 +107,7 @@ export async function* toGenerator(
 	if (typeof element === "function") element = element();
 	if (element instanceof Promise) element = await element;
 
-	// undefined, null, or boolean should not render
-	if (element == null || typeof element === "boolean") return;
+	if (element == null || typeof element === "boolean" || element === "") return;
 
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
@@ -121,7 +120,7 @@ export async function* toGenerator(
 				generators.push(toGenerator(children));
 			}
 
-			const queue: string[] = new Array(generators.length).fill("");
+			let queue: string[] | string = new Array(generators.length).fill("");
 			const complete = new Set<number>();
 
 			let current = 0;
@@ -148,7 +147,8 @@ export async function* toGenerator(
 				}
 			}
 
-			yield queue.join(""); // clear the queue
+			queue = queue.join("");
+			if (queue) yield queue; // clear the queue
 		} else {
 			yield JSON.stringify(element); // avoids things like [object Object]
 		}
@@ -169,7 +169,7 @@ export async function* toGenerator(
  * @returns A promise that resolves to the concatenated HTML.
  */
 export const toString = async (element: JSX.Element) => {
-	let buffer = "";
-	for await (const value of toGenerator(element)) buffer += value;
-	return buffer;
+	const parts: string[] = [];
+	for await (const value of toGenerator(element)) parts.push(value);
+	return parts.join("");
 };
