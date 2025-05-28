@@ -3,7 +3,7 @@ import { insertParams } from "../trie/insert-params.js";
 import type { ExtractParams } from "../types/index.js";
 import type { Middleware, Params } from "./index.js";
 
-type AnchorProps<P extends Params> = Omit<JSX.IntrinsicElements["a"], "href"> &
+type AnchorProps<P extends Params> = JSX.IntrinsicElements["a"] &
 	(keyof P extends never ? { params?: never } : { params: P });
 
 export class Page<Pattern extends string = string> {

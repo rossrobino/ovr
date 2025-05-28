@@ -4,10 +4,7 @@ import { insertParams } from "../trie/insert-params.js";
 import type { ExtractParams } from "../types/index.js";
 import type { Middleware, Params } from "./index.js";
 
-type FormProps<P extends Params> = Omit<
-	JSX.IntrinsicElements["form"],
-	"action" | "method"
-> &
+type FormProps<P extends Params> = JSX.IntrinsicElements["form"] &
 	(keyof P extends never ? { params?: never } : { params: P });
 
 export class Action<Pattern extends string = string> {
