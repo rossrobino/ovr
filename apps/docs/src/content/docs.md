@@ -47,9 +47,9 @@ Instead of waiting for `getUser` to resolve before sending the entire component,
 "</p>";
 ```
 
-Web browsers are built for streaming, they parse and paint HTML as it arrives. Most critically, the `<head>` of the document can be sent immediately to start the requests for linked assets (JavaScript, CSS, etc.) as soon as possible.
+Web browsers are built for streaming, they parse and paint HTML as it arrives. Most critically, the `<head>` of the document can be sent immediately to start the requests for linked assets (JavaScript, CSS, etc.) before the page has finished rendering.
 
-<video src="/html-streaming-network.mp4" autoplay loop muted loading="lazy" playsinline></video>
+<video aria-label="A video showing the network waterfall of a website loading. The HTML head element is streamed immediately, allowing JavaScript and CSS files to download while the rest of the HTML body streams in simultaneously." src="/html-streaming-network.mp4" autoplay loop muted loading="lazy" playsinline></video>
 
 ovr's architecture gives you true streaming SSR and progressive rendering out of the box. No hydration bundle, no buffering---just HTML over the wire, as soon as it's ready.
 
