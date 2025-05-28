@@ -2,7 +2,7 @@ import { Page, Action } from "ovr";
 
 async function Delay(props: { ms: number }) {
 	await new Promise((res) => setTimeout(res, props.ms));
-	return <p>{props.ms}</p>;
+	return <p>{props.ms}ms</p>;
 }
 
 export const action = new Action((c) => {
@@ -26,7 +26,9 @@ export const test = new Page("/test", () => {
 
 export const actionPage = new Page("/test/action/:param", (c) => (
 	<main>
-		<actionPage.Anchor params={c.params}>Hello</actionPage.Anchor>
+		<p>
+			<actionPage.Anchor params={c.params}>Hello</actionPage.Anchor>
+		</p>
 
 		<action.Form>
 			<input />
