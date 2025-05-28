@@ -29,7 +29,7 @@ async function Username() {
 function Component() {
 	return (
 		<p>
-			hello <Username />.
+			hello <Username />
 		</p>
 	);
 }
