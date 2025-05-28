@@ -29,7 +29,7 @@ async function Username() {
 function Component() {
 	return (
 		<p>
-			Hello, <Username />.
+			hello <Username />.
 		</p>
 	);
 }
@@ -39,10 +39,10 @@ Instead of waiting for `getUser` to resolve before sending the entire component,
 
 ```ts
 "<p>";
-"Hello, "; // before getUser() resolves
+"hello "; // before getUser() resolves
 // await getUser()...
 "<span>";
-"Username";
+"username";
 "</span>";
 "</p>";
 ```
