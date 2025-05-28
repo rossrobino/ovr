@@ -15,7 +15,7 @@ export const action = new Action((c) => {
 export const page = new Page("/demo", (c) => {
 	c.head(<title>Demo</title>);
 
-	const delays: number[] = Array.from({ length: 11 }, (_, i) => i * 200);
+	const delays = Array.from({ length: 11 }, (_, i) => i * 200);
 
 	return (
 		<main>
