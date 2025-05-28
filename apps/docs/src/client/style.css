@@ -15,6 +15,8 @@
 		--shiki-token-string-expression: var(--base-200);
 		--shiki-token-punctuation: var(--base-500);
 		--shiki-token-link: var(--base-300);
+
+		scrollbar-gutter: stable;
 	}
 
 	main {
@@ -27,5 +29,14 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--size-4);
+	}
+}
+
+@layer components {
+	.delay {
+		margin-block: var(--size-2);
+		border-radius: var(--border-radius);
+		background-color: var(--muted-background);
+		padding: var(--size-2);
 	}
 }
