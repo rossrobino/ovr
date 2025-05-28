@@ -1,5 +1,12 @@
 # ovr
 
+## 2.0.2
+
+### Patch Changes
+
+- 16621f3: fix: autocomplete other attributes for Action.Form and Page.Anchor
+- 492dbc5: add `webkitdirectory` attribute to input element type
+
 ## 2.0.1
 
 ### Patch Changes
