@@ -35,10 +35,10 @@ export class Context<P extends Params = Params> {
 	 *
 	 * @example { slug: "my-post" }
 	 */
-	params: P = {} as P; // set after match
+	params!: P; // set after match
 
 	/** The matched `Route` instance. */
-	route: Route<Middleware<P>[]> = undefined as any; // set after match
+	route!: Route<Middleware<P>[]>; // set after match
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
 	body: BodyInit | null = null;
