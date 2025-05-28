@@ -437,6 +437,7 @@ type InputAttributes = Attributes<
 			| "url"
 			| "week";
 		value: string;
+		webkitdirectory: boolean;
 		width: string;
 	},
 	never
