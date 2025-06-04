@@ -1,5 +1,51 @@
 # ovr
 
+## 2.0.3
+
+### Patch Changes
+
+- f01c132: fix: Prevent event loop blocking during large HTML generation
+
+  Added periodic event loop yielding to prevent blocking when generating large amounts of HTML. This ensures streaming chunks are properly flushed to the browser even when processing thousands of elements.
+
+  Previously, generating large HTML structures (like tables with many rows) could block the event loop, causing the browser to stop receiving chunks mid-stream. The page would appear to load partially then hang, especially noticeable with datasets over 1000+ items.
+
+  Now ovr automatically yields control back to the event loop periodically, allowing the streaming response to flush chunks consistently throughout the generation process.
+
+- f01c132: fix: Prevent memory buildup when rendering large sync generators
+
+  When a synchronous generator function is encountered, ovr now processes and streams each yielded element individually instead of collecting all values into memory first. This prevents memory exhaustion when rendering large datasets like tables with thousands of rows.
+
+  ```tsx
+  const Component = () => {
+  	return (
+  		<div>
+  			{function* () {
+  				for (const item of items) {
+  					yield <Item item={item} />;
+  				}
+  			}}
+  		</div>
+  	);
+  };
+  ```
+
+  Previously, a generator yielding 10,000 JSX elements would create all 10,000 objects in memory before streaming began. Now each element is processed and streamed immediately, keeping memory usage constant regardless of dataset size.
+
+  Users can still choose arrays when parallel processing is important than memory efficiency.
+
+  ```tsx
+  const Component = () => {
+  	return (
+  		<div>
+  			{items.map((item) => (
+  				<Item item={item} />
+  			))}
+  		</div>
+  	);
+  };
+  ```
+
 ## 2.0.2
 
 ### Patch Changes
