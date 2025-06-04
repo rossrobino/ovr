@@ -1,5 +1,11 @@
 # ovr
 
+## 2.0.4
+
+### Patch Changes
+
+- c41f753: fix: better error handling for streams
+
 ## 2.0.3
 
 ### Patch Changes
