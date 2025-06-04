@@ -1,6 +1,8 @@
 import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import type { Elements } from "./elements.js";
+import { isGenerator } from "./is-generator.js";
 import { merge } from "./merge-async-iterables.js";
+import { YieldController } from "./yield-controller.js";
 
 export namespace JSX {
 	export interface IntrinsicElements extends Elements {}
@@ -40,6 +42,8 @@ const voidElements = new Set([
 	"track",
 	"wbr",
 ]);
+
+const yieldController = new YieldController();
 
 /**
  * The main function of the JSX transform cycle, each time JSX is encountered
@@ -113,10 +117,14 @@ export async function* toGenerator(
 		if (Symbol.asyncIterator in element) {
 			for await (const children of element) yield* toGenerator(children);
 		} else if (Symbol.iterator in element) {
+			if (isGenerator(element)) {
+				// process lazily - avoid loading all in memory
+				for (const children of element) yield* toGenerator(children);
+			}
+
 			const generators: AsyncGenerator<string, void, unknown>[] = [];
 
 			for (const children of element) {
-				// this is where to escape string children if added in the future
 				generators.push(toGenerator(children));
 			}
 
@@ -125,6 +133,10 @@ export async function* toGenerator(
 
 			let current = 0;
 			for await (const { index, result } of merge(generators)) {
+				const maybeYield = yieldController.maybeYield();
+				// yield control back to event loop to stream current
+				if (maybeYield instanceof Promise) await maybeYield;
+
 				if (result.done) {
 					complete.add(index);
 
