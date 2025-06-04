@@ -1,8 +1,6 @@
 import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import type { Elements } from "./elements.js";
-import { isGenerator } from "./is-generator.js";
 import { merge } from "./merge-async-iterables.js";
-import { YieldController } from "./yield-controller.js";
 
 export namespace JSX {
 	export interface IntrinsicElements extends Elements {}
@@ -42,8 +40,6 @@ const voidElements = new Set([
 	"track",
 	"wbr",
 ]);
-
-const yieldController = new YieldController();
 
 /**
  * The main function of the JSX transform cycle, each time JSX is encountered
@@ -117,50 +113,61 @@ export async function* toGenerator(
 		if (Symbol.asyncIterator in element) {
 			for await (const children of element) yield* toGenerator(children);
 		} else if (Symbol.iterator in element) {
-			if (isGenerator(element)) {
-				// process lazily - avoid loading all in memory
-				for (const children of element) yield* toGenerator(children);
-			}
+			const iterator = element[Symbol.iterator]();
 
-			const generators: AsyncGenerator<string, void, unknown>[] = [];
-
-			for (const children of element) {
-				generators.push(toGenerator(children));
-			}
-
-			let queue: string[] | string = new Array(generators.length).fill("");
-			const complete = new Set<number>();
-
-			let current = 0;
-			for await (const { index, result } of merge(generators)) {
-				const maybeYield = yieldController.maybeYield();
-				// yield control back to event loop to stream current
-				if (maybeYield instanceof Promise) await maybeYield;
-
-				if (result.done) {
-					complete.add(index);
-
-					if (index === current) {
-						while (++current < generators.length) {
-							if (queue[current]) {
-								// yield whatever is in the next queue even if it hasn't completed yet
-								yield queue[current]!;
-								queue[current] = "";
-							}
-
-							// if it hasn't completed, stop iterating to the next
-							if (!complete.has(current)) break;
-						}
-					}
-				} else if (index === current) {
-					yield result.value; // stream the current value directly
-				} else {
-					queue[index] += result.value; // queue the value for later
+			if (
+				typeof iterator.next === "function" &&
+				typeof iterator.throw === "function" &&
+				typeof iterator.return === "function"
+			) {
+				// sync generator
+				// process lazily - avoids loading all in memory
+				while (true) {
+					const result = iterator.next();
+					if (result.done) break;
+					yield* toGenerator(result.value);
 				}
-			}
+			} else {
+				// other iterable - array, set, etc.
+				// process children in parallel
+				const generators: AsyncGenerator<string, void, unknown>[] = [];
 
-			queue = queue.join("");
-			if (queue) yield queue; // clear the queue
+				while (true) {
+					const result = iterator.next();
+					if (result.done) break;
+					generators.push(toGenerator(result.value));
+				}
+
+				let queue: string[] | string = new Array(generators.length).fill("");
+				let current = 0;
+				const complete = new Set<number>();
+
+				for await (const { index, result } of merge(generators)) {
+					if (result.done) {
+						complete.add(index);
+
+						if (index === current) {
+							while (++current < generators.length) {
+								if (queue[current]) {
+									// yield whatever is in the next queue even if it hasn't completed yet
+									yield queue[current]!;
+									queue[current] = "";
+								}
+
+								// if it hasn't completed, stop iterating to the next
+								if (!complete.has(current)) break;
+							}
+						}
+					} else if (index === current) {
+						yield result.value; // stream the current value directly
+					} else {
+						queue[index] += result.value; // queue the value for later
+					}
+				}
+
+				queue = queue.join("");
+				if (queue) yield queue; // clear the queue
+			}
 		} else {
 			yield JSON.stringify(element); // avoids things like [object Object]
 		}

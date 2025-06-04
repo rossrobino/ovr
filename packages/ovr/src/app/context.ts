@@ -216,11 +216,18 @@ export class Context<P extends Params = Params> {
 		elements[3] = bodyParts[0];
 		elements.push(Page, bodyClose + bodyParts[1]);
 
+		const gen = toGenerator(elements);
+
 		this.html(
 			new ReadableStream<string>({
-				async start(c) {
-					for await (const value of toGenerator(elements)) c.enqueue(value);
-					c.close();
+				async pull(c) {
+					const { value, done } = await gen.next();
+					if (done) c.close();
+					else c.enqueue(value);
+				},
+
+				cancel() {
+					gen.return();
 				},
 			}).pipeThrough(new TextEncoderStream()),
 			status,

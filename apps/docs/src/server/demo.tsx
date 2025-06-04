@@ -54,6 +54,14 @@ export const page = new Page("/demo", (c) => {
 			{delays.map((ms) => (
 				<Delay ms={ms} />
 			))}
+
+			{function* () {
+				const arr = Array.from({ length: 101 }).map((_, i) => i);
+
+				for (const num of arr) {
+					yield <p>item: {num}</p>;
+				}
+			}}
 		</main>
 	);
 });

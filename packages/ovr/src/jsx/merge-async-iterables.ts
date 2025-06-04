@@ -6,29 +6,37 @@ const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
 });
 
 /**
- * Merges `AsyncIterable[]` into a single `AsyncGenerator`, resolving all in parallel.
- * The return of each `AsyncIterable` is yielded from the generator with `done: true`.
+ * Merges `AsyncGenerator[]` into a single `AsyncGenerator`, resolving all in parallel.
+ * The return of each `AsyncGenerator` is yielded from the generator with `done: true`.
  *
  * Adapted from [stack overflow answers](https://stackoverflow.com/questions/50585456).
  *
- * @param iterables Resolved in parallel.
- * @yields `IteratorResult` and `index` of the resolved iterator.
+ * @param generators Resolved in parallel.
+ * @param returnValue Passed into each `iterator.return()`
+ * @yields `IteratorResult` and `index` of the resolved generator.
  */
-export async function* merge<T, R>(iterables: AsyncIterable<T, R>[]) {
-	const iterators = iterables.map((iter) => iter[Symbol.asyncIterator]());
+export async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
+	const iterators = generators.map((gen) => gen[Symbol.asyncIterator]());
 	const promises = iterators.map(next);
 
 	let remaining = promises.length;
-	let current;
+	let current: Awaited<ReturnType<typeof next>>;
 
-	while (remaining) {
-		yield (current = await Promise.race(promises));
+	try {
+		while (remaining) {
+			yield (current = await Promise.race(promises));
 
-		if (current.result.done) {
-			promises[current.index] = never;
-			remaining--;
-		} else {
-			promises[current.index] = next(iterators[current.index]!, current.index);
+			if (current.result.done) {
+				promises[current.index] = never;
+				remaining--;
+			} else {
+				promises[current.index] = next(
+					iterators[current.index]!,
+					current.index,
+				);
+			}
 		}
+	} finally {
+		for (const iter of iterators) iter.return().catch(); // could have already returned
 	}
 }
