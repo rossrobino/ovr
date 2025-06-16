@@ -1,5 +1,11 @@
 # ovr
 
+## 2.1.0
+
+### Minor Changes
+
+- bfbf643: feat: add CSRF middleware
+
 ## 2.0.4
 
 ### Patch Changes
