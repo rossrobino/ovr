@@ -5,19 +5,20 @@ import type { Params } from "./index.js";
  * @param params Parameters to insert
  * @returns Resolved pathname with params
  */
-export const insertParams = (parts: string[], params: Params) =>
-	parts
+export const insertParams = (parts: string[], params: Params) => {
+	const wild = "*";
+
+	return parts
 		.map((part) => {
 			if (part.startsWith(":")) {
 				const param = part.slice(1);
 
 				if (!(param in params))
-					throw new Error(`Parameter "${param}" did not match pattern..`);
+					throw new Error(`Parameter "${param}" did not match pattern.`);
 
 				return params[param as keyof typeof params];
 			}
 
-			const wild = "*";
 			if (part === wild) {
 				if (!(wild in params)) throw new Error("No wildcard parameter found.");
 
@@ -27,3 +28,4 @@ export const insertParams = (parts: string[], params: Params) =>
 			return part;
 		})
 		.join("/");
+};
