@@ -22,7 +22,7 @@
 	main {
 		margin-inline: auto;
 		padding: var(--size-4);
-		max-width: 70ch;
+		max-width: 75ch;
 	}
 
 	form {

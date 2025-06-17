@@ -1,6 +1,6 @@
 import * as demo from "./demo";
 import { html as docsHtml, headings } from "@/content/docs.md";
-import { Page } from "ovr";
+import { Page, Chunk } from "ovr";
 import { name, description } from "ovr/package.json";
 
 export const page = new Page("/", (c) => {
@@ -25,7 +25,8 @@ export const page = new Page("/", (c) => {
 				</p>
 			)}
 			<Nav />
-			{docsHtml}
+
+			{new Chunk(docsHtml, true)}
 		</main>
 	);
 });

@@ -1,4 +1,5 @@
 import type { MaybeFunction, MaybePromise } from "../types/index.js";
+import { Chunk } from "./chunk/index.js";
 import type { Elements } from "./elements.js";
 import { merge } from "./merge-async-iterables.js";
 
@@ -72,18 +73,18 @@ export async function* jsx(tag: FC<Props> | string, props: Props) {
 				typeof value === "number" ||
 				typeof value === "bigint"
 			) {
-				attrParts.push(` ${key}=${JSON.stringify(value)}`);
+				attrParts.push(` ${key}="${Chunk.escape(String(value), true)}"`);
 			}
 			// otherwise, don't include the attribute
 		}
 
-		yield `<${tag}${attrParts.join("")}>`;
+		yield new Chunk(`<${tag}${attrParts.join("")}>`, true);
 
 		if (voidElements.has(tag)) return;
 
 		if (children) yield* toGenerator(children);
 
-		yield `</${tag}>`;
+		yield new Chunk(`</${tag}>`, true);
 	}
 }
 
@@ -99,20 +100,31 @@ export async function* Fragment(props: { children?: JSX.Element } = {}) {
 
 /**
  * @param element
- * @yields Rendered strings of HTML as the `Element` resolves.
+ * @yields Chunks of HTML as the `Element` resolves.
  */
 export async function* toGenerator(
 	element: JSX.Element,
-): AsyncGenerator<string, void, unknown> {
+): AsyncGenerator<Chunk, void, unknown> {
 	if (typeof element === "function") element = element();
+
 	if (element instanceof Promise) element = await element;
 
 	if (element == null || typeof element === "boolean" || element === "") return;
 
+	if (element instanceof Chunk) {
+		yield element;
+
+		return;
+	}
+
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
 			for await (const children of element) yield* toGenerator(children);
-		} else if (Symbol.iterator in element) {
+
+			return;
+		}
+
+		if (Symbol.iterator in element) {
 			const iterator = element[Symbol.iterator]();
 
 			if (
@@ -127,53 +139,61 @@ export async function* toGenerator(
 					if (result.done) break;
 					yield* toGenerator(result.value);
 				}
-			} else {
-				// other iterable - array, set, etc.
-				// process children in parallel
-				const generators: AsyncGenerator<string, void, unknown>[] = [];
 
-				while (true) {
-					const result = iterator.next();
-					if (result.done) break;
-					generators.push(toGenerator(result.value));
-				}
-
-				let queue: string[] | string = new Array(generators.length).fill("");
-				let current = 0;
-				const complete = new Set<number>();
-
-				for await (const { index, result } of merge(generators)) {
-					if (result.done) {
-						complete.add(index);
-
-						if (index === current) {
-							while (++current < generators.length) {
-								if (queue[current]) {
-									// yield whatever is in the next queue even if it hasn't completed yet
-									yield queue[current]!;
-									queue[current] = "";
-								}
-
-								// if it hasn't completed, stop iterating to the next
-								if (!complete.has(current)) break;
-							}
-						}
-					} else if (index === current) {
-						yield result.value; // stream the current value directly
-					} else {
-						queue[index] += result.value; // queue the value for later
-					}
-				}
-
-				queue = queue.join("");
-				if (queue) yield queue; // clear the queue
+				return;
 			}
-		} else {
-			yield JSON.stringify(element); // avoids things like [object Object]
+
+			// other iterable - array, set, etc.
+			// process children in parallel
+			const generators: AsyncGenerator<Chunk, void, unknown>[] = [];
+
+			while (true) {
+				const result = iterator.next();
+				if (result.done) break;
+				generators.push(toGenerator(result.value));
+			}
+
+			const queue: (Chunk | null)[] = new Array(generators.length).fill(null);
+
+			let current = 0;
+			const complete = new Set<number>();
+
+			for await (const {
+				index,
+				result: { done, value: chunk },
+			} of merge(generators)) {
+				if (done) {
+					complete.add(index);
+
+					if (index === current) {
+						while (++current < generators.length) {
+							if (queue[current]) {
+								// yield whatever is in the next queue even if it hasn't completed yet
+								yield queue[current]!;
+								queue[current] = null;
+							}
+
+							// if it hasn't completed, stop iterating to the next
+							if (!complete.has(current)) break;
+						}
+					}
+				} else if (index === current) {
+					yield chunk; // stream the current value directly
+				} else {
+					// queue the value for later
+					if (queue[index]) queue[index].concat(chunk);
+					else queue[index] = chunk;
+				}
+			}
+
+			// clear the queue
+			yield* queue.filter(Boolean) as Chunk[];
+
+			return;
 		}
-	} else {
-		yield String(element); // primitive
 	}
+
+	yield new Chunk(element); // primitive or other object
 }
 
 /**
@@ -188,7 +208,7 @@ export async function* toGenerator(
  * @returns A promise that resolves to the concatenated HTML.
  */
 export const toString = async (element: JSX.Element) => {
-	const parts: string[] = [];
-	for await (const value of toGenerator(element)) parts.push(value);
-	return parts.join("");
+	const chunks: Chunk[] = [];
+	for await (const chunk of toGenerator(element)) chunks.push(chunk);
+	return chunks.join("");
 };

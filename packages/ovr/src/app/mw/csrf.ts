@@ -1,4 +1,4 @@
-import type { Middleware } from "../app/index.js";
+import type { Middleware } from "../index.js";
 
 /**
  * Basic CSRF protection that checks the request's `method` and `Origin` header.

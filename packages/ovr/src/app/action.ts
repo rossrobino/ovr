@@ -1,7 +1,7 @@
-import { hash } from "../hash/index.js";
 import { jsx, type JSX } from "../jsx/index.js";
 import { insertParams } from "../trie/insert-params.js";
 import type { ExtractParams } from "../types/index.js";
+import { hash } from "../util/hash.js";
 import type { Middleware, Params } from "./index.js";
 
 type FormProps<P extends Params> = JSX.IntrinsicElements["form"] &
@@ -15,9 +15,7 @@ export class Action<Pattern extends string = string> {
 	middleware: Middleware<any>[];
 
 	/** `<form>` component with preset `method` and `action` attributes. */
-	Form: (
-		props: FormProps<ExtractParams<Pattern>>,
-	) => AsyncGenerator<string, void, unknown>;
+	Form: (props: FormProps<ExtractParams<Pattern>>) => JSX.Element;
 
 	#parts: string[] = [];
 

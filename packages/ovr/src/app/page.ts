@@ -14,9 +14,7 @@ export class Page<Pattern extends string = string> {
 	middleware: Middleware<any>[];
 
 	/** `<a>` component with preset `href` attribute. */
-	Anchor: (
-		props: AnchorProps<ExtractParams<Pattern>>,
-	) => AsyncGenerator<string, void, unknown>;
+	Anchor: (props: AnchorProps<ExtractParams<Pattern>>) => JSX.Element;
 
 	#parts: string[];
 

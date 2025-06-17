@@ -2,7 +2,7 @@
 
 ovr is a [lightweight](https://bundlephobia.com/package/ovr) toolkit for building fast, streaming web applications with asynchronous JSX and a modern Fetch API-based router.
 
-Designed to optimize performance and Time-To-First-Byte (TTFB), ovr evaluates components concurrently and streams HTML in order by producing an `AsyncGenerator<string>` that feeds directly into the streamed response.
+Designed to optimize performance and Time-To-First-Byte (TTFB), ovr evaluates components concurrently and streams HTML in order by producing an `AsyncGenerator` of HTML that feeds directly into the streamed response.
 
 ```tsx
 function Component() {
@@ -131,11 +131,24 @@ function* DataTypes() {
 	yield "string"; // "string"
 	yield 0; // "0";
 	yield BigInt(9007199254740991); // "9007199254740991"
-	yield { foo: "bar" }; // '{ "foo": "bar" }'
 	yield <p>jsx</p>; // "<p>jsx</p>"
 	yield ["any-", "iterable", 1, null]; // "any-iterable1"
 	yield () => "function"; // "function"
 	yield async () => "async"; // "async"
+}
+```
+
+### Raw HTML
+
+To render HTML directly without escaping, create a new `Chunk` with the second argument `safe` set to `true`.
+
+```tsx
+import { Chunk } from "ovr";
+
+const html = "<p>Safe to render</p>";
+
+function Component() {
+	return <div>{new Chunk(html, true)}</div>;
 }
 ```
 
@@ -173,11 +186,11 @@ app.base =
 The `App` API is inspired by and works similar to frameworks such as [Hono](https://hono.dev/) and [Express](https://expressjs.com/). Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
 
 ```tsx
-// API route
-app.get("/", (c) => c.text("Hello world"));
-
 // Return JSX as a streamed HTML response
-app.get("/about", () => <h1>About</h1>);
+app.get("/", () => <h1>Hello</h1>);
+
+// API route
+app.get("/text", (c) => c.text("Hello world"));
 
 // Params
 app.post("/api/:id", (c) => {
@@ -201,7 +214,7 @@ app.on("METHOD", "/pattern", (c) => {
 });
 
 // Global middleware
-app.use(async (c) => {
+app.use(async (c, next) => {
 	// ...
 });
 ```
@@ -378,21 +391,9 @@ export default app;
 export const GET = app.fetch;
 ```
 
-## Data fetching
-
-Since components are asynchronous, data can be fetched directly within a component or in a middleware handler.
-
-```tsx
-async function Username() {
-	const user = await getUser();
-
-	return <span>{user.name}<span>;
-}
-```
-
 ### Memoization
 
-If you need to display `Username` in multiple locations, you need to ensure you aren't fetching the same data multiple times. ovr provides built in memoization on the request context you can utilize on any function to memoize it for the request.
+If you need to display a component in multiple locations, you need to ensure you aren't fetching the same data multiple times. ovr provides built in memoization on the request context you can utilize on any function to memoize it for the request.
 
 ```tsx
 import { Context } from "ovr";
@@ -417,9 +418,9 @@ const memo = new Memo();
 
 const add = memo.use((a: number, b: number) => a + b);
 
-fn(1, 2); // runs
-fn(1, 2); // cached
-fn(2, 3); // runs again, saves the new result separately
+add(1, 2); // runs
+add(1, 2); // cached
+add(2, 3); // runs again, saves the new result separately
 ```
 
 ## Trie

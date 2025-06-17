@@ -1,4 +1,9 @@
-import { Page } from "ovr";
+import { Page, Chunk, type JSX } from "ovr";
+
+const notSafe = "<p>Not safe</p>";
+const safe = new Chunk("<p>Safe</p>", true);
+
+const attrTest = JSON.stringify({ attr: "test" });
 
 export const page = new Page("/escape", () => {
 	return (
@@ -9,7 +14,45 @@ export const page = new Page("/escape", () => {
 			<hr />
 
 			<p>Normal paragraph</p>
-			<div>{"<h2>This should be escaped</h2>"}</div>
+
+			<hr />
+
+			<div>{notSafe}</div>
+
+			<hr />
+
+			<div>
+				{notSafe}
+				{notSafe}
+			</div>
+
+			<hr />
+
+			<Component>{notSafe}</Component>
+
+			<hr />
+
+			<Component>
+				{notSafe}
+				{notSafe}
+				{safe}
+				<Component>{notSafe}</Component>
+			</Component>
+
+			<hr />
+
+			<div>
+				{safe}
+				{notSafe}
+			</div>
+
+			<hr />
+
+			<p class={attrTest}>Attribute test</p>
 		</main>
 	);
 });
+
+const Component = (props: { children?: JSX.Element }) => {
+	return <div>{props.children}</div>;
+};

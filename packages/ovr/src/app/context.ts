@@ -1,7 +1,7 @@
-import { hash } from "../hash/index.js";
+import { Chunk } from "../jsx/chunk/index.js";
 import { toGenerator, type JSX } from "../jsx/index.js";
-import { Memo } from "../memo/index.js";
 import type { Route } from "../trie/index.js";
+import { hash } from "../util/hash.js";
 import {
 	App,
 	type ErrorHandler,
@@ -10,6 +10,7 @@ import {
 	type Params,
 	type TrailingSlash,
 } from "./index.js";
+import { Memo } from "./memo/index.js";
 
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
 
@@ -216,14 +217,19 @@ export class Context<P extends Params = Params> {
 		elements[3] = bodyParts[0];
 		elements.push(Page, bodyClose + bodyParts[1]);
 
-		const gen = toGenerator(elements);
+		const gen = toGenerator(
+			elements.map((el) => {
+				if (typeof el === "string") return new Chunk(el, true);
+				return el;
+			}),
+		);
 
 		this.html(
 			new ReadableStream<string>({
 				async pull(c) {
 					const { value, done } = await gen.next();
 					if (done) c.close();
-					else c.enqueue(value);
+					else c.enqueue(value?.value);
 				},
 
 				cancel() {

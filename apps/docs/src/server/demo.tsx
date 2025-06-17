@@ -6,12 +6,6 @@ async function Delay(props: { ms: number }) {
 	return <div class="delay">{props.ms}ms</div>;
 }
 
-export const action = new Action((c) => {
-	console.log("posted");
-
-	c.redirect(page.pattern);
-});
-
 export const page = new Page("/demo", (c) => {
 	c.head(<title>Demo</title>);
 
@@ -46,16 +40,22 @@ export const page = new Page("/demo", (c) => {
 				component to render.
 			</p>
 			<p>
-				The delay does not waterfall, each component is generated in parallel
-				with <code>Promise.race</code>, each arrives 200ms after the next
-				instead of the total delay.
+				The delay does not waterfall, components are generated in parallel with{" "}
+				<code>Promise.race</code>, each arrives 200ms after the next instead of
+				the total delay.
 			</p>
 
-			{delays.map((ms) => (
+			{[...delays, 1000].map((ms) => (
 				<Delay ms={ms} />
 			))}
 		</main>
 	);
+});
+
+export const action = new Action((c) => {
+	console.log("posted");
+
+	c.redirect(page.pattern);
 });
 
 export const actionPage = new Page("/demo/action/:param", (c) => {
