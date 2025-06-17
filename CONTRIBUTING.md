@@ -1,6 +1,6 @@
 # Contributing to ovr
 
-ovr is open source with the MIT license. Feel free to create and issue on GitHub if you have an idea for the project to get feedback before working on a pull request.
+ovr is open source with the MIT license. Feel free to create an issue on GitHub if you have an idea for the project to get feedback before working on a pull request.
 
 ## Local development
 
