@@ -1,6 +1,6 @@
 import { Page } from "ovr";
 
-export const page = new Page("/escape", (c) => {
+export const page = new Page("/escape", () => {
 	return (
 		<main>
 			<h1>Escape Test</h1>
