@@ -19,6 +19,11 @@ export const page = new Page("/", (c) => {
 				<demo.page.Anchor>Demo</demo.page.Anchor> |{" "}
 				<a href="https://github.com/rossrobino/ovr">GitHub</a> | MIT License
 			</p>
+			{import.meta.env.DEV && (
+				<p>
+					<a href="/escape">Escape Test</a>
+				</p>
+			)}
 			<Nav />
 			{docsHtml}
 		</main>
