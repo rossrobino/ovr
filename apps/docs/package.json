@@ -10,14 +10,13 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@robino/md": "^4.0.0",
+		"@robino/md": "^4.0.2",
 		"ovr": "*",
 		"uico": "^0.10.2"
 	},
 	"devDependencies": {
-		"@domcojs/vercel": "^2.0.1",
-		"@robino/tsconfig": "^1.0.4",
-		"domco": "^4.1.3",
+		"@domcojs/vercel": "^2.0.2",
+		"domco": "^4.1.4",
 		"vite": "^6.3.5"
 	}
 }
