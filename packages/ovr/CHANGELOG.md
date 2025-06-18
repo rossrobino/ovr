@@ -1,5 +1,21 @@
 # ovr
 
+## 3.0.1
+
+### Patch Changes
+
+- 5a757b5: publish source and declaration maps for go to definition
+- 22b88a2: fix: Adds better JSDoc and types for `jsx` function.
+- b5ebc6c: fix: single falsy child not being rendered
+
+  For example:
+
+  ```tsx
+  <div>{0}</div>
+  ```
+
+  Was not rendering. Now it correctly produces `"<div>0</div>"`
+
 ## 3.0.0
 
 ### Major Changes
