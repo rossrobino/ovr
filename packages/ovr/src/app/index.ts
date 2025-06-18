@@ -1,4 +1,4 @@
-import { Trie, Route } from "../trie/index.js";
+import { Route, Trie } from "../trie/index.js";
 import type {
 	DeepArray,
 	ExtractMultiParams,

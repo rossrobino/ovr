@@ -1,5 +1,5 @@
 import * as home from "./home";
-import { Page, Action } from "ovr";
+import { Action, Page } from "ovr";
 
 async function Delay(props: { ms: number }) {
 	await new Promise((res) => setTimeout(res, props.ms));

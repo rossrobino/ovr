@@ -1,5 +1,5 @@
 import { Chunk } from "../jsx/chunk/index.js";
-import { toGenerator, type JSX } from "../jsx/index.js";
+import { type JSX, toGenerator } from "../jsx/index.js";
 import type { Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import {

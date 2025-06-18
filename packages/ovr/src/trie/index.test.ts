@@ -1,4 +1,4 @@
-import { Trie, Route } from "./index.js";
+import { Route, Trie } from "./index.js";
 import { expect, test } from "vitest";
 
 const trie = new Trie<string>()

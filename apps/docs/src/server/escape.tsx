@@ -1,4 +1,4 @@
-import { Page, Chunk, type JSX } from "ovr";
+import { Chunk, type JSX, Page } from "ovr";
 
 const notSafe = "<p>Not safe</p>";
 const safe = new Chunk("<p>Safe</p>", true);

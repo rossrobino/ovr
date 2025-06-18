@@ -1,5 +1,5 @@
 import { Memo } from "./index.js";
-import { describe, test, expect, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 describe("Memo", () => {
 	test("memoizes simple values based on arguments", () => {

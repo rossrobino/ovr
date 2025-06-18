@@ -353,7 +353,7 @@ This makes it easy to create a module of pages and actions, and add them all at 
 
 ```tsx
 // home.tsx
-import { Page, Action } from "ovr";
+import { Action, Page } from "ovr";
 
 export const page = new Page("/", (c) => {
 	// ...
@@ -430,7 +430,7 @@ add(2, 3); // runs again, saves the new result separately
 The trie is forked and adapted from [memoirist](https://github.com/SaltyAom/memoirist) and [@medley/router](https://github.com/medleyjs/router).
 
 ```ts
-import { Trie, Route } from "ovr";
+import { Route, Trie } from "ovr";
 
 // specify the type of the store in the generic
 const trie = new Trie<string>();
