@@ -39,11 +39,13 @@ export class Chunk {
 		return result + s.slice(start);
 	}
 
-	/** Safe value to render. */
+	/** Safe value to render */
 	value: string;
 
 	/**
-	 * @param html converted to a string
+	 * `Chunk` to send in an HTML stream.
+	 *
+	 * @param html string of HTML to escape
 	 * @param safe Set to `true` if the HTML is safe and should not be escaped
 	 */
 	constructor(html: unknown, safe?: boolean) {

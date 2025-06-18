@@ -695,7 +695,7 @@ type VideoAttributes = Attributes<{
 	width: string;
 }>;
 
-export type Elements =
+export type IntrinsicElements =
 	// allows custom elements
 	Record<string, Attributes> & {
 		a: AAttributes;

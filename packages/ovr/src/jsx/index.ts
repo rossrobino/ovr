@@ -1,10 +1,14 @@
 import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
-import type { Elements } from "./elements.js";
-import { merge } from "./merge-async-iterables.js";
+import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
+import { merge } from "./merge-async-generators.js";
 
+/** ovr JSX namespace */
 export namespace JSX {
-	export interface IntrinsicElements extends Elements {}
+	/** Standard HTML elements */
+	export interface IntrinsicElements extends IE {}
+
+	/** ovr Element */
 	export type Element = MaybeFunction<
 		MaybePromise<
 			| string
@@ -21,11 +25,14 @@ export namespace JSX {
 	>;
 }
 
+/** Unknown component props. */
 export type Props = Record<string, unknown>;
 
-export type FC<Props> = (props: Props) => JSX.Element;
-
-// https://developer.mozilla.org/en-US/docs/Glossary/Void_element#self-closing_tags
+/**
+ * These are the HTML tags that do not require a closing tag.
+ *
+ * [MDN Reference](https://developer.mozilla.org/en-US/docs/Glossary/Void_element#self-closing_tags)
+ */
 const voidElements = new Set([
 	"area",
 	"base",
@@ -46,50 +53,56 @@ const voidElements = new Set([
  * The main function of the JSX transform cycle, each time JSX is encountered
  * it is passed into this function to be resolved.
  *
- * @param tag string or function that refers to the component or element type
+ * @param tag string or function component
  * @param props object containing all the properties and attributes passed to the element or component
- * @returns an async generator that yields parts of HTML
+ * @returns an async generator that yields `Chunk`s of HTML
  */
-export async function* jsx(tag: FC<Props> | string, props: Props) {
+export async function* jsx<P extends Props = Props>(
+	tag: ((props: P) => JSX.Element) | string,
+	props: P,
+) {
 	if (typeof tag === "function") {
+		// component or fragment
 		yield* toGenerator(tag(props));
-	} else {
-		// element
-		const { children, ...attrs } = props;
 
-		const attrParts: string[] = [];
-
-		for (let key in attrs) {
-			const value = attrs[key]; // needs to come before reassigning keys
-
-			if (key === "className") key = "class";
-			else if (key === "htmlFor") key = "for";
-
-			if (value === true) {
-				// just put the key without the value
-				attrParts.push(` ${key}`);
-			} else if (
-				typeof value === "string" ||
-				typeof value === "number" ||
-				typeof value === "bigint"
-			) {
-				attrParts.push(` ${key}="${Chunk.escape(String(value), true)}"`);
-			}
-			// otherwise, don't include the attribute
-		}
-
-		yield new Chunk(`<${tag}${attrParts.join("")}>`, true);
-
-		if (voidElements.has(tag)) return;
-
-		if (children) yield* toGenerator(children);
-
-		yield new Chunk(`</${tag}>`, true);
+		return;
 	}
+
+	// intrinsic element
+	const { children, ...rest } = props;
+
+	const attributes: string[] = [];
+
+	for (let key in rest) {
+		const value = rest[key]; // needs to come before reassigning keys
+
+		if (key === "className") key = "class";
+		else if (key === "htmlFor") key = "for";
+
+		if (value === true) {
+			// just put the key without the value
+			attributes.push(` ${key}`);
+		} else if (
+			typeof value === "string" ||
+			typeof value === "number" ||
+			typeof value === "bigint"
+		) {
+			attributes.push(` ${key}="${Chunk.escape(String(value), true)}"`);
+		}
+		// otherwise, don't include the attribute
+	}
+
+	yield new Chunk(`<${tag}${attributes.join("")}>`, true);
+
+	if (voidElements.has(tag)) return;
+
+	if (children) yield* toGenerator(children);
+
+	yield new Chunk(`</${tag}>`, true);
 }
 
 /**
- * JSX requires a `Fragment` export to resolve <></>
+ * JSX requires a `Fragment` export to resolve `<></>`
  *
  * @param props containing `children` to render
  * @returns async generator that yields concatenated children
@@ -105,10 +118,11 @@ export async function* Fragment(props: { children?: JSX.Element } = {}) {
 export async function* toGenerator(
 	element: JSX.Element,
 ): AsyncGenerator<Chunk, void, unknown> {
+	// modifications
 	if (typeof element === "function") element = element();
-
 	if (element instanceof Promise) element = await element;
 
+	// resolve based on type
 	if (element == null || typeof element === "boolean" || element === "") return;
 
 	if (element instanceof Chunk) {
@@ -205,10 +219,10 @@ export async function* toGenerator(
  * Use `toGenerator` whenever possible.
  *
  * @param element
- * @returns A promise that resolves to the concatenated HTML.
+ * @returns Concatenated HTML
  */
 export const toString = async (element: JSX.Element) => {
-	const chunks: Chunk[] = [];
-	for await (const chunk of toGenerator(element)) chunks.push(chunk);
-	return chunks.join("");
+	const buffer: Chunk[] = [];
+	for await (const chunk of toGenerator(element)) buffer.push(chunk);
+	return buffer.join("");
 };
