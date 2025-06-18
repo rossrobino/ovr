@@ -2,16 +2,45 @@ export class Chunk {
 	static #attr = /[&"<]/g;
 	static #content = /[&<]/g;
 
+	/** Safe value to render */
+	value: string;
+
+	/**
+	 * `Chunk` to send in an HTML stream.
+	 *
+	 * @param s string of HTML to escape
+	 * @param safe Set to `true` if the HTML is safe and should not be escaped
+	 */
+	constructor(s: unknown, safe?: boolean) {
+		const value = String(s ?? "");
+
+		if (safe) this.value = value;
+		else this.value = Chunk.escape(value);
+	}
+
+	/**
+	 * @returns `value`
+	 */
+	toString() {
+		return this.value;
+	}
+
+	/**
+	 * @param chunks Chunks to append to the end of the chunk
+	 */
+	concat(...chunks: Chunk[]) {
+		this.value += chunks.join("");
+	}
+
 	/**
 	 * Escapes strings of HTML.
 	 *
-	 * @param str String to escape
+	 * @param s String to escape
 	 * @param attr Set to `true` if the value is an attribute, otherwise it's a string of HTML content
 	 * @returns Escaped string of HTML
 	 */
-	static escape(str: string, attr?: boolean) {
+	static escape(s: string, attr?: boolean) {
 		// adapted from https://github.com/sveltejs/svelte/blob/main/packages/svelte/src/escaping.js
-		const s = String(str ?? "");
 		const regex = attr ? Chunk.#attr : Chunk.#content;
 
 		// search starts at beginning of the string
@@ -37,35 +66,5 @@ export class Chunk {
 		}
 
 		return result + s.slice(start);
-	}
-
-	/** Safe value to render */
-	value: string;
-
-	/**
-	 * `Chunk` to send in an HTML stream.
-	 *
-	 * @param html string of HTML to escape
-	 * @param safe Set to `true` if the HTML is safe and should not be escaped
-	 */
-	constructor(html: unknown, safe?: boolean) {
-		const str = String(html ?? "");
-
-		if (safe) this.value = str;
-		else this.value = Chunk.escape(str);
-	}
-
-	/**
-	 * @returns `value`
-	 */
-	toString() {
-		return this.value;
-	}
-
-	/**
-	 * @param chunks Chunks to append to the end of the chunk
-	 */
-	concat(...chunks: Chunk[]) {
-		this.value += chunks.join("");
 	}
 }

@@ -26,7 +26,7 @@ export namespace JSX {
 }
 
 /** Unknown component props. */
-export type Props = Record<string, unknown>;
+export type Props = Record<string, JSX.Element>;
 
 /**
  * These are the HTML tags that do not require a closing tag.
@@ -96,7 +96,7 @@ export async function* jsx<P extends Props = Props>(
 
 	if (voidElements.has(tag)) return;
 
-	if (children) yield* toGenerator(children);
+	yield* toGenerator(children);
 
 	yield new Chunk(`</${tag}>`, true);
 }
@@ -119,13 +119,17 @@ export async function* toGenerator(
 	element: JSX.Element,
 ): AsyncGenerator<Chunk, void, unknown> {
 	// modifications
+	// these are required to allow functions to be used as children
+	// instead of creating a separate component to use them
 	if (typeof element === "function") element = element();
 	if (element instanceof Promise) element = await element;
 
 	// resolve based on type
+	// should not render
 	if (element == null || typeof element === "boolean" || element === "") return;
 
 	if (element instanceof Chunk) {
+		// already escaped or safe
 		yield element;
 
 		return;
@@ -133,12 +137,14 @@ export async function* toGenerator(
 
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
+			// async iterable - lazily resolve
 			for await (const children of element) yield* toGenerator(children);
 
 			return;
 		}
 
 		if (Symbol.iterator in element) {
+			// sync iterable
 			const iterator = element[Symbol.iterator]();
 
 			if (
@@ -207,7 +213,8 @@ export async function* toGenerator(
 		}
 	}
 
-	yield new Chunk(element); // primitive or other object
+	// primitive or other object
+	yield new Chunk(element);
 }
 
 /**

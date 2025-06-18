@@ -49,6 +49,12 @@ export const page = new Page("/escape", () => {
 			<hr />
 
 			<p class={attrTest}>Attribute test</p>
+
+			<hr />
+
+			<p>zero</p>
+
+			<p>{0}</p>
 		</main>
 	);
 });
