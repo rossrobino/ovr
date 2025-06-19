@@ -13,9 +13,7 @@ export class Chunk {
 	 */
 	constructor(s: unknown, safe?: boolean) {
 		const value = String(s ?? "");
-
-		if (safe) this.value = value;
-		else this.value = Chunk.escape(value);
+		this.value = safe ? value : Chunk.escape(value);
 	}
 
 	/**
