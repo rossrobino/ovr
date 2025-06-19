@@ -7,7 +7,7 @@ const attrTest = JSON.stringify({ attr: "test" });
 
 export const page = new Page("/escape", () => {
 	return (
-		<main>
+		<>
 			<h1>Escape Test</h1>
 			<a href="/">Docs</a>
 
@@ -55,7 +55,7 @@ export const page = new Page("/escape", () => {
 			<p>zero</p>
 
 			<p>{0}</p>
-		</main>
+		</>
 	);
 });
 

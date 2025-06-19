@@ -12,7 +12,7 @@ export const page = new Page("/", (c) => {
 	);
 
 	return (
-		<main>
+		<>
 			<h1>{name}</h1>
 			<p>{description}</p>
 			<p>
@@ -27,7 +27,7 @@ export const page = new Page("/", (c) => {
 			<Nav />
 
 			{new Chunk(docsHtml, true)}
-		</main>
+		</>
 	);
 });
 

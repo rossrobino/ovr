@@ -1,5 +1,5 @@
-import * as home from "./home";
-import { Action, Page } from "ovr";
+import * as home from "@/server/home";
+import { Page } from "ovr";
 
 async function Delay(props: { ms: number }) {
 	await new Promise((res) => setTimeout(res, props.ms));
@@ -16,10 +16,6 @@ export const page = new Page("/demo", (c) => {
 			<h1>Demo</h1>
 			<p>
 				<home.page.Anchor>Docs</home.page.Anchor>
-				{" | "}
-				<actionPage.Anchor params={{ param: "param" }}>
-					Action
-				</actionPage.Anchor>
 			</p>
 			<p>
 				This is a demo of a streamed HTML page, each <code>Delay</code>{" "}
@@ -48,33 +44,6 @@ export const page = new Page("/demo", (c) => {
 			{[...delays, 1000].map((ms) => (
 				<Delay ms={ms} />
 			))}
-		</main>
-	);
-});
-
-export const action = new Action((c) => {
-	console.log("posted");
-
-	c.redirect(page.pattern);
-});
-
-export const actionPage = new Page("/demo/action/:param", (c) => {
-	c.head(<title>ovr action</title>);
-
-	return (
-		<main>
-			<h1>Action</h1>
-			<p>
-				This page is a demo of the{" "}
-				<code>
-					<a href="/#action">Action</a>
-				</code>{" "}
-				helper.
-			</p>
-			<action.Form>
-				<input />
-				<button>Submit</button>
-			</action.Form>
 		</main>
 	);
 });

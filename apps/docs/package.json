@@ -16,7 +16,11 @@
 	},
 	"devDependencies": {
 		"@domcojs/vercel": "^2.0.2",
+		"@iconify-json/lucide": "^1.2.50",
+		"@iconify/tailwind4": "^1.0.6",
+		"@tailwindcss/vite": "^4.1.10",
 		"domco": "^4.1.4",
+		"tailwindcss": "^4.1.10",
 		"vite": "^6.3.5"
 	}
 }
