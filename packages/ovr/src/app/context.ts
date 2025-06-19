@@ -192,8 +192,9 @@ export class Context<P extends Params = Params> {
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
 	page(Page: JSX.Element, status?: number) {
-		for (let i = this.#layouts.length - 1; i >= 0; i--)
+		for (let i = this.#layouts.length - 1; i >= 0; i--) {
 			Page = this.#layouts[i]!({ children: Page });
+		}
 
 		const headClose = "</head>";
 		const bodyClose = "</body>";
