@@ -1,4 +1,3 @@
-import * as home from "@/server/home";
 import { Page } from "ovr";
 
 async function Delay(props: { ms: number }) {
@@ -12,11 +11,8 @@ export const page = new Page("/demo", (c) => {
 	const delays = Array.from({ length: 11 }, (_, i) => i * 200);
 
 	return (
-		<main>
+		<>
 			<h1>Demo</h1>
-			<p>
-				<home.page.Anchor>Docs</home.page.Anchor>
-			</p>
 			<p>
 				This is a demo of a streamed HTML page, each <code>Delay</code>{" "}
 				component is delayed a certain number of milliseconds. There is no
@@ -44,6 +40,6 @@ export const page = new Page("/demo", (c) => {
 			{[...delays, 1000].map((ms) => (
 				<Delay ms={ms} />
 			))}
-		</main>
+		</>
 	);
 });

@@ -11,8 +11,11 @@
 	},
 	"dependencies": {
 		"@robino/md": "^4.0.2",
+		"clsx": "^2.1.1",
+		"drab": "^7.0.2",
 		"ovr": "*",
-		"uico": "^0.10.2"
+		"uico": "^0.10.2",
+		"zod": "^3.25.67"
 	},
 	"devDependencies": {
 		"@domcojs/vercel": "^2.0.2",
