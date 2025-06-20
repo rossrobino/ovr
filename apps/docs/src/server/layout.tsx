@@ -6,7 +6,11 @@ import { Context, type JSX } from "ovr";
 
 export const Layout = (props: { children?: JSX.Element }) => {
 	return (
-		<div>
+		<drab-prefetch
+			trigger="a[href^='/']:not([data-no-prefetch])"
+			prerender
+			class="block"
+		>
 			<header class="flex justify-between gap-4 p-4 md:hidden">
 				<HomeLink />
 				<nav>
@@ -38,7 +42,7 @@ export const Layout = (props: { children?: JSX.Element }) => {
 					</div>
 				</div>
 			</main>
-		</div>
+		</drab-prefetch>
 	);
 };
 
@@ -98,6 +102,7 @@ const NavList = () => {
 			})}
 			<li>
 				<demo.page.Anchor
+					data-no-prefetch
 					class={clsx(
 						"button secondary justify-start capitalize",
 						demo.page.pattern !== Context.get().url.pathname && "ghost",

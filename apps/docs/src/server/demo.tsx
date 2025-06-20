@@ -37,6 +37,10 @@ export const page = new Page("/demo", (c) => {
 				the total delay.
 			</p>
 
+			<page.Anchor class="button ghost gap-3">
+				<span class="icon-[lucide--rotate-cw]"></span> Refresh
+			</page.Anchor>
+
 			{[...delays, 1000].map((ms) => (
 				<Delay ms={ms} />
 			))}
