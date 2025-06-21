@@ -3,9 +3,9 @@ title: App
 description: Creating an application with ovr.
 ---
 
-To start using ovr, create a new `App` instance:
+To create a web server with ovr, initialize a new `App` instance:
 
-```ts
+```tsx
 import { App } from "ovr";
 
 const app = new App();
@@ -15,7 +15,7 @@ const app = new App();
 
 The following values can be customized after creating the `App`.
 
-```ts
+```tsx
 // redirect trailing slash preference - default is "always"
 app.trailingSlash = "always";
 
@@ -25,7 +25,7 @@ app.notFound = (c) => c.html("Not found", 404);
 // add an error handler
 app.error = (c, error) => c.html(error.message, { status: 500 });
 
-// base HTML to inject elements into, this is the default---must include <head> and <body> tags
+// base HTML to inject elements into, this is the default
 app.base =
 	'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
 ```
@@ -186,7 +186,7 @@ const action = new Action("/custom/pattern", (c) => {
 });
 ```
 
-## add
+## Add
 
 Use the `add` method to register a `Page` or `Action` to your app.
 
@@ -220,24 +220,12 @@ import * as home from "./home";
 app.add(home); // adds all exports
 ```
 
-## fetch
+## Fetch
 
-Use the `fetch` method to create a `Response`.
+Use the `fetch` method to create a `Response`, this is the `Request` handler for your application.
 
 ```ts
 const response = await app.fetch(new Request("https://example.com/"));
-```
-
-The `fetch` method can easily be plugged into other tooling built on the Fetch API:
-
-```ts
-// bun, deno, cloudflare, domco...
-export default app;
-```
-
-```ts
-// next, sveltekit, astro...
-export const GET = app.fetch;
 ```
 
 ## Memoization
@@ -246,13 +234,17 @@ If you need to display a component in multiple locations, you need to ensure you
 
 ```tsx
 import { Context } from "ovr";
+import { db } from "@/lib/db";
 
-async function Username() {
+function getData(id: number) {
 	const c = Context.get();
-	const memoized = c.memo(getUser);
-	const user = await memoized();
+	return c.memo(db.query)(id);
+}
 
-	return <span>{user.name}<span>;
+async function Data(props: { id: number }) {
+	const data = await getData(props.id);
+
+	return <span>{data}<span>;
 }
 ```
 
@@ -260,7 +252,7 @@ This will deduplicate multiple calls to the same function with the with the same
 
 ### Create your own cache
 
-The `Memo` class can also be utilized outside of the application context if you need to cache across requests. Although, it's safer to cache per request using `Context.memo`---especially for user specific or sensitive information.
+The `Memo` class can also be utilized outside of the application context if you need to cache across requests. It's generally safer to cache per request using `Context.memo`---especially for user specific or sensitive information.
 
 ```ts
 import { Memo } from "ovr";

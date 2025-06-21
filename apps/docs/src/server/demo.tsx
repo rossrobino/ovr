@@ -26,7 +26,7 @@ export const page = new Page("/demo", (c) => {
 				the other linked assets, then render the page.
 			</p>
 			<p>
-				With ovr, you have fine grained control of when each piece of HTML
+				With ovr, you have fine grained control of when each chunk of HTML
 				arrives. By default, every component is streamed independently. You can
 				read this content immediately instead of waiting 2 seconds for the last
 				component to render.
