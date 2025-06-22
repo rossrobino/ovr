@@ -5,7 +5,7 @@ description: Understand how ovr processes async components in parallel.
 
 # Parallelization
 
-Each `Delay` component is delayed a certain number of milliseconds. There is no client side JavaScript, the HTML is simply streamed _in order_ as it is generated. Many frameworks by default wait until the last `Delay` component has finished rendering before sending the final response, then the entire HTML page is sent at once. Finally, your browser can request the other linked assets, then render the page. In most frameworks, you must _opt in_ to streaming.
+There is no client side JavaScript required to accomplish this stream, the HTML is sent _in order_ as it is generated. In most frameworks, you must _opt in_ to streaming.
 
 With ovr, every component is streamed independently. You can read this content immediately instead of waiting for the last component to render. The delay does not waterfall, components are generated in parallel with `Promise.race`.
 

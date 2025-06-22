@@ -19,10 +19,10 @@ You can use a generator to `yield` elements as you iterate through the array.
 ```tsx
 function* Numbers() {
 	let i = 0;
-	while (i < 10_000) yield <div>{i++}</div>;
+	while (i < 5_000) yield <div>{i++}</div>;
 }
 ```
 
 This allows the server to send the result as it iterates through the generator, users also see the start of the content faster. If you are on a browser that displays the scrollbar, you can refresh the page to view the elements streaming in, or open your network tab to watch the request.
 
-## 10,000 divs
+## 5,000 divs

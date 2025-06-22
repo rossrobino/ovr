@@ -10,7 +10,7 @@ export const parallel = new Get("/demo/parallel", (c) => {
 	};
 
 	const Delays = () => {
-		const delays = Array.from({ length: 6 }, (_, i) => i * 200);
+		const delays = Array.from({ length: 6 }, (_, i) => i * 100);
 		return delays.map((ms) => <Delay ms={ms} />);
 	};
 
@@ -36,7 +36,7 @@ export const memory = new Get("/demo/memory", (c) => {
 
 	function* Numbers() {
 		let i = 0;
-		while (i < 10_000)
+		while (i < 5_000)
 			yield <div class="bg-muted rounded p-2 text-center">{i++}</div>;
 	}
 
