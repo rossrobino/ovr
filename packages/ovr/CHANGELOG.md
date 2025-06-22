@@ -1,5 +1,20 @@
 # ovr
 
+## 4.0.0
+
+### Major Changes
+
+- 4aa4ae5: rename: Renames `Page` and `Action` helpers to `Get` and `Post` respectively.
+
+### Minor Changes
+
+- 4aa4ae5: feat: Allow empty `app.base` to return HTML partials
+
+### Patch Changes
+
+- 4aa4ae5: fix: yield with `setImmediate` every 50 iterations to properly cancel request for sync generators.
+- 4aa4ae5: fix: memory leak in `merge` with promise that never resolved
+
 ## 3.0.1
 
 ### Patch Changes
