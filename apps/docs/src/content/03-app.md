@@ -151,11 +151,11 @@ The `Get` helper encapsulates a GET route and creates an `Anchor` component for 
 ```tsx
 import { Get } from "ovr";
 
-const home = new Get("/", (c) => {
+const get = new Get("/", (c) => {
 	return <p>hello world</p>;
 });
 
-<home.Anchor>Home</home.Anchor>; // <a> tag with preset `href` attribute
+<get.Anchor>Home</get.Anchor>; // <a> tag with preset `href` attribute
 ```
 
 ## Post
@@ -191,10 +191,10 @@ const post = new Post("/custom/pattern", (c) => {
 Use the `add` method to register a `Get` or `Post` to your app.
 
 ```tsx
-app.add(page); // single
-app.add(page, post); // multiple
-app.add({ page, post }); // object
-app.add([page, post]); // array
+app.add(get); // single
+app.add(get, post); // multiple
+app.add({ get, post }); // object
+app.add([get, post]); // array
 // any combination of these also works
 ```
 
@@ -204,7 +204,7 @@ This makes it easy to create a module of routes, and add them all at once.
 // home.tsx
 import { Get, Post } from "ovr";
 
-export const page = new Get("/", (c) => {
+export const get = new Get("/", (c) => {
 	// ...
 });
 
