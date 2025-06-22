@@ -10,7 +10,7 @@ Using generators can reduce memory consumption which can be useful if you are re
 ```tsx
 function Numbers() {
 	const nums = Array.from({ length: 10_000 }, (_, i) => i);
-	return nums.map((item) => <li>{item}</li>);
+	return nums.map((i) => <div>{i}</div>);
 }
 ```
 
@@ -19,7 +19,7 @@ You can use a generator to `yield` elements as you iterate through the array.
 ```tsx
 function* Numbers() {
 	let i = 0;
-	while (i < 10_000) yield <li>{i++}</li>;
+	while (i < 10_000) yield <div>{i++}</div>;
 }
 ```
 
