@@ -12,7 +12,7 @@ With ovr, every component is streamed independently. You can read this content i
 ```tsx
 const Delay = async ({ ms }: { ms: number }) => {
 	await new Promise((res) => setTimeout(res, ms));
-	return <div class="bg-muted rounded-md p-2">{ms}ms</div>;
+	return <div>{ms}ms</div>;
 };
 
 const Delays = () => {
