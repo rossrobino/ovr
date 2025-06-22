@@ -144,28 +144,28 @@ app.get(
 
 The same `Context` is passed into each middleware. After all the middleware have been run, the `Context` will `build` and return the final `Response`.
 
-## Page
+## Get
 
-The `Page` helper encapsulates routes and creates links to them. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
+The `Get` helper encapsulates a GET route and creates an `Anchor` component for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
 
 ```tsx
-import { Page } from "ovr";
+import { Get } from "ovr";
 
-const home = new Page("/", (c) => {
+const home = new Get("/", (c) => {
 	return <p>hello world</p>;
 });
 
 <home.Anchor>Home</home.Anchor>; // <a> tag with preset `href` attribute
 ```
 
-## Action
+## Post
 
-There is also an `Action` helper that will create a POST handler and a corresponding `Form` element that can be used within other components.
+There is also an `Post` helper that will create a POST handler and a corresponding `Form` element that can be used within other components.
 
 ```tsx
-import { Action } from "ovr";
+import { Post } from "ovr";
 
-const action = new Action((c) => {
+const post = new Post((c) => {
 	const data = await c.req.formData();
 
 	// ...
@@ -173,7 +173,7 @@ const action = new Action((c) => {
 	c.redirect("/", 303);
 })
 
-<action.Form>...</action.Form>; // <form> with preset `method` and `action` attributes
+<post.Form>...</post.Form>; // <form> with preset `method` and `action` attributes
 ```
 
 ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
@@ -181,34 +181,34 @@ ovr will automatically create a unique pattern for the route based on a hash of 
 You can also set the pattern manually:
 
 ```tsx
-const action = new Action("/custom/pattern", (c) => {
+const post = new Post("/custom/pattern", (c) => {
 	// ...
 });
 ```
 
 ## Add
 
-Use the `add` method to register a `Page` or `Action` to your app.
+Use the `add` method to register a `Get` or `Post` to your app.
 
 ```tsx
 app.add(page); // single
-app.add(page, action); // multiple
-app.add({ page, action }); // object
-app.add([page, action]); // array
+app.add(page, post); // multiple
+app.add({ page, post }); // object
+app.add([page, post]); // array
 // any combination of these also works
 ```
 
-This makes it easy to create a module of pages and actions, and add them all at once.
+This makes it easy to create a module of routes, and add them all at once.
 
 ```tsx
 // home.tsx
-import { Action, Page } from "ovr";
+import { Get, Post } from "ovr";
 
-export const page = new Page("/", (c) => {
+export const page = new Get("/", (c) => {
 	// ...
 });
 
-export const action = new Action((c) => {
+export const post = new Post((c) => {
 	// ...
 });
 ```

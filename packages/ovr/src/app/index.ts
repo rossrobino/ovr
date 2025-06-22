@@ -4,9 +4,9 @@ import type {
 	ExtractMultiParams,
 	ExtractParams,
 } from "../types/index.js";
-import { Action } from "./action.js";
 import { Context } from "./context.js";
-import { Page } from "./page.js";
+import { Get } from "./get.js";
+import { Post } from "./post.js";
 import { AsyncLocalStorage } from "node:async_hooks";
 
 export type Params = Record<string, string>;
@@ -105,16 +105,16 @@ export class App {
 	static storage = new AsyncLocalStorage<Context>();
 
 	/**
-	 * @param routes `Page`s or `Action`s to add to the `App`
+	 * @param routes `Get` or `Post` to add to `App`
 	 * @returns `App` instance
 	 */
-	add(...routes: DeepArray<Page | Action | Record<string, Page | Action>>[]) {
+	add(...routes: DeepArray<Get | Post | Record<string, Get | Post>>[]) {
 		for (const route of routes) {
 			if (route instanceof Array) {
 				this.add(...route);
-			} else if (route instanceof Page) {
+			} else if (route instanceof Get) {
 				this.get(route.pattern, ...route.middleware);
-			} else if (route instanceof Action) {
+			} else if (route instanceof Post) {
 				this.post(route.pattern, ...route.middleware);
 			} else {
 				this.add(...Object.values(route));

@@ -1,11 +1,11 @@
-import { Chunk, type JSX, Page } from "ovr";
+import { Chunk, Get, type JSX } from "ovr";
 
 const notSafe = "<p>Not safe</p>";
 const safe = new Chunk("<p>Safe</p>", true);
 
 const attrTest = JSON.stringify({ attr: "test" });
 
-export const page = new Page("/escape", () => {
+export const page = new Get("/escape", () => {
 	return (
 		<>
 			<h1>Escape Test</h1>

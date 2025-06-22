@@ -1,11 +1,11 @@
-import { Page } from "ovr";
+import { Get } from "ovr";
 
 async function Delay(props: { ms: number }) {
 	await new Promise((res) => setTimeout(res, props.ms));
 	return <div class="delay">{props.ms}ms</div>;
 }
 
-export const page = new Page("/demo", (c) => {
+export const page = new Get("/demo", (c) => {
 	c.head(<title>Demo</title>);
 
 	const delays = Array.from({ length: 11 }, (_, i) => i * 200);

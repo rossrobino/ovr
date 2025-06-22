@@ -6,7 +6,7 @@ import type { Middleware, Params } from "./index.js";
 type AnchorProps<P extends Params> = JSX.IntrinsicElements["a"] &
 	(keyof P extends never ? { params?: never } : { params: P });
 
-export class Page<Pattern extends string = string> {
+export class Get<Pattern extends string = string> {
 	/** Route pattern */
 	pattern: Pattern;
 
@@ -25,10 +25,9 @@ export class Page<Pattern extends string = string> {
 	 * @example
 	 *
 	 * ```tsx
-	 * // page.tsx
-	 * import { Page } from "ovr";
+	 * import { Get } from "ovr";
 	 *
-	 * export const page = new Page("/", () => {
+	 * const page = new Get("/", () => {
 	 * 	return <p>Hello world</p>
 	 * });
 	 *
@@ -36,8 +35,7 @@ export class Page<Pattern extends string = string> {
 	 * 	return <page.Anchor>Home</page.Anchor>
 	 * }
 	 *
-	 * // app.tsx
-	 * app.add(page); registers the page
+	 * app.add(page); register
 	 * ```
 	 */
 	constructor(
