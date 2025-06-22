@@ -89,13 +89,6 @@
 }
 
 @layer components {
-	.delay {
-		margin-block: var(--size-2);
-		border-radius: var(--border-radius);
-		background-color: var(--muted-background);
-		padding: var(--size-2);
-	}
-
 	pre {
 		margin: 0;
 		@apply rounded-none px-6 sm:rounded-b-sm sm:px-4;

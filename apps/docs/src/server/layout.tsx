@@ -1,5 +1,5 @@
-import { content } from "@/content";
-import * as demo from "@/server/demo";
+import { content, getSlugs } from "@/content";
+import * as demos from "@/server/demo";
 import { Popover } from "@/ui/popover";
 import clsx from "clsx";
 import { Context, type JSX } from "ovr";
@@ -21,7 +21,9 @@ export const Layout = (props: { children?: JSX.Element }) => {
 							children: <span class="icon-[lucide--align-justify]"></span>,
 						}}
 					>
-						<NavList />
+						<div class="flex flex-col gap-4">
+							<NavList />
+						</div>
 					</Popover>
 				</nav>
 			</header>
@@ -56,7 +58,7 @@ const TOC = () => {
 	return (
 		<div>
 			<aside class="sticky top-0 hidden min-w-52 flex-col gap-3 p-4 lg:flex">
-				<h2 class="text-muted-foreground pl-3 text-sm uppercase">
+				<h2 class="text-muted-foreground pl-3 text-xs uppercase">
 					<a href="#">On this page</a>
 				</h2>
 				<ul class="grid gap-1">
@@ -82,36 +84,53 @@ const TOC = () => {
 
 const HomeLink = () => {
 	return (
-		<a href="/" class="text-lg font-bold no-underline">
+		<a href="/" class="pl-2 text-lg font-bold no-underline">
 			ovr
 		</a>
 	);
 };
 
-const NavList = () => {
-	const slugs = Object.keys(content).map((path) => {
-		let slug = path.split("/").at(2)?.split(".").at(0)!;
-		if (slug === "index") slug = "";
-		return slug;
-	});
-
+const NavHeading = (props: { children: JSX.Element }) => {
 	return (
-		<ul class="grid gap-1">
-			{slugs.map((slug) => {
-				return <NavLink slug={slug} />;
-			})}
-			<li>
-				<demo.page.Anchor
-					data-no-prefetch
-					class={clsx(
-						"button secondary justify-start capitalize",
-						demo.page.pattern !== Context.get().url.pathname && "ghost",
-					)}
-				>
-					Demo
-				</demo.page.Anchor>
-			</li>
-		</ul>
+		<h2 class="text-muted-foreground pl-2 text-xs uppercase">
+			{props.children}
+		</h2>
+	);
+};
+
+const NavList = () => {
+	return (
+		<>
+			<hr />
+
+			<NavHeading>Docs</NavHeading>
+			<ul class="grid gap-1">
+				{getSlugs().map((slug) => {
+					return <NavLink slug={slug} />;
+				})}
+			</ul>
+
+			<hr />
+
+			<NavHeading>Demo</NavHeading>
+			<ul class="grid gap-1">
+				{Object.values(demos).map((demo) => {
+					return (
+						<li>
+							<demo.Anchor
+								data-no-prefetch
+								class={clsx(
+									"button secondary justify-start capitalize",
+									demo.pattern !== Context.get().url.pathname && "ghost",
+								)}
+							>
+								{demo.pattern.split("/").at(2)}
+							</demo.Anchor>
+						</li>
+					);
+				})}
+			</ul>
+		</>
 	);
 };
 

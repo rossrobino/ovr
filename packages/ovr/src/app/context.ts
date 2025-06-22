@@ -196,41 +196,55 @@ export class Context<P extends Params = Params> {
 			Page = this.#layouts[i]!({ children: Page });
 		}
 
-		const headClose = "</head>";
-		const bodyClose = "</body>";
+		let gen: AsyncGenerator<Chunk, void>;
 
-		const elements: JSX.Element[] = this.base.split(headClose);
-		if (!elements[1]) throw new TagNotFound(headClose);
+		if (this.base) {
+			// inject into base
+			const headClose = "</head>";
+			const bodyClose = "</body>";
 
-		elements.splice(1, 0, this.#headElements, headClose);
+			const elements: JSX.Element[] = this.base.split(headClose);
+			if (!elements[1]) throw new TagNotFound(headClose);
 
-		const bodyParts = (elements[3] as string).split(bodyClose);
-		if (!bodyParts[1]) throw new TagNotFound(bodyClose);
+			elements.splice(1, 0, this.#headElements, headClose);
 
-		const userAgent = this.req.headers.get("user-agent");
-		if (userAgent?.includes("Safari") && !userAgent.includes("Chrome")) {
-			// https://bugs.webkit.org/show_bug.cgi?id=252413
-			// https://github.com/sveltejs/kit/issues/10315
-			// https://github.com/remix-run/remix/issues/5804
-			bodyParts[0] += `<div aria-hidden=true style=position:absolute;width:0;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0>${"\u200b".repeat(200)}</div>`;
+			const bodyParts = (elements[3] as string).split(bodyClose);
+			if (!bodyParts[1]) throw new TagNotFound(bodyClose);
+
+			const userAgent = this.req.headers.get("user-agent");
+			if (userAgent?.includes("Safari") && !userAgent.includes("Chrome")) {
+				// https://bugs.webkit.org/show_bug.cgi?id=252413
+				// https://github.com/sveltejs/kit/issues/10315
+				// https://github.com/remix-run/remix/issues/5804
+				bodyParts[0] += `<div aria-hidden=true style=position:absolute;width:0;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0>${"\u200b".repeat(200)}</div>`;
+			}
+
+			elements[3] = bodyParts[0];
+			elements.push(Page, bodyClose + bodyParts[1]);
+
+			gen = toGenerator(
+				elements.map((el) => {
+					if (typeof el === "string") return new Chunk(el, true);
+					return el;
+				}),
+			);
+		} else {
+			// HTML partial - just use the layouts + page
+			gen = toGenerator(Page);
 		}
-
-		elements[3] = bodyParts[0];
-		elements.push(Page, bodyClose + bodyParts[1]);
-
-		const gen = toGenerator(
-			elements.map((el) => {
-				if (typeof el === "string") return new Chunk(el, true);
-				return el;
-			}),
-		);
 
 		this.html(
 			new ReadableStream<string>({
-				async pull(c) {
-					const { value, done } = await gen.next();
-					if (done) c.close();
-					else c.enqueue(value?.value);
+				pull: async (c) => {
+					if (this.req.signal.aborted) {
+						c.close();
+						gen.return();
+						return;
+					}
+
+					const result = await gen.next();
+					if (result.done) c.close();
+					else c.enqueue(result.value.value);
 				},
 
 				cancel() {
@@ -269,6 +283,12 @@ export class Context<P extends Params = Params> {
 	 * @returns the constructed `Response`
 	 */
 	build() {
+		if (this.req.signal.aborted) {
+			// user cancelled the request
+			this.body = null;
+			this.status = 408;
+		}
+
 		if (
 			(!this.status || this.status === 404) &&
 			this.#trailingSlash !== "ignore"

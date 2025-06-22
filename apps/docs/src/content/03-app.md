@@ -5,7 +5,7 @@ description: Creating an application with ovr.
 
 To create a web server with ovr, initialize a new `App` instance:
 
-```tsx
+```ts
 import { App } from "ovr";
 
 const app = new App();
@@ -13,113 +13,88 @@ const app = new App();
 
 ## Configuration
 
-The following values can be customized after creating the `App`.
+The following values can be customized after creating the `App`. You can also configure most of these per route within middleware by modifying the value on the `Context`.
 
-```tsx
-// redirect trailing slash preference - default is "always"
-app.trailingSlash = "always";
+### Trailing Slash
 
-// customize the not found response
+ovr handles [trailing slash](https://bjornlu.com/blog/trailing-slash-for-frameworks) redirects automatically, you can customize the redirect preference.
+
+```tsk
+app.trailingSlash = "never";
+```
+
+### Not Found
+
+Customize the not found response handler.
+
+```ts
 app.notFound = (c) => c.html("Not found", 404);
+```
 
-// add an error handler
-app.error = (c, error) => c.html(error.message, { status: 500 });
+### Error Handler
 
-// base HTML to inject elements into, this is the default
+Add an error handler, by default errors are thrown.
+
+```ts
+app.error = (c, error) => {
+	console.error(error);
+
+	c.html("An error occurred", 500);
+};
+```
+
+### Base HTML
+
+Change the base HTML to inject elements into, this is the default.
+
+```ts
 app.base =
 	'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
 ```
 
 ## Overview
 
-The `App` API is inspired by and works similar to frameworks such as [Hono](https://hono.dev/) and [Express](https://expressjs.com/). Below are some examples of how to create basic routes with the corresponding functions for each HTTP method.
+The `App` API is inspired by and works similar to frameworks such as [Hono](https://hono.dev/) and [Express](https://expressjs.com/).
+
+### Response
+
+At the most basic level, you can create a route and return a `Response` from the middleware to handle a request.
+
+```ts
+app.get("/", () => new Response("Hello world"));
+```
+
+You can also return a `ReadableStream` to use as the `Response.body`.
+
+### JSX
+
+Returning JSX or other non `null` or `undefined` values from middleware will generate an HTML streamed response.
 
 ```tsx
-// Return JSX as a streamed HTML response
-app.get("/", () => <h1>Hello</h1>);
+app.get("/", () => <h1>Hello world</h1>);
+```
 
-// API route
-app.get("/text", (c) => c.text("Hello world"));
+The element will be injected into the `<body>` element of the [`base`](/03-app#base-html) HTML.
 
-// Params
-app.post("/api/:id", (c) => {
-	// matches "/api/123"
-	c.params; // { id: "123" }
+## HTTP methods
+
+`app.get` and `app.post` create handlers for the HTTP methods respectively. You can add other or custom methods with `app.on`.
+
+```ts
+// Other or custom methods
+app.on("METHOD", "/pattern", () => {
+	// ...
 });
+```
 
-// Wildcard - add an asterisk `*` to match all remaining segments in the route
-app.get("/files/*", (c) => {
-	c.params["*"]; // matched wildcard path (e.g., "images/logo.png")
-});
+## Multiple patterns
 
-// Multiple patterns
+Add the same middleware to multiple patterns.
+
+```ts
 app.get(["/multi/:param", "/pattern/:another"], (c) => {
 	c.param; // { param: string } | { another: string }
 });
-
-// Other or custom methods
-app.on("METHOD", "/pattern", (c) => {
-	// ...
-});
-
-// Global middleware
-app.use(async (c, next) => {
-	// ...
-});
-```
-
-## Return values
-
-Here are the various actions that occur based on the return type of the handler.
-
-| Return Value                             | Action                     |
-| ---------------------------------------- | -------------------------- |
-| `Response`                               | Passed into `context.res`  |
-| `ReadableStream`                         | Assigned to `context.body` |
-| Other truthy values (JSX, strings, etc.) | Passed into `context.page` |
-| Falsy values                             | None                       |
-
-## Context
-
-`Context` contains context for the current request and helpers to build a `Response`.
-
-```tsx
-app.get("/api/:id", (c) => {
-	// Request info
-	c.req; // original Request
-	c.url; // parsed URL
-	c.params; // type-safe route parameters ({ id: "123" })
-	c.route; // matched Route (contains pattern, store)
-
-	// Response building methods
-	c.html(body, status); // Set HTML response
-	c.text(body, status); // Set plain text response
-	c.json(data, status); // Set JSON response
-	c.redirect(location, status); // Set redirect response
-	c.res(body, init); // Generic response (like `new Response()`)
-
-	// JSX page building methods (Leverages Streaming JSX)
-	c.head(<meta name="description" content="..." />); // add elements to <head>
-	c.layout(Layout); // wrap page content with layout components
-	c.page(<UserProfilePage userId={c.params.id} />); // stream JSX page (same as returning)
-
-	// other utilities
-	c.memo(fn); // memoize a function to dedupe async operations and cache the results
-	c.etag("content-to-hash"); // generate and check ETag for caching
-
-	// internal
-	c.build(); // builds the final Response object
-});
-```
-
-Context can be acquired from anywhere within the scope of a request handler with the `Context.get` method. `get` uses `AsyncLocalStorage` under the hood. This prevents you from having to prop drill the context to each component from the handler.
-
-```tsx
-import { Context } from "ovr";
-
-function Component() {
-	const c = Context.get(); // current request context
-}
 ```
 
 ## Middleware
@@ -136,88 +111,26 @@ app.get(
 
 		console.log("3");
 	},
-	() => {
+	(c) => {
 		console.log("2");
 	},
 );
 ```
 
-The same `Context` is passed into each middleware. After all the middleware have been run, the `Context` will `build` and return the final `Response`.
+The same [`Context`](/04-context) is passed into each middleware. After all the middleware have been run, the `Context` will `build` and return the final `Response`.
 
-## Page
+### Global Middleware
 
-The `Page` helper encapsulates routes and creates links to them. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
+Add global middleware that runs in front of every request with `app.use`.
 
-```tsx
-import { Page } from "ovr";
-
-const home = new Page("/", (c) => {
-	return <p>hello world</p>;
-});
-
-<home.Anchor>Home</home.Anchor>; // <a> tag with preset `href` attribute
-```
-
-## Action
-
-There is also an `Action` helper that will create a POST handler and a corresponding `Form` element that can be used within other components.
-
-```tsx
-import { Action } from "ovr";
-
-const action = new Action((c) => {
-	const data = await c.req.formData();
-
+```ts
+app.use(async (c, next) => {
 	// ...
 
-	c.redirect("/", 303);
-})
+	await next();
 
-<action.Form>...</action.Form>; // <form> with preset `method` and `action` attributes
-```
-
-ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
-
-You can also set the pattern manually:
-
-```tsx
-const action = new Action("/custom/pattern", (c) => {
 	// ...
 });
-```
-
-## Add
-
-Use the `add` method to register a `Page` or `Action` to your app.
-
-```tsx
-app.add(page); // single
-app.add(page, action); // multiple
-app.add({ page, action }); // object
-app.add([page, action]); // array
-// any combination of these also works
-```
-
-This makes it easy to create a module of pages and actions, and add them all at once.
-
-```tsx
-// home.tsx
-import { Action, Page } from "ovr";
-
-export const page = new Page("/", (c) => {
-	// ...
-});
-
-export const action = new Action((c) => {
-	// ...
-});
-```
-
-```tsx
-// app.tsx
-import * as home from "./home";
-
-app.add(home); // adds all exports
 ```
 
 ## Fetch
@@ -226,42 +139,4 @@ Use the `fetch` method to create a `Response`, this is the `Request` handler for
 
 ```ts
 const response = await app.fetch(new Request("https://example.com/"));
-```
-
-## Memoization
-
-If you need to display a component in multiple locations, you need to ensure you aren't fetching the same data multiple times. ovr provides built in memoization on the request context you can utilize on any function to memoize it for the request.
-
-```tsx
-import { Context } from "ovr";
-import { db } from "@/lib/db";
-
-function getData(id: number) {
-	const c = Context.get();
-	return c.memo(db.query)(id);
-}
-
-async function Data(props: { id: number }) {
-	const data = await getData(props.id);
-
-	return <span>{data}<span>;
-}
-```
-
-This will deduplicate multiple calls to the same function with the with the same arguments and cache the result.
-
-### Create your own cache
-
-The `Memo` class can also be utilized outside of the application context if you need to cache across requests. It's generally safer to cache per request using `Context.memo`---especially for user specific or sensitive information.
-
-```ts
-import { Memo } from "ovr";
-
-const memo = new Memo();
-
-const add = memo.use((a: number, b: number) => a + b);
-
-add(1, 2); // runs
-add(1, 2); // cached
-add(2, 3); // runs again, saves the new result separately
 ```

@@ -7,6 +7,28 @@ ovr's router offers efficient and fast route matching, supporting static paths, 
 
 The router is forked and adapted from [memoirist](https://github.com/SaltyAom/memoirist) and [@medley/router](https://github.com/medleyjs/router).
 
+## Parameters
+
+Create a parameter for a route using the colon before a path segment. `/api/:id` will create a `params` object on the `Context` with a property of `id` containing the actual path segment requested.
+
+```ts
+// Params
+app.post("/api/:id", (c) => {
+	// matches "/api/123"
+	c.params; // { id: "123" }
+});
+```
+
+## Wildcard
+
+Use an asterisk `*` to match all remaining segments in the route.
+
+```ts
+app.get("/files/*", (c) => {
+	c.params["*"]; // matched wildcard path (e.g., "images/logo.png")
+});
+```
+
 ## Prioritization
 
 Routes are prioritized in this order:
@@ -31,7 +53,7 @@ More specific matches are prioritized. The following pathnames would match the c
 
 ## Create your own router
 
-[App](/app) is built using the `Trie` and `Route` classes. You don't need to access these if you are using `App`, but you can build your own router using the them.
+`App` is built using the `Trie` and `Route` classes. You don't need to access these if you are using `App`, but you can build your own router using the them.
 
 ```ts
 import { Route, Trie } from "ovr";

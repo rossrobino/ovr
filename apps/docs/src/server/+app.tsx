@@ -1,7 +1,7 @@
-import { content } from "@/content";
+import { content, getSlugs } from "@/content";
 import * as demo from "@/server/demo";
-import * as esc from "@/server/escape";
 import { Layout } from "@/server/layout";
+import { Head } from "@/ui/head";
 import { html } from "client:page";
 import { App, Chunk, csrf } from "ovr";
 
@@ -13,12 +13,7 @@ app.get(["/", "/:slug"], (c) => {
 
 	if (!result?.html) return;
 
-	c.head(
-		<>
-			<title>{result.frontmatter.title}</title>
-			<meta name="description" content={result.frontmatter.description} />
-		</>,
-	);
+	c.head(<Head {...result.frontmatter} />);
 
 	return (
 		<>
@@ -29,7 +24,8 @@ app.get(["/", "/:slug"], (c) => {
 });
 
 app.base = html;
-app.prerender = ["/"];
+
+app.prerender = getSlugs().map((slug) => "/" + slug);
 
 app.use(
 	(c, next) => {
@@ -44,9 +40,5 @@ app.use(
 );
 
 app.add(demo);
-
-if (import.meta.env.DEV) {
-	app.add(esc);
-}
 
 export default app;

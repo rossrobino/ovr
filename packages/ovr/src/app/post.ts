@@ -7,7 +7,7 @@ import type { Middleware, Params } from "./index.js";
 type FormProps<P extends Params> = JSX.IntrinsicElements["form"] &
 	(keyof P extends never ? { params?: never } : { params: P });
 
-export class Action<Pattern extends string = string> {
+export class Post<Pattern extends string = string> {
 	/** Route pattern */
 	pattern: Pattern;
 
@@ -25,23 +25,21 @@ export class Action<Pattern extends string = string> {
 	 * @example
 	 *
 	 * ```tsx
-	 * // action.tsx
-	 * import { Action } from "ovr";
+	 * import { Post } from "ovr";
 	 *
-	 * export const action = new Action((c) => {
+	 * const post = new Post((c) => {
 	 * 	console.log("posted");
 	 * 	c.redirect("/", 303);
 	 * });
 	 *
-	 * export const page = new Page("/", () => (
-	 * 	<action.Form>
+	 * const page = new Get("/", () => (
+	 * 	<post.Form>
 	 * 		<input />
 	 * 		<button>Submit</button>
-	 * 	</action.Form>
+	 * 	</post.Form>
 	 * ));
 	 *
-	 * // app.tsx
-	 * app.add(page, action); registers the action
+	 * app.add(page, post); register
 	 * ```
 	 */
 	constructor(...middleware: Middleware<{}>[]);
