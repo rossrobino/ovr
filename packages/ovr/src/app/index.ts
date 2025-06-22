@@ -284,7 +284,7 @@ export class App {
 
 								if (result instanceof Response) c.res(result.body, result);
 								else if (result instanceof ReadableStream) c.body = result;
-								else if (result) c.page(result);
+								else if (result != null) c.page(result);
 							}
 						};
 

@@ -65,4 +65,4 @@ ovr's architecture gives you true streaming SSR and progressive rendering out of
 
 <div class="flex justify-center my-12">
 <a href="/01-get-started" class="button">Get Started</a>
-<div>
+</div>
