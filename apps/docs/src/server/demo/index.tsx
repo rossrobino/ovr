@@ -10,7 +10,7 @@ export const parallel = new Get("/demo/parallel", (c) => {
 	};
 
 	const Delays = () => {
-		const delays = Array.from({ length: 6 }, (_, i) => i * 100);
+		const delays = Array.from({ length: 6 }, (_, i) => i * 200);
 		return delays.map((ms) => <Delay ms={ms} />);
 	};
 
