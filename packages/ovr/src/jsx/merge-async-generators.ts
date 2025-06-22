@@ -1,5 +1,3 @@
-const never = new Promise(() => {}) as Promise<any>;
-
 const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
 	index,
 	result: await iterator.next(),
@@ -17,26 +15,28 @@ const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
  */
 export async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
 	const iterators = generators.map((gen) => gen[Symbol.asyncIterator]());
-	const promises = iterators.map(next);
+	const promises = new Map<number, Promise<any>>();
 
-	let remaining = promises.length;
+	iterators.forEach((iterator, index) =>
+		promises.set(index, next(iterator, index)),
+	);
+
 	let current: Awaited<ReturnType<typeof next>>;
 
 	try {
-		while (remaining) {
-			yield (current = await Promise.race(promises));
+		while (promises.size > 0) {
+			yield (current = await Promise.race(promises.values()));
 
 			if (current.result.done) {
-				promises[current.index] = never;
-				remaining--;
+				promises.delete(current.index);
 			} else {
-				promises[current.index] = next(
-					iterators[current.index]!,
+				promises.set(
 					current.index,
+					next(iterators[current.index]!, current.index),
 				);
 			}
 		}
 	} finally {
-		for (const iter of iterators) iter.return().catch(); // could have already returned
+		for (const iter of iterators) iter.return().catch(() => {}); // could have already returned
 	}
 }

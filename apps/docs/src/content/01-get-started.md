@@ -22,14 +22,7 @@ npm create domco
 To utilize JSX, add the following options to your `tsconfig.json` to enable the JSX transform. TypeScript, Vite, or esbuild will pickup the option from this file.
 
 ```json
-{
-	"compilerOptions": {
-		/* other options... */
-
-		"jsx": "react-jsx",
-		"jsxImportSource": "ovr"
-	}
-}
+{ "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "ovr" } }
 ```
 
 Or you can use a comment if you are using ovr in conjunction with another framework to specify the import source for a specific module where you are using ovr.

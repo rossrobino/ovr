@@ -2,6 +2,7 @@ import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
 import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
 import { merge } from "./merge-async-generators.js";
+import { setImmediate } from "node:timers/promises";
 
 /** ovr JSX namespace */
 export namespace JSX {
@@ -154,10 +155,21 @@ export async function* toGenerator(
 			) {
 				// sync generator
 				// process lazily - avoids loading all in memory
+				const yieldIterations = 50;
+				let yieldCounter = yieldIterations;
+
 				while (true) {
 					const result = iterator.next();
+
 					if (result.done) break;
 					yield* toGenerator(result.value);
+
+					if (--yieldCounter === 0) {
+						// yields back to the event loop to send chunks
+						// or check if the request has been cancelled
+						await setImmediate();
+						yieldCounter = yieldIterations;
+					}
 				}
 
 				return;

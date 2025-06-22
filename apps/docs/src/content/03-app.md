@@ -13,13 +13,13 @@ const app = new App();
 
 ## Configuration
 
-The following values can be customized after creating the `App`.
+The following values can be customized after creating the `App`. You can also configure most of these per route within middleware by modifying the value on the `Context`.
 
 ### Trailing Slash
 
-Customize the redirect [trailing slash](https://bjornlu.com/blog/trailing-slash-for-frameworks) preference.
+ovr handles [trailing slash](https://bjornlu.com/blog/trailing-slash-for-frameworks) redirects automatically, you can customize the redirect preference.
 
-```ts
+```tsk
 app.trailingSlash = "never";
 ```
 
@@ -33,7 +33,7 @@ app.notFound = (c) => c.html("Not found", 404);
 
 ### Error Handler
 
-Add an error handler.
+Add an error handler, by default errors are thrown.
 
 ```ts
 app.error = (c, error) => {
@@ -121,7 +121,7 @@ The same [`Context`](/04-context) is passed into each middleware. After all the 
 
 ### Global Middleware
 
-Add global middleware runs in front of every request with `app.use`.
+Add global middleware that runs in front of every request with `app.use`.
 
 ```ts
 app.use(async (c, next) => {
