@@ -157,7 +157,7 @@ export async function* toGenerator(
 			) {
 				// sync generator
 				// process lazily - avoids loading all in memory
-				const yieldIterations = 20;
+				const yieldIterations = 150;
 				let yieldCounter = yieldIterations;
 				let result: IteratorResult<JSX.Element>;
 
