@@ -1,11 +1,12 @@
 import * as chatContent from "@/server/demo/content/chat.md";
 import { Head } from "@/ui/head";
-import { Agent, run } from "@openai/agents";
 import "dotenv/config";
 import { Chunk, Get, Post } from "ovr";
-import * as z from "zod/v4";
+import * as z from "zod/v4-mini";
 
 async function* Poet(props: { message: string }) {
+	const { Agent, run } = await import("@openai/agents");
+
 	const agent = new Agent({
 		name: "Poet",
 		instructions: "You turn messages into poems.",

@@ -1,27 +1,23 @@
 import code from "@/server/demo/basic?raw";
+import * as basicContent from "@/server/demo/content/basic.md";
+import { Head } from "@/ui/head";
 import { Chunk, Get, Post } from "ovr";
 
-export const page = new Get("/demo/basic", () => {
-	return (
-		<div>
-			<h1>Basic</h1>
+export const page = new Get("/demo/basic", (c) => {
+	c.head(<Head {...basicContent.frontmatter} />);
 
-			<p>
-				Here is a basic page and post method created with ovr's <code>Get</code>{" "}
-				and <code>Post</code> helpers.
-			</p>
+	return (
+		<>
+			<h1>{basicContent.frontmatter.title}</h1>
+
+			{new Chunk(basicContent.html, true)}
+
+			<hr />
 
 			<post.Form>
 				<button>Submit</button>
 			</post.Form>
-
-			<hr />
-
-			{async () => {
-				const { processor } = await import("@/lib/md");
-				return new Chunk(processor.render(`\`\`\`tsx\n${code}\`\`\``), true);
-			}}
-		</div>
+		</>
 	);
 });
 
