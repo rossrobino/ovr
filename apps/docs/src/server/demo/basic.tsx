@@ -30,5 +30,5 @@ export const page = new Get("/demo/basic", () => {
 
 export const post = new Post((c) => {
 	console.log("posted");
-	c.redirect("/demo/basic", 303);
+	c.redirect("/", 303);
 });

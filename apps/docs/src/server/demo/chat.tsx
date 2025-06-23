@@ -5,6 +5,25 @@ import "dotenv/config";
 import { Chunk, Get, Post, csrf } from "ovr";
 import * as z from "zod/v4";
 
+async function* Poet(props: { message: string }) {
+	const agent = new Agent({
+		name: "Poet",
+		instructions: "You turn messages into poems.",
+		model: "gpt-4.1-nano",
+	});
+
+	const result = await run(agent, props.message, { stream: true });
+
+	for await (const event of result) {
+		if (
+			event.type === "raw_model_stream_event" &&
+			event.data.type === "output_text_delta"
+		) {
+			yield event.data.delta;
+		}
+	}
+}
+
 export const chat = new Get("/demo/chat", () => {
 	const codeBlock = new Chunk(
 		processor.render(`\`\`\`tsx\n${code}\`\`\``),
@@ -39,25 +58,6 @@ export const chat = new Get("/demo/chat", () => {
 		</div>
 	);
 });
-
-async function* Poet(props: { message: string }) {
-	const agent = new Agent({
-		name: "Poet",
-		instructions: "You turn messages into poems.",
-		model: "gpt-4.1-nano",
-	});
-
-	const result = await run(agent, props.message, { stream: true });
-
-	for await (const event of result) {
-		if (
-			event.type === "raw_model_stream_event" &&
-			event.data.type === "output_text_delta"
-		) {
-			yield event.data.delta;
-		}
-	}
-}
 
 export const stream = new Post(
 	csrf({
