@@ -1,10 +1,12 @@
 import { type JSX, jsx } from "../jsx/index.js";
 import { insertParams } from "../trie/insert-params.js";
-import type { ExtractParams } from "../types/index.js";
-import type { Middleware, Params } from "./index.js";
-
-type AnchorProps<P extends Params> = JSX.IntrinsicElements["a"] &
-	(keyof P extends never ? { params?: never } : { params: P });
+import type {
+	AnchorProps,
+	ButtonProps,
+	ExtractParams,
+	FormProps,
+} from "../types/index.js";
+import type { Middleware } from "./index.js";
 
 export class Get<Pattern extends string = string> {
 	/** Route pattern */
@@ -15,6 +17,12 @@ export class Get<Pattern extends string = string> {
 
 	/** `<a>` component with preset `href` attribute. */
 	Anchor: (props: AnchorProps<ExtractParams<Pattern>>) => JSX.Element;
+
+	/** `<button>` component with preset `formaction` and `formmethod` attributes. */
+	Button: (props: ButtonProps<ExtractParams<Pattern>>) => JSX.Element;
+
+	/** `<form>` component with preset `method` and `action` attributes. */
+	Form: (props: FormProps<ExtractParams<Pattern>>) => JSX.Element;
 
 	#parts: string[];
 
@@ -45,10 +53,30 @@ export class Get<Pattern extends string = string> {
 		this.pattern = pattern;
 		this.middleware = middleware;
 		this.#parts = pattern.split("/");
+
 		this.Anchor = (props) => {
 			const { params = {}, ...rest } = props;
 
 			return jsx("a", { href: insertParams(this.#parts, params), ...rest });
+		};
+
+		this.Button = (props) => {
+			const { params = {}, ...rest } = props;
+
+			return jsx("button", {
+				formaction: insertParams(this.#parts, params),
+				formmethod: "get",
+				...rest,
+			});
+		};
+
+		this.Form = (props) => {
+			const { params = {}, ...rest } = props;
+
+			return jsx("form", {
+				action: insertParams(this.#parts, params),
+				...rest,
+			});
 		};
 	}
 }

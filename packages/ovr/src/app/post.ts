@@ -1,11 +1,8 @@
 import { type JSX, jsx } from "../jsx/index.js";
 import { insertParams } from "../trie/insert-params.js";
-import type { ExtractParams } from "../types/index.js";
+import type { ButtonProps, ExtractParams, FormProps } from "../types/index.js";
 import { hash } from "../util/hash.js";
-import type { Middleware, Params } from "./index.js";
-
-type FormProps<P extends Params> = JSX.IntrinsicElements["form"] &
-	(keyof P extends never ? { params?: never } : { params: P });
+import type { Middleware } from "./index.js";
 
 export class Post<Pattern extends string = string> {
 	/** Route pattern */
@@ -13,6 +10,9 @@ export class Post<Pattern extends string = string> {
 
 	/** POST middleware */
 	middleware: Middleware<any>[];
+
+	/** `<button>` component with preset `formaction` and `formmethod` attributes. */
+	Button: (props: ButtonProps<ExtractParams<Pattern>>) => JSX.Element;
 
 	/** `<form>` component with preset `method` and `action` attributes. */
 	Form: (props: FormProps<ExtractParams<Pattern>>) => JSX.Element;
@@ -34,7 +34,7 @@ export class Post<Pattern extends string = string> {
 	 *
 	 * const page = new Get("/", () => (
 	 * 	<post.Form>
-	 * 		<input />
+	 * 		<input type="text" name="name" />
 	 * 		<button>Submit</button>
 	 * 	</post.Form>
 	 * ));
@@ -61,10 +61,20 @@ export class Post<Pattern extends string = string> {
 			this.pattern = patternOrMiddleware;
 		} else {
 			this.middleware.unshift(patternOrMiddleware);
-			this.pattern = `/_action/${hash(this.middleware.join())}` as Pattern;
+			this.pattern = `/_p/${hash(this.middleware.join())}` as Pattern;
 		}
 
 		this.#parts = this.pattern.split("/");
+
+		this.Button = (props) => {
+			const { params = {}, ...rest } = props;
+
+			return jsx("button", {
+				formaction: insertParams(this.#parts, params),
+				formmethod: "post",
+				...rest,
+			});
+		};
 
 		this.Form = (props) => {
 			const { params = {}, ...rest } = props;

@@ -6,4 +6,3 @@ export { Context } from "./app/context.js";
 export { Get } from "./app/get.js";
 export { Post } from "./app/post.js";
 export { csrf } from "./app/mw/csrf.js";
-export type * from "./types/index.js";

@@ -1,3 +1,6 @@
+import type { Params } from "../app/index.js";
+import type { JSX } from "../jsx/index.js";
+
 export type MaybePromise<T> = T | Promise<T>;
 
 export type MaybeFunction<T> = T | (() => T);
@@ -21,3 +24,12 @@ export type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 		? ExtractParams<First>
 		: ExtractParams<First> | ExtractMultiParams<Rest>
 	: never;
+
+export type AnchorProps<P extends Params> = JSX.IntrinsicElements["a"] &
+	(keyof P extends never ? { params?: never } : { params: P });
+
+export type FormProps<P extends Params> = JSX.IntrinsicElements["form"] &
+	(keyof P extends never ? { params?: never } : { params: P });
+
+export type ButtonProps<P extends Params> = JSX.IntrinsicElements["button"] &
+	(keyof P extends never ? { params?: never } : { params: P });

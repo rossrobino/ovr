@@ -7,7 +7,7 @@ ovr provides helpers to encapsulate a route, allowing you to easily create a rou
 
 ## Get
 
-`Get` creates a GET route and a corresponding `Anchor` component for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
+`Get` creates a GET route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
 
 ```tsx
 import { Get } from "ovr";
@@ -16,12 +16,19 @@ const get = new Get("/", () => {
 	return <p>hello world</p>;
 });
 
-<get.Anchor>Home</get.Anchor>; // <a> tag with preset `href="/"` attribute
+// <a> tag with preset `href="/"` attribute
+<get.Anchor>Home</get.Anchor>;
+
+// <button> component with preset `formaction` and `formmethod` attributes
+<get.Button>Submit</get.Button>
+
+// <form> tag with preset `action="/"` attribute
+<get.Form>...</get.Form>;
 ```
 
 ## Post
 
-There is also an `Post` helper that will create a POST handler and a corresponding `Form` element.
+There is also an `Post` helper that will create a POST handler and corresponding `Form` and `Button` elements.
 
 ```tsx
 import { Post } from "ovr";
@@ -34,7 +41,11 @@ const post = new Post((c) => {
 	c.redirect("/", 303);
 })
 
-<post.Form>...</post.Form>; // <form> with preset `method` and `action` attributes
+// <form> with preset `method="POST"` and `action` attributes
+<post.Form>...</post.Form>;
+
+// <button> component with preset `formaction` and `formmethod` attributes
+<post.Button>Submit</post.Button>
 ```
 
 For `Post`, ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
