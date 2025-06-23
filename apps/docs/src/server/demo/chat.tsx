@@ -1,5 +1,5 @@
-import { processor } from "@/lib/md";
-import code from "@/server/demo/chat?raw";
+import * as chatContent from "@/server/demo/content/chat.md";
+import { Head } from "@/ui/head";
 import { Agent, run } from "@openai/agents";
 import "dotenv/config";
 import { Chunk, Get, Post, csrf } from "ovr";
@@ -24,33 +24,31 @@ async function* Poet(props: { message: string }) {
 	}
 }
 
-export const chat = new Get("/demo/chat", () => (
-	<div>
-		<h1>Chat</h1>
+export const chat = new Get("/demo/chat", (c) => {
+	c.head(<Head {...chatContent.frontmatter} />);
 
-		<p>
-			Here's a basic chat example with the OpenAI Agents SDK. The response is
-			streamed without JavaScript using the async generator
-			<code>Poet</code> component.
-		</p>
+	return (
+		<div>
+			<h1>{chatContent.frontmatter.title}</h1>
 
-		<stream.Form class="grid gap-4">
-			<div>
-				<label for="message">Message</label>
-				<textarea
-					name="message"
-					id="message"
-					placeholder="Create a poem from a message"
-				></textarea>
-			</div>
-			<button>Send</button>
-		</stream.Form>
+			{new Chunk(chatContent.html, true)}
 
-		<hr />
+			<hr />
 
-		{new Chunk(processor.render(`\`\`\`tsx\n${code}\`\`\``), true)}
-	</div>
-));
+			<stream.Form class="grid gap-4">
+				<div>
+					<label for="message">Message</label>
+					<textarea
+						name="message"
+						id="message"
+						placeholder="Create a poem from a message"
+					></textarea>
+				</div>
+				<button>Send</button>
+			</stream.Form>
+		</div>
+	);
+});
 
 export const stream = new Post(
 	csrf({
