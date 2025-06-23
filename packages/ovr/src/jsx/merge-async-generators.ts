@@ -10,7 +10,6 @@ const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
  * Adapted from [stack overflow answers](https://stackoverflow.com/questions/50585456).
  *
  * @param generators Resolved in parallel.
- * @param returnValue Passed into each `iterator.return()`
  * @yields `IteratorResult` and `index` of the resolved generator.
  */
 export async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
@@ -37,6 +36,9 @@ export async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
 			}
 		}
 	} finally {
-		for (const iter of iterators) iter.return().catch(() => {}); // could have already returned
+		for (const iterator of iterators) {
+			// catch - could have already returned
+			iterator.return().catch(() => {});
+		}
 	}
 }
