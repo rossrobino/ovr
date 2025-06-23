@@ -24,40 +24,33 @@ async function* Poet(props: { message: string }) {
 	}
 }
 
-export const chat = new Get("/demo/chat", () => {
-	const codeBlock = new Chunk(
-		processor.render(`\`\`\`tsx\n${code}\`\`\``),
-		true,
-	);
+export const chat = new Get("/demo/chat", () => (
+	<div>
+		<h1>Chat</h1>
 
-	return (
-		<div>
-			<h1>Chat</h1>
+		<p>
+			Here's a basic chat example with the OpenAI Agents SDK. The response is
+			streamed without JavaScript using the async generator
+			<code>Poet</code> component.
+		</p>
 
-			<p>
-				Here's a basic chat example with the OpenAI Agents SDK. The response is
-				streamed without JavaScript using the async generator
-				<code>Poet</code> component.
-			</p>
+		<stream.Form class="grid gap-4">
+			<div>
+				<label for="message">Message</label>
+				<textarea
+					name="message"
+					id="message"
+					placeholder="Create a poem from a message"
+				></textarea>
+			</div>
+			<button>Send</button>
+		</stream.Form>
 
-			<stream.Form class="grid gap-4">
-				<div>
-					<label for="message">Message</label>
-					<textarea
-						name="message"
-						id="message"
-						placeholder="Create a poem from a message"
-					></textarea>
-				</div>
-				<button>Send</button>
-			</stream.Form>
+		<hr />
 
-			<hr />
-
-			{codeBlock}
-		</div>
-	);
-});
+		{new Chunk(processor.render(`\`\`\`tsx\n${code}\`\`\``), true)}
+	</div>
+));
 
 export const stream = new Post(
 	csrf({
