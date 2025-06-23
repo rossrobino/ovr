@@ -1,5 +1,11 @@
 # ovr
 
+## 4.1.0
+
+### Minor Changes
+
+- 5e53fc6: feat: Adds [more components](https://ovr.robino.dev/04-helpers) to `Get` and `Post` helpers.
+
 ## 4.0.0
 
 ### Major Changes
