@@ -7,7 +7,7 @@ Using generators can reduce memory consumption which can be useful if you are re
 
 ```tsx
 function Numbers() {
-	const nums = Array.from({ length: 10_000 }, (_, i) => i);
+	const nums = Array.from({ length: 5_000 }, (_, i) => i);
 	return nums.map((i) => <div>{i}</div>);
 }
 ```
