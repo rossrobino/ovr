@@ -5,6 +5,8 @@ import { Chunk, Get } from "ovr";
 
 export * from "@/server/demo/basic";
 
+export * from "@/server/demo/chat";
+
 export const parallel = new Get("/demo/parallel", (c) => {
 	const Delay = async ({ ms }: { ms: number }) => {
 		await new Promise((res) => setTimeout(res, ms));

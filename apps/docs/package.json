@@ -12,8 +12,10 @@
 	"dependencies": {
 		"@fontsource-variable/geist": "^5.2.6",
 		"@fontsource-variable/geist-mono": "^5.2.6",
+		"@openai/agents": "^0.0.9",
 		"@robino/md": "^4.0.2",
 		"clsx": "^2.1.1",
+		"dotenv": "^16.5.0",
 		"drab": "^7.0.2",
 		"ovr": "*",
 		"uico": "^0.10.2",

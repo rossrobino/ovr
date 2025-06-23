@@ -37,7 +37,7 @@ export const Layout = (props: { children?: JSX.Element }) => {
 				<div class="flex w-full min-w-0 flex-row-reverse justify-between">
 					<TOC />
 					<div class="flex w-full min-w-0 justify-center">
-						<div class="prose max-w-3xl min-w-0 px-4 pt-3.5 pb-4">
+						<div class="prose w-full max-w-3xl min-w-0 px-4 pt-3.5 pb-4">
 							{props.children}
 							<hr class="my-12" />
 						</div>

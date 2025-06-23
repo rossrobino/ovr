@@ -21,6 +21,8 @@ export const page = new Get("/demo/basic", () => {
 				<button>Submit</button>
 			</post.Form>
 
+			<hr />
+
 			{codeBlock}
 		</div>
 	);
