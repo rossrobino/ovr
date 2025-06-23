@@ -233,6 +233,8 @@ export class Context<P extends Params = Params> {
 			gen = toGenerator(Page);
 		}
 
+		let result: IteratorResult<Chunk>;
+
 		this.html(
 			new ReadableStream<string>({
 				pull: async (c) => {
@@ -242,7 +244,7 @@ export class Context<P extends Params = Params> {
 						return;
 					}
 
-					const result = await gen.next();
+					result = await gen.next();
 					if (result.done) c.close();
 					else c.enqueue(result.value.value);
 				},

@@ -72,28 +72,28 @@ export async function* jsx<P extends Props = Props>(
 	// intrinsic element
 	const { children, ...rest } = props;
 
-	const attributes: string[] = [];
+	let attributes = "";
+	let key: string;
+	let value: JSX.Element;
 
-	for (let key in rest) {
-		const value = rest[key]; // needs to come before reassigning keys
+	for (key in rest) {
+		value = rest[key]; // needs to come before reassigning keys
 
 		if (key === "className") key = "class";
 		else if (key === "htmlFor") key = "for";
 
 		if (value === true) {
 			// just put the key without the value
-			attributes.push(` ${key}`);
-		} else if (
-			typeof value === "string" ||
-			typeof value === "number" ||
-			typeof value === "bigint"
-		) {
-			attributes.push(` ${key}="${Chunk.escape(String(value), true)}"`);
+			attributes += ` ${key}`;
+		} else if (typeof value === "string") {
+			attributes += ` ${key}="${Chunk.escape(value, true)}"`;
+		} else if (typeof value === "number" || typeof value === "bigint") {
+			attributes += ` ${key}="${value}"`;
 		}
 		// otherwise, don't include the attribute
 	}
 
-	yield new Chunk(`<${tag}${attributes.join("")}>`, true);
+	yield new Chunk(`<${tag}${attributes}>`, true);
 
 	if (voidElements.has(tag)) return;
 
@@ -139,7 +139,9 @@ export async function* toGenerator(
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
 			// async iterable - lazily resolve
-			for await (const children of element) yield* toGenerator(children);
+			let children: JSX.Element;
+
+			for await (children of element) yield* toGenerator(children);
 
 			return;
 		}
@@ -155,11 +157,12 @@ export async function* toGenerator(
 			) {
 				// sync generator
 				// process lazily - avoids loading all in memory
-				const yieldIterations = 50;
+				const yieldIterations = 150;
 				let yieldCounter = yieldIterations;
+				let result: IteratorResult<JSX.Element>;
 
 				while (true) {
-					const result = iterator.next();
+					result = iterator.next();
 
 					if (result.done) break;
 					yield* toGenerator(result.value);
@@ -178,26 +181,24 @@ export async function* toGenerator(
 			// other iterable - array, set, etc.
 			// process children in parallel
 			const generators: AsyncGenerator<Chunk, void, unknown>[] = [];
+			let result: IteratorResult<JSX.Element>;
 
 			while (true) {
-				const result = iterator.next();
+				result = iterator.next();
 				if (result.done) break;
 				generators.push(toGenerator(result.value));
 			}
 
-			const queue: (Chunk | null)[] = new Array(generators.length).fill(null);
-
-			let current = 0;
+			const queue: (Chunk | null)[] = new Array(generators.length);
 			const complete = new Set<number>();
+			let current = 0;
+			let m: { index: number; result: IteratorResult<Chunk, void> };
 
-			for await (const {
-				index,
-				result: { done, value: chunk },
-			} of merge(generators)) {
-				if (done) {
-					complete.add(index);
+			for await (m of merge(generators)) {
+				if (m.result.done) {
+					complete.add(m.index);
 
-					if (index === current) {
+					if (m.index === current) {
 						while (++current < generators.length) {
 							if (queue[current]) {
 								// yield whatever is in the next queue even if it hasn't completed yet
@@ -209,12 +210,12 @@ export async function* toGenerator(
 							if (!complete.has(current)) break;
 						}
 					}
-				} else if (index === current) {
-					yield chunk; // stream the current value directly
+				} else if (m.index === current) {
+					yield m.result.value; // stream the current value directly
 				} else {
 					// queue the value for later
-					if (queue[index]) queue[index].concat(chunk);
-					else queue[index] = chunk;
+					if (queue[m.index]) queue[m.index]!.concat(m.result.value);
+					else queue[m.index] = m.result.value;
 				}
 			}
 
@@ -241,7 +242,10 @@ export async function* toGenerator(
  * @returns Concatenated HTML
  */
 export const toString = async (element: JSX.Element) => {
-	const buffer: Chunk[] = [];
-	for await (const chunk of toGenerator(element)) buffer.push(chunk);
-	return buffer.join("");
+	let buffer = "";
+	let chunk: Chunk;
+
+	for await (chunk of toGenerator(element)) buffer += chunk.value;
+
+	return buffer;
 };

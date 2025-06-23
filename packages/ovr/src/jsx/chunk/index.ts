@@ -46,20 +46,20 @@ export class Chunk {
 		// tracks the position of the last successful match in the input string
 		let start = 0;
 		let result = "";
+		// index of the match
+		let i: number;
+		let match: string | undefined;
 
 		// since `g` flag is used, regex maintains state with each loop,
 		// checking from the lastIndex onward each time
 		while (regex.test(s)) {
-			// index of the match
-			const i = regex.lastIndex - 1;
-			const match = s[i];
-
+			i = regex.lastIndex - 1;
+			match = s[i];
 			result +=
 				// everything that didn't match during this test
 				s.slice(start, i) +
 				// replacement
 				(match === "&" ? "&amp;" : match === '"' ? "&quot;" : "&lt;");
-
 			start = regex.lastIndex;
 		}
 

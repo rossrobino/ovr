@@ -1,25 +1,29 @@
-import { processor } from "@/lib/md";
 import code from "@/server/demo/basic?raw";
 import { Chunk, Get, Post } from "ovr";
 
-export const page = new Get("/demo/basic", () => (
-	<div>
-		<h1>Basic</h1>
+export const page = new Get("/demo/basic", () => {
+	return (
+		<div>
+			<h1>Basic</h1>
 
-		<p>
-			Here is a basic page and post method created with ovr's <code>Get</code>{" "}
-			and <code>Post</code> helpers.
-		</p>
+			<p>
+				Here is a basic page and post method created with ovr's <code>Get</code>{" "}
+				and <code>Post</code> helpers.
+			</p>
 
-		<post.Form>
-			<button>Submit</button>
-		</post.Form>
+			<post.Form>
+				<button>Submit</button>
+			</post.Form>
 
-		<hr />
+			<hr />
 
-		{new Chunk(processor.render(`\`\`\`tsx\n${code}\`\`\``), true)}
-	</div>
-));
+			{async () => {
+				const { processor } = await import("@/lib/md");
+				return new Chunk(processor.render(`\`\`\`tsx\n${code}\`\`\``), true);
+			}}
+		</div>
+	);
+});
 
 export const post = new Post((c) => {
 	console.log("posted");

@@ -14,7 +14,7 @@ const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
  */
 export async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
 	const iterators = generators.map((gen) => gen[Symbol.asyncIterator]());
-	const promises = new Map<number, Promise<any>>();
+	const promises = new Map<number, ReturnType<typeof next<T, void>>>();
 
 	iterators.forEach((iterator, index) =>
 		promises.set(index, next(iterator, index)),
