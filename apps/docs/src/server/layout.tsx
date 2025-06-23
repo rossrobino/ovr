@@ -116,23 +116,25 @@ const NavList = () => {
 
 			<NavHeading>Demo</NavHeading>
 			<ul class="grid gap-1">
-				{Object.values(demos).map((demo) => {
-					if (!("Anchor" in demo)) return; // filter out post
+				{Object.values(demos)
+					.sort((a, b) => a.pattern.localeCompare(b.pattern))
+					.map((demo) => {
+						if (!("Anchor" in demo)) return; // filter out post
 
-					return (
-						<li>
-							<demo.Anchor
-								data-no-prefetch
-								class={clsx(
-									"button secondary justify-start capitalize",
-									demo.pattern !== Context.get().url.pathname && "ghost",
-								)}
-							>
-								{demo.pattern.split("/").at(2)}
-							</demo.Anchor>
-						</li>
-					);
-				})}
+						return (
+							<li>
+								<demo.Anchor
+									data-no-prefetch
+									class={clsx(
+										"button secondary justify-start capitalize",
+										demo.pattern !== Context.get().url.pathname && "ghost",
+									)}
+								>
+									{demo.pattern.split("/").at(2)}
+								</demo.Anchor>
+							</li>
+						);
+					})}
 			</ul>
 		</>
 	);
