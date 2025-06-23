@@ -2,7 +2,7 @@ import * as chatContent from "@/server/demo/content/chat.md";
 import { Head } from "@/ui/head";
 import { Agent, run } from "@openai/agents";
 import "dotenv/config";
-import { Chunk, Get, Post, csrf } from "ovr";
+import { Chunk, Get, Post } from "ovr";
 import * as z from "zod/v4";
 
 async function* Poet(props: { message: string }) {
@@ -50,26 +50,19 @@ export const chat = new Get("/demo/chat", (c) => {
 	);
 });
 
-export const stream = new Post(
-	csrf({
-		origin: import.meta.env.DEV
-			? "http://localhost:5173"
-			: "https://ovr.robino.dev",
-	}),
-	async (c) => {
-		const data = await c.req.formData();
-		const message = z.string().parse(data.get("message"));
+export const stream = new Post(async (c) => {
+	const data = await c.req.formData();
+	const message = z.string().parse(data.get("message"));
 
-		return (
-			<div>
-				<h1>Poem</h1>
+	return (
+		<div>
+			<h1>Poem</h1>
 
-				<blockquote class="bg-muted rounded-md p-6 shadow-md">
-					<Poet message={message} />
-				</blockquote>
+			<blockquote class="bg-muted rounded-md p-6 shadow-md">
+				<Poet message={message} />
+			</blockquote>
 
-				<chat.Anchor>Back to chat</chat.Anchor>
-			</div>
-		);
-	},
-);
+			<chat.Anchor>Back to chat</chat.Anchor>
+		</div>
+	);
+});

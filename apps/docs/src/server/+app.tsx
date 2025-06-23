@@ -3,25 +3,9 @@ import * as demo from "@/server/demo";
 import { Layout } from "@/server/layout";
 import { Head } from "@/ui/head";
 import { html } from "client:page";
-import { App, Chunk, csrf } from "ovr";
+import { App, Chunk, Get, csrf } from "ovr";
 
 const app = new App();
-
-app.get(["/", "/:slug"], (c) => {
-	const result =
-		content[`/content/${"slug" in c.params ? c.params.slug : "index"}.md`];
-
-	if (!result?.html) return;
-
-	c.head(<Head {...result.frontmatter} />);
-
-	return (
-		<>
-			<h1>{result.frontmatter.title}</h1>
-			{new Chunk(result.html, true)}
-		</>
-	);
-});
 
 app.base = html;
 
@@ -39,6 +23,39 @@ app.use(
 	}),
 );
 
-app.add(demo);
+const home = new Get("/", (c) => {
+	const result = content["/content/index.md"];
+	if (!result) return;
+
+	c.head(<Head {...result.frontmatter} />);
+
+	return (
+		<>
+			<h1>{result.frontmatter.title}</h1>
+			{new Chunk(result.html, true)}
+		</>
+	);
+});
+
+const docs = new Get("/:slug", (c) => {
+	if (c.params.slug === "index") {
+		return c.redirect("/", 308);
+	}
+
+	const result = content[`/content/${c.params.slug}.md`];
+
+	if (!result) return;
+
+	c.head(<Head {...result.frontmatter} />);
+
+	return (
+		<>
+			<h1>{result.frontmatter.title}</h1>
+			{new Chunk(result.html, true)}
+		</>
+	);
+});
+
+app.add(home, docs, demo);
 
 export default app;
