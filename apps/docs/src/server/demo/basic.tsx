@@ -1,4 +1,3 @@
-import code from "@/server/demo/basic?raw";
 import * as basicContent from "@/server/demo/content/basic.md";
 import { Head } from "@/ui/head";
 import { Chunk, Get, Post } from "ovr";
