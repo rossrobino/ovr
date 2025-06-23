@@ -117,6 +117,8 @@ const NavList = () => {
 			<NavHeading>Demo</NavHeading>
 			<ul class="grid gap-1">
 				{Object.values(demos).map((demo) => {
+					if (!("Anchor" in demo)) return; // filter out post
+
 					return (
 						<li>
 							<demo.Anchor

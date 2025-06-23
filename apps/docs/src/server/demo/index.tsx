@@ -3,6 +3,8 @@ import * as parallelContent from "@/server/demo/content/parallel.md";
 import { Head } from "@/ui/head";
 import { Chunk, Get } from "ovr";
 
+export * from "@/server/demo/basic";
+
 export const parallel = new Get("/demo/parallel", (c) => {
 	const Delay = async ({ ms }: { ms: number }) => {
 		await new Promise((res) => setTimeout(res, ms));
