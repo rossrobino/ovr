@@ -29,7 +29,7 @@ export const Layout = (props: { children?: JSX.Element }) => {
 			</header>
 			<main class="flex">
 				<div>
-					<nav class="sticky top-0 z-10 hidden min-w-52 flex-col gap-4 p-4 md:flex">
+					<nav class="sticky top-0 z-10 hidden max-h-dvh min-w-52 flex-col gap-4 overflow-y-auto p-4 md:flex">
 						<HomeLink />
 						<NavList />
 					</nav>
@@ -135,6 +135,21 @@ const NavList = () => {
 							</li>
 						);
 					})}
+			</ul>
+
+			<hr />
+
+			<ul>
+				<li>
+					<a
+						href="https://github.com/rossrobino/ovr"
+						target="_blank"
+						class="button ghost icon"
+						aria-label="GitHub"
+					>
+						<span class="icon-[lucide--github]"></span>
+					</a>
+				</li>
 			</ul>
 		</>
 	);

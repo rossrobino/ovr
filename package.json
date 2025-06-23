@@ -25,11 +25,11 @@
 		"release": "npm run build && changeset publish"
 	},
 	"devDependencies": {
-		"@changesets/cli": "^2.29.4",
-		"@robino/prettier": "^2.0.1",
+		"@changesets/cli": "^2.29.5",
+		"@robino/prettier": "^2.0.2",
 		"@robino/tsconfig": "^1.1.0",
-		"prettier": "^3.5.3",
-		"prettier-plugin-tailwindcss": "^0.6.12",
+		"prettier": "^3.6.0",
+		"prettier-plugin-tailwindcss": "^0.6.13",
 		"turbo": "^2.5.4",
 		"typescript": "^5.8.3",
 		"vitest": "^3.2.4"

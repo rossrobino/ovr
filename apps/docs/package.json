@@ -18,12 +18,12 @@
 		"dotenv": "^16.5.0",
 		"drab": "^7.0.2",
 		"ovr": "*",
-		"uico": "^0.10.2",
+		"uico": "^0.10.3",
 		"zod": "^3.25.67"
 	},
 	"devDependencies": {
 		"@domcojs/vercel": "^2.0.2",
-		"@iconify-json/lucide": "^1.2.50",
+		"@iconify-json/lucide": "^1.2.51",
 		"@iconify/tailwind4": "^1.0.6",
 		"@tailwindcss/vite": "^4.1.10",
 		"domco": "^4.1.4",
