@@ -19,7 +19,7 @@ The following values can be customized after creating the `App`. You can also co
 
 ovr handles [trailing slash](https://bjornlu.com/blog/trailing-slash-for-frameworks) redirects automatically, you can customize the redirect preference.
 
-```tsk
+```ts
 app.trailingSlash = "never";
 ```
 

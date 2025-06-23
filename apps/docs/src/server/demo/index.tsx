@@ -18,6 +18,8 @@ export const parallel = new Get("/demo/parallel", (c) => {
 
 	return (
 		<>
+			<h1>{parallelContent.frontmatter.title}</h1>
+
 			{new Chunk(parallelContent.html, true)}
 
 			<div class="grid grid-cols-3 gap-2 sm:grid-cols-6">
@@ -47,6 +49,8 @@ export const memory = new Get("/demo/memory", (c) => {
 
 	return (
 		<>
+			<h1>{memoryContent.frontmatter.title}</h1>
+
 			{new Chunk(memoryContent.html, true)}
 
 			<div class="grid grid-cols-3 gap-1 sm:grid-cols-6">

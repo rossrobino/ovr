@@ -58,8 +58,10 @@ const TOC = () => {
 	return (
 		<div>
 			<aside class="sticky top-0 hidden min-w-52 flex-col gap-3 p-4 lg:flex">
-				<h2 class="text-muted-foreground pl-3 text-xs uppercase">
-					<a href="#">On this page</a>
+				<h2 class="pl-3 text-xs uppercase">
+					<a href="#" class="text-muted-foreground font-bold">
+						On this page
+					</a>
 				</h2>
 				<ul class="grid gap-1">
 					{result?.headings.map((heading) => {
@@ -68,7 +70,7 @@ const TOC = () => {
 						return (
 							<li>
 								<a
-									class="button ghost h-8 justify-start px-3 capitalize"
+									class="button ghost h-8 justify-start truncate px-3 capitalize"
 									href={`#${heading.id}`}
 								>
 									{heading.name}
@@ -92,7 +94,7 @@ const HomeLink = () => {
 
 const NavHeading = (props: { children: JSX.Element }) => {
 	return (
-		<h2 class="text-muted-foreground pl-2 text-xs uppercase">
+		<h2 class="text-muted-foreground pl-2 text-xs font-bold uppercase">
 			{props.children}
 		</h2>
 	);

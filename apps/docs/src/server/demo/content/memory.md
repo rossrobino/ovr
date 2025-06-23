@@ -3,8 +3,6 @@ title: Memory Optimization
 description: Demo of using sync generators to optimize memory usage.
 ---
 
-# Memory Optimization
-
 Using generators can reduce memory consumption which can be useful if you are rendering a large HTML page. Instead of creating the entire component in memory by mapping through a large array:
 
 ```tsx

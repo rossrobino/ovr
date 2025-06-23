@@ -3,6 +3,8 @@
 @import "uico";
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @plugin "@iconify/tailwind4" {
 	scale: 1.25;
@@ -72,6 +74,9 @@
 	:root {
 		--light-end: 0.002;
 
+		--font-family-sans: "Geist Variable", sans-serif;
+		--font-family-mono: "Geist Mono Variable", monospace;
+
 		--shiki-foreground: var(--base-100);
 		--shiki-background: var(--base-900);
 		--shiki-token-constant: var(--base-50);
@@ -86,11 +91,29 @@
 
 		scrollbar-gutter: stable;
 	}
+
+	body {
+		font-weight: 300;
+	}
 }
 
 @layer components {
 	pre {
 		margin: 0;
-		@apply rounded-none px-4 sm:rounded-b-sm;
+		@apply rounded-none px-4 font-light sm:rounded-b-sm;
+	}
+
+	a:not(h1 a, h2 a, h3 a, h4 a),
+	button {
+		@apply font-normal;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply font-semibold;
 	}
 }
