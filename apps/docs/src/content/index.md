@@ -3,7 +3,7 @@ title: Progressive HTML Rendering
 description: Introduction to ovr.
 ---
 
-ovr is a [lightweight](https://npmgraph.js.org/?q=ovr) server framework built for streaming HTML with asynchronous JSX and a modern Fetch API-based router.
+ovr is a [lightweight](https://npmgraph.js.org/?q=ovr) server framework built for streaming HTML with asynchronous generator JSX.
 
 ## Introduction
 
