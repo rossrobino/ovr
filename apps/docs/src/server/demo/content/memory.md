@@ -23,4 +23,6 @@ function* Numbers() {
 
 This allows the server to send the result as it iterates through the generator, users also see the start of the content faster. If you are on a browser that displays the scrollbar, you can refresh the page to view the elements streaming in, or open your network tab to watch the request.
 
+---
+
 ## 5,000 divs

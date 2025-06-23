@@ -16,3 +16,5 @@ const Delays = () => {
 	return delays.map((ms) => <Delay ms={ms} />);
 };
 ```
+
+---
