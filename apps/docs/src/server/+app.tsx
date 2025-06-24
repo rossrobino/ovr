@@ -78,7 +78,7 @@ const docs = new Get("/:slug", (c) => {
 					return (
 						<a
 							class={clsx(
-								"border-muted flex flex-col gap-2 border p-4 capitalize no-underline",
+								"border-secondary flex flex-col gap-2 rounded-md border p-4 capitalize no-underline",
 								props.class,
 							)}
 							href={`/${props.slug}`}
