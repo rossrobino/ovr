@@ -1,5 +1,5 @@
-import { content, getSlugs } from "@/content";
 import * as demos from "@/server/demo";
+import * as docs from "@/server/docs";
 import { Popover } from "@/ui/popover";
 import clsx from "clsx";
 import { Context, type JSX } from "ovr";
@@ -49,8 +49,7 @@ export const Layout = (props: { children?: JSX.Element }) => {
 
 const TOC = () => {
 	const { pathname } = Context.get().url;
-	const result =
-		content[`/content${pathname === "/" ? "/index" : pathname}.md`];
+	const result = docs.getContent(pathname.slice(1));
 
 	if (!result) return;
 
@@ -106,7 +105,7 @@ const NavList = () => {
 
 			<NavHeading>Docs</NavHeading>
 			<ul class="grid gap-1">
-				{getSlugs().map((slug) => {
+				{docs.getSlugs().map((slug) => {
 					return <NavLink slug={slug} />;
 				})}
 			</ul>
