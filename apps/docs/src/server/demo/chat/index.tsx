@@ -1,4 +1,4 @@
-import * as chatContent from "@/server/demo/content/chat.md";
+import * as chatContent from "@/server/demo/chat/index.md";
 import { Head } from "@/ui/head";
 import "dotenv/config";
 import { Chunk, Get, Post } from "ovr";
