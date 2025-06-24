@@ -7,7 +7,7 @@ ovr is a [lightweight](https://npmgraph.js.org/?q=ovr) server framework built fo
 
 ## Introduction
 
-Designed to optimize performance and Time-To-First-Byte (TTFB), ovr evaluates components in parallel and streams HTML in order by producing an `AsyncGenerator` of HTML that feeds directly into the streamed response.
+Designed to optimize performance and Time-To-First-Byte, ovr evaluates components in parallel and streams HTML in order by producing an `AsyncGenerator` of HTML that feeds directly into the streamed response.
 
 For the following component:
 

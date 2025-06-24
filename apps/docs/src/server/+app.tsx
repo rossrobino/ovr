@@ -3,6 +3,7 @@ import * as demo from "@/server/demo";
 import { Layout } from "@/server/layout";
 import { Head } from "@/ui/head";
 import { html } from "client:page";
+import clsx from "clsx";
 import { App, Chunk, Get, csrf } from "ovr";
 
 const app = new App();
@@ -51,7 +52,54 @@ const docs = new Get("/:slug", (c) => {
 	return (
 		<>
 			<h1>{result.frontmatter.title}</h1>
+
 			{new Chunk(result.html, true)}
+
+			<hr />
+
+			{() => {
+				const num = parseInt(c.params.slug);
+				const previous = getSlugs().find((slug) => {
+					const n = parseInt(slug);
+					return n === num - 1;
+				});
+				const next = getSlugs().find((slug) => {
+					const n = parseInt(slug);
+					return n === num + 1;
+				});
+
+				const Link = (props: {
+					slug: string | undefined;
+					class?: string;
+					next?: boolean;
+				}) => {
+					if (!props.slug) return <div></div>;
+
+					return (
+						<a
+							class={clsx(
+								"border-muted flex flex-col gap-2 border p-4 capitalize no-underline",
+								props.class,
+							)}
+							href={`/${props.slug}`}
+						>
+							<span class="text-muted-foreground text-xs uppercase">
+								{props.next ? "Next page" : "Previous page"}
+							</span>
+							<span class="underline">
+								{props.slug.split("-").slice(1).join(" ")}
+							</span>
+						</a>
+					);
+				};
+
+				return (
+					<div class="grid grid-cols-2 gap-4">
+						<Link slug={previous} />
+						<Link slug={next} class="items-end" next />
+					</div>
+				);
+			}}
 		</>
 	);
 });
