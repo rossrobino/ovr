@@ -1,5 +1,5 @@
-import type { Params } from "../app/index.js";
 import type { JSX } from "../jsx/index.js";
+import type { Params } from "../trie/index.js";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -24,6 +24,23 @@ export type ExtractMultiParams<Patterns extends string[]> = Patterns extends [
 		? ExtractParams<First>
 		: ExtractParams<First> | ExtractMultiParams<Rest>
 	: never;
+
+export type InsertParams<
+	Pattern extends string,
+	P extends Params,
+> = Pattern extends `${infer Start}:${infer Param}/${infer Rest}`
+	? Param extends keyof P
+		? `${Start}${P[Param]}/${InsertParams<Rest, P>}`
+		: Pattern
+	: Pattern extends `${infer Start}:${infer Param}`
+		? Param extends keyof P
+			? `${Start}${P[Param]}`
+			: Pattern
+		: Pattern extends `${infer Start}*`
+			? "*" extends keyof P
+				? `${Start}${P["*"]}`
+				: Pattern
+			: Pattern;
 
 export type AnchorProps<P extends Params> = JSX.IntrinsicElements["a"] &
 	(keyof P extends never ? { params?: never } : { params: P });

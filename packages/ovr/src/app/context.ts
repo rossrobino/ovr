@@ -1,13 +1,12 @@
 import { Chunk } from "../jsx/chunk/index.js";
 import { type JSX, toGenerator } from "../jsx/index.js";
-import type { Route } from "../trie/index.js";
+import type { Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import {
 	App,
 	type ErrorHandler,
 	type Middleware,
 	type NotFoundHandler,
-	type Params,
 	type TrailingSlash,
 } from "./index.js";
 import { Memo } from "./memo/index.js";

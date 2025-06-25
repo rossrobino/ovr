@@ -1,15 +1,13 @@
-import { Route, Trie } from "../trie/index.js";
+import { type Params, Route, Trie } from "../trie/index.js";
 import type {
 	DeepArray,
 	ExtractMultiParams,
 	ExtractParams,
 } from "../types/index.js";
 import { Context } from "./context.js";
-import { Get } from "./get.js";
-import { Post } from "./post.js";
+import { Get } from "./helper/get.js";
+import { Post } from "./helper/post.js";
 import { AsyncLocalStorage } from "node:async_hooks";
-
-export type Params = Record<string, string>;
 
 export type Middleware<P extends Params = Params> = (
 	context: Context<P>,
@@ -105,19 +103,19 @@ export class App {
 	static storage = new AsyncLocalStorage<Context>();
 
 	/**
-	 * @param routes `Get` or `Post` to add to `App`
+	 * @param helpers `Helper` to add to `App`
 	 * @returns `App` instance
 	 */
-	add(...routes: DeepArray<Get | Post | Record<string, Get | Post>>[]) {
-		for (const route of routes) {
-			if (route instanceof Array) {
-				this.add(...route);
-			} else if (route instanceof Get) {
-				this.get(route.pattern, ...route.middleware);
-			} else if (route instanceof Post) {
-				this.post(route.pattern, ...route.middleware);
+	add(...helpers: DeepArray<Get | Post | Record<string, Get | Post>>[]) {
+		for (const helper of helpers) {
+			if (helper instanceof Array) {
+				this.add(...helper);
+			} else if (helper instanceof Get) {
+				this.get(helper.pattern, ...helper.middleware);
+			} else if (helper instanceof Post) {
+				this.post(helper.pattern, ...helper.middleware);
 			} else {
-				this.add(...Object.values(route));
+				this.add(...Object.values(helper));
 			}
 		}
 

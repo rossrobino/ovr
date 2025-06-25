@@ -10,7 +10,7 @@ const app = new App();
 app.base = html;
 
 app.prerender = [
-	home.page.pattern,
+	home.page.pathname(),
 	...docs.getSlugs().map((slug) => "/" + slug),
 ];
 

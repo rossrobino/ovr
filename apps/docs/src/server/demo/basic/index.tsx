@@ -13,14 +13,15 @@ export const page = new Get("/demo/basic", (c) => {
 
 			<hr />
 
-			<post.Form>
+			<post.Form params={{ id: "hello" }}>
 				<button>Submit</button>
 			</post.Form>
 		</>
 	);
 });
 
-export const post = new Post((c) => {
+export const post = new Post("/post/:id", (c) => {
+	console.log(c.params.id);
 	console.log("posted");
 	c.redirect("/", 303);
 });
