@@ -257,7 +257,7 @@ export class Context<P extends Params = Params> {
 					},
 				},
 				{ highWaterMark: 16_000, size: (chunk) => chunk.length },
-			).pipeThrough(new TextEncoderStream()),
+			),
 			status,
 		);
 	}
