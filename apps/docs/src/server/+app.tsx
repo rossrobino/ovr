@@ -9,10 +9,10 @@ const app = new App();
 
 app.base = html;
 
-// app.prerender = [
-// 	home.page.pathname(),
-// 	...docs.getSlugs().map((slug) => "/" + slug),
-// ];
+app.prerender = [
+	home.page.pathname(),
+	...docs.getSlugs().map((slug) => "/" + slug),
+];
 
 app.use(
 	(c, next) => {

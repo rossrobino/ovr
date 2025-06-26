@@ -68,6 +68,8 @@ export class Context<P extends Params = Params> {
 
 	memo = this.#memo.use;
 
+	static #encoder = new TextEncoder();
+
 	constructor(
 		req: Request,
 		url: URL,
@@ -240,7 +242,7 @@ export class Context<P extends Params = Params> {
 		let result: IteratorResult<Chunk>;
 
 		this.html(
-			new ReadableStream<string>(
+			new ReadableStream<Uint8Array>(
 				{
 					pull: async (c) => {
 						if (this.req.signal.aborted) return close(c);
@@ -249,7 +251,8 @@ export class Context<P extends Params = Params> {
 
 						if (result.done) return close(c);
 
-						c.enqueue(result.value.value);
+						// need to encode for Node JS (ex: during prerendering)
+						c.enqueue(Context.#encoder.encode(result.value.value));
 					},
 
 					cancel() {
