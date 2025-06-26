@@ -1,5 +1,12 @@
 # ovr
 
+## 4.2.2
+
+### Patch Changes
+
+- e801bee: patch: Removes undocumented support for `className` and `htmlFor` - if used, just use `class` and `for` respectively
+- e801bee: perf: Update `toString` to use `Array.fromAsync`
+
 ## 4.2.1
 
 ### Patch Changes
