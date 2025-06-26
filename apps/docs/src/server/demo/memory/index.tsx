@@ -2,7 +2,7 @@ import * as memoryContent from "@/server/demo/memory/index.md";
 import { Head } from "@/ui/head";
 import { Chunk, Get } from "ovr";
 
-export const memory = new Get("/demo/memory", (c) => {
+export const memory = new Get("/demo/memory", async (c) => {
 	c.head(<Head {...memoryContent.frontmatter} />);
 
 	function* Numbers() {
@@ -12,6 +12,10 @@ export const memory = new Get("/demo/memory", (c) => {
 			yield <div class="bg-muted rounded p-2 text-center">{i++}</div>;
 		// console.log(performance.now() - time);
 	}
+
+	// const time = performance.now();
+	// const str = await toString(Numbers);
+	// console.log(performance.now() - time);
 
 	// function Numbers() {
 	// 	const nums = Array.from({ length: 10_000 }, (_, i) => i);

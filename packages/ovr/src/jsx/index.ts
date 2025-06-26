@@ -77,10 +77,7 @@ export async function* jsx<P extends Props = Props>(
 	let value: JSX.Element;
 
 	for (key in rest) {
-		value = rest[key]; // needs to come before reassigning keys
-
-		if (key === "className") key = "class";
-		else if (key === "htmlFor") key = "for";
+		value = rest[key];
 
 		if (value === true) {
 			// just put the key without the value
@@ -241,11 +238,5 @@ export async function* toGenerator(
  * @param element
  * @returns Concatenated HTML
  */
-export const toString = async (element: JSX.Element) => {
-	let buffer = "";
-	let chunk: Chunk;
-
-	for await (chunk of toGenerator(element)) buffer += chunk.value;
-
-	return buffer;
-};
+export const toString = async (element: JSX.Element) =>
+	(await Array.fromAsync(toGenerator(element))).join("");

@@ -13,7 +13,6 @@ type Attributes<
 	autocorrect: "on" | "off";
 	autofocus: boolean;
 	class: string;
-	className: string;
 	contenteditable: string;
 	dir: string;
 	draggable: boolean;
@@ -445,7 +444,7 @@ type InputAttributes = Attributes<
 
 type InsAttributes = Attributes<{ cite: string; datetime: string }>;
 
-type LabelAttributes = Attributes<{ for: string; htmlFor: string }>;
+type LabelAttributes = Attributes<{ for: string }>;
 
 type LiAttributes = Attributes<{ value: string }>;
 
@@ -574,12 +573,7 @@ type OptionAttributes = Attributes<{
 	value: string;
 }>;
 
-type OutputAttributes = Attributes<{
-	for: string;
-	htmlFor: string;
-	form: string;
-	name: string;
-}>;
+type OutputAttributes = Attributes<{ for: string; form: string; name: string }>;
 
 type ProgressAttributes = Attributes<{ max: string; value: string }>;
 
