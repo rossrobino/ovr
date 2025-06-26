@@ -1,5 +1,6 @@
 import * as demos from "@/server/demo";
 import * as docs from "@/server/docs";
+import * as homeResult from "@/server/home/index.md";
 import { Popover } from "@/ui/popover";
 import clsx from "clsx";
 import { Context, type JSX } from "ovr";
@@ -49,9 +50,15 @@ export const Layout = (props: { children?: JSX.Element }) => {
 
 const TOC = () => {
 	const { pathname } = Context.get().url;
-	const result = docs.getContent(pathname.slice(1));
 
-	if (!result) return;
+	let result: ReturnType<typeof docs.getContent>;
+
+	if (pathname === "/") {
+		result = homeResult;
+	} else {
+		result = docs.getContent(pathname.slice(1));
+		if (!result) return;
+	}
 
 	return (
 		<div>
@@ -62,7 +69,7 @@ const TOC = () => {
 					</a>
 				</h2>
 				<ul class="grid gap-1">
-					{result?.headings.map((heading) => {
+					{result.headings.map((heading) => {
 						if (heading.level !== 2) return;
 
 						return (
