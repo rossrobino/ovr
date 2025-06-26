@@ -7,8 +7,10 @@ export const memory = new Get("/demo/memory", (c) => {
 
 	function* Numbers() {
 		let i = 0;
+		// const time = performance.now();
 		while (i < 5_000)
 			yield <div class="bg-muted rounded p-2 text-center">{i++}</div>;
+		// console.log(performance.now() - time);
 	}
 
 	// function Numbers() {

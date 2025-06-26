@@ -232,26 +232,32 @@ export class Context<P extends Params = Params> {
 			gen = toGenerator(Page);
 		}
 
+		const close = (c?: ReadableStreamDefaultController) => {
+			c?.close();
+			gen.return();
+		};
+
 		let result: IteratorResult<Chunk>;
 
 		this.html(
-			new ReadableStream<string>({
-				pull: async (c) => {
-					if (this.req.signal.aborted) {
-						c.close();
-						gen.return();
-						return;
-					}
+			new ReadableStream<string>(
+				{
+					pull: async (c) => {
+						if (this.req.signal.aborted) return close(c);
 
-					result = await gen.next();
-					if (result.done) c.close();
-					else c.enqueue(result.value.value);
-				},
+						result = await gen.next();
 
-				cancel() {
-					gen.return();
+						if (result.done) return close(c);
+
+						c.enqueue(result.value.value);
+					},
+
+					cancel() {
+						close();
+					},
 				},
-			}).pipeThrough(new TextEncoderStream()),
+				{ highWaterMark: 16_000, size: (chunk) => chunk.length },
+			),
 			status,
 		);
 	}
