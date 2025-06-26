@@ -1,5 +1,11 @@
 # ovr
 
+## 4.2.1
+
+### Patch Changes
+
+- 2170567: perf: Stream optimizations
+
 ## 4.2.0
 
 ### Minor Changes
