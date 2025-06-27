@@ -11,10 +11,10 @@ Install the `ovr` package from npm using your preferred package manager.
 npm i ovr
 ```
 
-Alternatively, you can setup ovr with a pre-configured template using [Vite with domco](https://github.com/rossrobino/domco). Run the following script and select the `ovr` template. This includes live reload and options for Tailwind, deployment adapters, and more.
+Alternatively, you can setup ovr with a pre-configured template using [Vite with domco](https://github.com/rossrobino/domco). This includes live reload and options for Tailwind, deployment adapters, and more.
 
 ```bash
-npm create domco
+npx create-domco@latest --framework=ovr
 ```
 
 ## JSX
