@@ -1,5 +1,11 @@
 # ovr
 
+## 4.2.3
+
+### Patch Changes
+
+- 4e64d54: fix: Remove unneeded check from `Context.page`
+
 ## 4.2.2
 
 ### Patch Changes
