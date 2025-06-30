@@ -1,5 +1,13 @@
 # ovr
 
+## 4.2.4
+
+### Patch Changes
+
+- 6ad1ed2: fix: Better error handling for `Context.head`.
+
+  If `Context.head` is called after the response is already being read, an error will be thrown since it will have no effect.
+
 ## 4.2.3
 
 ### Patch Changes
