@@ -19,7 +19,7 @@ function* Numbers() {
 	let i = 0;
 	while (i < 5_000) {
 		i++;
-		yield <div class="bg-foreground rounded-sm p-0.5" />;
+		yield <div />;
 	}
 }
 ```
