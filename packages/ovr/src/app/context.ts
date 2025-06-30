@@ -14,9 +14,20 @@ import { Memo } from "./memo/index.js";
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
 
 class TagNotFound extends Error {
+	override name = "TagNotFound";
 	constructor(tag: string) {
 		super(`No closing ${tag} tag found`);
-		this.name = "TagNotFound";
+	}
+}
+
+class ResponseFinalized extends Error {
+	override name = "ResponseFinalized";
+	constructor(property: string) {
+		super(
+			`Cannot set \`${property}\` after the \`Response\` has been finalized. ` +
+				`This can occur if \`${property}\` is set within a component since ` +
+				"components are evaluated during streaming.",
+		);
 	}
 }
 
@@ -40,11 +51,9 @@ export class Context<P extends Params = Params> {
 	/** The matched `Route` instance. */
 	route!: Route<Middleware<P>[]>; // set after match
 
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
-	body: BodyInit | null = null;
+	#body: BodyInit | null = null;
 
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) */
-	status?: number;
+	#status?: number;
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers) */
 	headers = new Headers();
@@ -55,8 +64,7 @@ export class Context<P extends Params = Params> {
 
 	#trailingSlash: TrailingSlash;
 
-	/** Passed from `app.base` */
-	base: string;
+	#base: string;
 
 	/** Passed from `app.error` */
 	error: ErrorHandler<P>;
@@ -69,11 +77,11 @@ export class Context<P extends Params = Params> {
 
 	memo = this.#memo.use;
 
-	/** Final `Response` set in `build` */
-	#response: Response | undefined;
+	/** Check if the `Response` has been built already */
+	#finalized = false;
 
 	/** Used across requests */
-	static #encoder = new TextEncoder();
+	static readonly #encoder = new TextEncoder();
 
 	constructor(
 		req: Request,
@@ -86,9 +94,36 @@ export class Context<P extends Params = Params> {
 		this.req = req;
 		this.url = url;
 		this.#trailingSlash = trailingSlash;
-		this.base = base;
+		this.#base = base;
 		this.error = error;
 		this.notFound = notFound;
+	}
+
+	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) */
+	get status() {
+		return this.#status;
+	}
+	set status(status) {
+		if (this.#finalized) throw new ResponseFinalized("status");
+		this.#status = status;
+	}
+
+	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
+	get body() {
+		return this.#body;
+	}
+	set body(body) {
+		if (this.#finalized) throw new ResponseFinalized("body");
+		this.#body = body;
+	}
+
+	/** Passed from `app.base` */
+	get base() {
+		return this.#base;
+	}
+	set base(base) {
+		if (this.#finalized) throw new ResponseFinalized("base");
+		this.#base = base;
 	}
 
 	/**
@@ -181,15 +216,7 @@ export class Context<P extends Params = Params> {
 	 * @param Element `JSX.Element` to add to the head
 	 */
 	head(...Element: JSX.Element[]) {
-		if (this.#bodyUsed) {
-			throw new Error(
-				"Cannot call `head` after `Response.body` has been read. " +
-					"This can occur if `head` is called within a component since " +
-					"components are evaluated during the stream, often times after " +
-					"the <head> element has already been sent.",
-			);
-		}
-
+		if (this.#finalized) throw new ResponseFinalized("head");
 		this.#headElements.push(...Element);
 	}
 
@@ -197,6 +224,7 @@ export class Context<P extends Params = Params> {
 	 * @param Layout `Layout`(s) for the `Page` to be passed into before being injected into the `<body>`
 	 */
 	layout(...Layout: Layout[]) {
+		if (this.#finalized) throw new ResponseFinalized("layout");
 		this.#layouts.push(...Layout);
 	}
 
@@ -252,7 +280,7 @@ export class Context<P extends Params = Params> {
 
 		this.html(
 			new ReadableStream<Uint8Array>({
-				pull: async (c) => {
+				async pull(c) {
 					result = await gen.next();
 
 					if (result.done) {
@@ -301,12 +329,6 @@ export class Context<P extends Params = Params> {
 	 * @returns the constructed `Response`
 	 */
 	build() {
-		if (this.req.signal.aborted) {
-			// user cancelled the request
-			this.body = null;
-			this.status = 408;
-		}
-
 		if (
 			(!this.status || this.status === 404) &&
 			this.#trailingSlash !== "ignore"
@@ -328,16 +350,9 @@ export class Context<P extends Params = Params> {
 
 		if (!this.body && !this.status) this.notFound(this);
 
-		return (this.#response = new Response(this.body, this));
-	}
+		this.#finalized = true;
 
-	/**
-	 * Check if the `Response` has been set and the body has been read.
-	 *
-	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/bodyUsed)
-	 */
-	get #bodyUsed() {
-		return Boolean(this.#response?.bodyUsed);
+		return new Response(this.body, this);
 	}
 
 	/**
