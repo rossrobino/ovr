@@ -8,7 +8,7 @@ export const memory = new Get("/demo/memory", async (c) => {
 	function* Numbers() {
 		let i = 0;
 		// const time = performance.now();
-		while (i < 5_000) {
+		while (i < 4_998) {
 			i++;
 			yield <div class="bg-foreground rounded-sm p-0.5" />;
 		}
@@ -26,11 +26,15 @@ export const memory = new Get("/demo/memory", async (c) => {
 
 	return (
 		<>
+			{() => c.head("hello")}
 			<h1>{memoryContent.frontmatter.title}</h1>
 
 			{new Chunk(memoryContent.html, true)}
 
-			<div class="flex flex-wrap gap-px">
+			<div
+				class="flex flex-wrap gap-px"
+				aria-label="This is div element that displays five thousand div elements that are streamed in. When the page is reloaded each div is streamed in order."
+			>
 				<Numbers />
 			</div>
 		</>

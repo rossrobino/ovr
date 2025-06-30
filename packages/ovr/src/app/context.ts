@@ -64,10 +64,15 @@ export class Context<P extends Params = Params> {
 	/** Passed from `app.notFound` */
 	notFound: NotFoundHandler<P>;
 
+	/** `Memo` unique to the current `Request` context */
 	#memo = new Memo();
 
 	memo = this.#memo.use;
 
+	/** Final `Response` set in `build` */
+	#response: Response | undefined;
+
+	/** Used across requests */
 	static #encoder = new TextEncoder();
 
 	constructor(
@@ -176,6 +181,15 @@ export class Context<P extends Params = Params> {
 	 * @param Element `JSX.Element` to add to the head
 	 */
 	head(...Element: JSX.Element[]) {
+		if (this.#bodyUsed) {
+			throw new Error(
+				"Cannot call `head` after `Response.body` has been read. " +
+					"This can occur if `head` is called within a component since " +
+					"components are evaluated during the stream, often times after " +
+					"the <head> element has already been sent.",
+			);
+		}
+
 		this.#headElements.push(...Element);
 	}
 
@@ -314,7 +328,16 @@ export class Context<P extends Params = Params> {
 
 		if (!this.body && !this.status) this.notFound(this);
 
-		return new Response(this.body, this);
+		return (this.#response = new Response(this.body, this));
+	}
+
+	/**
+	 * Check if the `Response` has been set and the body has been read.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/bodyUsed)
+	 */
+	get #bodyUsed() {
+		return Boolean(this.#response?.bodyUsed);
 	}
 
 	/**

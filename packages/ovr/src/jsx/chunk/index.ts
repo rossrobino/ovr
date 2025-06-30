@@ -8,11 +8,11 @@ export class Chunk {
 	/**
 	 * `Chunk` to send in an HTML stream.
 	 *
-	 * @param s string of HTML to escape
+	 * @param html string of HTML to escape
 	 * @param safe Set to `true` if the HTML is safe and should not be escaped
 	 */
-	constructor(s: unknown, safe?: boolean) {
-		const value = String(s ?? "");
+	constructor(html: unknown, safe?: boolean) {
+		const value = String(html ?? "");
 		this.value = safe ? value : Chunk.escape(value);
 	}
 
@@ -33,11 +33,11 @@ export class Chunk {
 	/**
 	 * Escapes strings of HTML.
 	 *
-	 * @param s String to escape
+	 * @param html String to escape
 	 * @param attr Set to `true` if the value is an attribute, otherwise it's a string of HTML content
 	 * @returns Escaped string of HTML
 	 */
-	static escape(s: string, attr?: boolean) {
+	static escape(html: string, attr?: boolean) {
 		// adapted from https://github.com/sveltejs/svelte/blob/main/packages/svelte/src/escaping.js
 		const regex = attr ? Chunk.#attr : Chunk.#content;
 
@@ -46,23 +46,22 @@ export class Chunk {
 		// tracks the position of the last successful match in the input string
 		let start = 0;
 		let result = "";
-		// index of the match
-		let i: number;
-		let match: string | undefined;
 
 		// since `g` flag is used, regex maintains state with each loop,
 		// checking from the lastIndex onward each time
-		while (regex.test(s)) {
-			i = regex.lastIndex - 1;
-			match = s[i];
+		while (regex.test(html)) {
+			// index of the match
+			const i = regex.lastIndex - 1;
+			const match = html[i];
+
 			result +=
 				// everything that didn't match during this test
-				s.slice(start, i) +
+				html.slice(start, i) +
 				// replacement
 				(match === "&" ? "&amp;" : match === '"' ? "&quot;" : "&lt;");
 			start = regex.lastIndex;
 		}
 
-		return result + s.slice(start);
+		return result + html.slice(start);
 	}
 }

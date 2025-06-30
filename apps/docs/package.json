@@ -26,7 +26,7 @@
 		"@iconify-json/lucide": "^1.2.54",
 		"@iconify/tailwind4": "^1.0.6",
 		"@tailwindcss/vite": "^4.1.11",
-		"domco": "^4.1.8",
+		"domco": "^4.2.0",
 		"tailwindcss": "^4.1.11",
 		"vite": "^7.0.0"
 	}
