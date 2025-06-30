@@ -8,8 +8,10 @@ export const memory = new Get("/demo/memory", async (c) => {
 	function* Numbers() {
 		let i = 0;
 		// const time = performance.now();
-		while (i < 5_000)
-			yield <div class="bg-muted rounded p-2 text-center">{i++}</div>;
+		while (i < 5_000) {
+			i++;
+			yield <div class="bg-foreground rounded-sm p-0.5" />;
+		}
 		// console.log(performance.now() - time);
 	}
 
@@ -28,7 +30,7 @@ export const memory = new Get("/demo/memory", async (c) => {
 
 			{new Chunk(memoryContent.html, true)}
 
-			<div class="grid grid-cols-3 gap-1 sm:grid-cols-6">
+			<div class="flex flex-wrap gap-px">
 				<Numbers />
 			</div>
 		</>

@@ -15,18 +15,18 @@
 		"@openai/agents": "^0.0.10",
 		"@robino/md": "^4.0.3",
 		"clsx": "^2.1.1",
-		"dotenv": "^16.5.0",
+		"dotenv": "^17.0.0",
 		"drab": "^7.0.2",
 		"ovr": "*",
 		"uico": "^0.10.3",
 		"zod": "^3.25.67"
 	},
 	"devDependencies": {
-		"@domcojs/vercel": "^2.0.2",
-		"@iconify-json/lucide": "^1.2.52",
+		"@domcojs/vercel": "^3.0.0",
+		"@iconify-json/lucide": "^1.2.54",
 		"@iconify/tailwind4": "^1.0.6",
 		"@tailwindcss/vite": "^4.1.11",
-		"domco": "^4.1.6",
+		"domco": "^4.1.8",
 		"tailwindcss": "^4.1.11",
 		"vite": "^7.0.0"
 	}

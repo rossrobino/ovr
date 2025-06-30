@@ -26,6 +26,27 @@ app.use(
 	}),
 );
 
+if (import.meta.env.DEV) {
+	app.get("/backpressure", async (c) => {
+		// need to make each chunk very large to observe pull stop
+		// log something in the Context.page => pull method to see
+		const res = await fetch("http://localhost:5173/demo/memory");
+
+		// Manually consume the stream slowly
+		const reader = res.body!.getReader();
+
+		while (true) {
+			// Only read every 100ms to simulate slow client
+			await new Promise((resolve) => setTimeout(resolve, 100));
+			const { done, value } = await reader.read();
+			console.log(`Read ${value?.length} bytes`);
+			if (done) break;
+		}
+
+		return c.res("done");
+	});
+}
+
 app.add(home, docs.page, demo);
 
 export default app;

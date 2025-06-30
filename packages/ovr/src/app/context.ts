@@ -234,33 +234,27 @@ export class Context<P extends Params = Params> {
 			gen = toGenerator(Page);
 		}
 
-		const close = (c?: ReadableStreamDefaultController) => {
-			c?.close();
-			gen.return();
-		};
-
 		let result: IteratorResult<Chunk>;
 
 		this.html(
-			new ReadableStream<Uint8Array>(
-				{
-					pull: async (c) => {
-						if (this.req.signal.aborted) return close(c);
+			new ReadableStream<Uint8Array>({
+				pull: async (c) => {
+					result = await gen.next();
 
-						result = await gen.next();
+					if (result.done) {
+						c.close();
+						gen.return();
+						return;
+					}
 
-						if (result.done) return close(c);
-
-						// need to encode for Node JS (ex: during prerendering)
-						c.enqueue(Context.#encoder.encode(result.value.value));
-					},
-
-					cancel() {
-						close();
-					},
+					// need to encode for Node JS (ex: during prerendering)
+					c.enqueue(Context.#encoder.encode(result.value.value));
 				},
-				{ highWaterMark: 16_000, size: (chunk) => chunk.length },
-			),
+
+				cancel() {
+					gen.return();
+				},
+			}),
 			status,
 		);
 	}
