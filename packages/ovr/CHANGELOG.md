@@ -1,5 +1,11 @@
 # ovr
 
+## 4.2.5
+
+### Patch Changes
+
+- 87fab37: fix: Adds `ResponseFinalized` errors to any properties of `Context` that cannot be set after the `Response` has been finalized.
+
 ## 4.2.4
 
 ### Patch Changes
