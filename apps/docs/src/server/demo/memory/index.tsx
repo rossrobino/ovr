@@ -26,9 +26,6 @@ export const memory = new Get("/demo/memory", async (c) => {
 
 	return (
 		<>
-			{() => {
-				c.layout(() => "hello");
-			}}
 			<h1>{memoryContent.frontmatter.title}</h1>
 
 			{new Chunk(memoryContent.html, true)}
