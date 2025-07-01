@@ -83,6 +83,9 @@ export class Context<P extends Params = Params> {
 	/** Used across requests */
 	static readonly #encoder = new TextEncoder();
 
+	static readonly #headClose = "</head>";
+	static readonly #bodyClose = "</body>";
+
 	constructor(
 		req: Request,
 		url: URL,
@@ -243,16 +246,13 @@ export class Context<P extends Params = Params> {
 
 		if (this.base) {
 			// inject into base
-			const headClose = "</head>";
-			const bodyClose = "</body>";
+			const elements: JSX.Element[] = this.base.split(Context.#headClose);
+			if (!elements[1]) throw new TagNotFound(Context.#headClose);
 
-			const elements: JSX.Element[] = this.base.split(headClose);
-			if (!elements[1]) throw new TagNotFound(headClose);
+			elements.splice(1, 0, this.#headElements, Context.#headClose);
 
-			elements.splice(1, 0, this.#headElements, headClose);
-
-			const bodyParts = (elements[3] as string).split(bodyClose);
-			if (!bodyParts[1]) throw new TagNotFound(bodyClose);
+			const bodyParts = (elements[3] as string).split(Context.#bodyClose);
+			if (!bodyParts[1]) throw new TagNotFound(Context.#bodyClose);
 
 			const userAgent = this.req.headers.get("user-agent");
 			if (userAgent?.includes("Safari") && !userAgent.includes("Chrome")) {
@@ -263,25 +263,22 @@ export class Context<P extends Params = Params> {
 			}
 
 			elements[3] = bodyParts[0];
-			elements.push(Page, bodyClose + bodyParts[1]);
+			elements.push(Page, Context.#bodyClose + bodyParts[1]);
 
 			gen = toGenerator(
-				elements.map((el) => {
-					if (typeof el === "string") return new Chunk(el, true);
-					return el;
-				}),
+				elements.map((el) =>
+					typeof el === "string" ? new Chunk(el, true) : el,
+				),
 			);
 		} else {
 			// HTML partial - just use the layouts + page
 			gen = toGenerator(Page);
 		}
 
-		let result: IteratorResult<Chunk>;
-
 		this.html(
 			new ReadableStream<Uint8Array>({
 				async pull(c) {
-					result = await gen.next();
+					const result = await gen.next();
 
 					if (result.done) {
 						c.close();

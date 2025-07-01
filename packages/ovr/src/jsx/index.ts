@@ -73,11 +73,9 @@ export async function* jsx<P extends Props = Props>(
 	const { children, ...rest } = props;
 
 	let attributes = "";
-	let key: string;
-	let value: JSX.Element;
 
-	for (key in rest) {
-		value = rest[key];
+	for (const key in rest) {
+		const value = rest[key];
 
 		if (value === true) {
 			// just put the key without the value
@@ -136,9 +134,7 @@ export async function* toGenerator(
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
 			// async iterable - lazily resolve
-			let children: JSX.Element;
-
-			for await (children of element) yield* toGenerator(children);
+			for await (const children of element) yield* toGenerator(children);
 
 			return;
 		}
@@ -156,10 +152,9 @@ export async function* toGenerator(
 				// process lazily - avoids loading all in memory
 				const yieldIterations = 150;
 				let yieldCounter = yieldIterations;
-				let result: IteratorResult<JSX.Element>;
 
 				while (true) {
-					result = iterator.next();
+					const result = iterator.next();
 
 					if (result.done) break;
 					yield* toGenerator(result.value);
@@ -178,10 +173,9 @@ export async function* toGenerator(
 			// other iterable - array, set, etc.
 			// process children in parallel
 			const generators: AsyncGenerator<Chunk, void, unknown>[] = [];
-			let result: IteratorResult<JSX.Element>;
 
 			while (true) {
-				result = iterator.next();
+				const result = iterator.next();
 				if (result.done) break;
 				generators.push(toGenerator(result.value));
 			}
@@ -189,9 +183,8 @@ export async function* toGenerator(
 			const queue: (Chunk | null)[] = new Array(generators.length);
 			const complete = new Set<number>();
 			let current = 0;
-			let m: { index: number; result: IteratorResult<Chunk, void> };
 
-			for await (m of merge(generators)) {
+			for await (const m of merge(generators)) {
 				if (m.result.done) {
 					complete.add(m.index);
 
