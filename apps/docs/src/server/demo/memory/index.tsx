@@ -8,8 +8,7 @@ export const memory = new Get("/demo/memory", async (c) => {
 	function* Numbers() {
 		let i = 0;
 		// const time = performance.now();
-		while (i < 4_998) {
-			i++;
+		while (i++ < 4_998) {
 			yield <div class="bg-foreground rounded-sm p-0.5" />;
 		}
 		// console.log(performance.now() - time);

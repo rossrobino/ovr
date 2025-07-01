@@ -3,7 +3,7 @@ title: Chat
 description: Learn how to build a basic chat interface with ovr.
 ---
 
-Here's a basic chat example with the OpenAI Agents SDK. The response is streamed without JavaScript using the async generator `Poet` component.
+Here's a basic chat example with the OpenAI Agents SDK. The response is streamed _without_ JavaScript using the async generator `Poet` component.
 
 ```tsx
 async function* Poet(props: { message: string }) {
