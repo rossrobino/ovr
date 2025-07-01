@@ -12,7 +12,7 @@ const Delay = async ({ ms }: { ms: number }) => {
 };
 
 const Delays = () => {
-	const delays = Array.from({ length: 6 }, (_, i) => i * 200);
+	const delays = Array.from({ length: 6 }, (_, i) => i * 100);
 	return delays.map((ms) => <Delay ms={ms} />);
 };
 ```
