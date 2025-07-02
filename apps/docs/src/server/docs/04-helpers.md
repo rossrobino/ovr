@@ -16,13 +16,13 @@ const get = new Get("/", () => {
 	return <p>hello world</p>;
 });
 
-// <a> tag with preset `href="/"` attribute
+// <a> tag with preset `href` attribute
 <get.Anchor>Home</get.Anchor>;
 
 // <button> component with preset `formaction` and `formmethod` attributes
 <get.Button>Submit</get.Button>
 
-// <form> tag with preset `action="/"` attribute
+// <form> tag with preset `action` attribute
 <get.Form>...</get.Form>;
 ```
 
@@ -41,7 +41,7 @@ const post = new Post((c) => {
 	c.redirect("/", 303);
 })
 
-// <form> with preset `method="POST"` and `action` attributes
+// <form> with preset `method` and `action` attributes
 <post.Form>...</post.Form>;
 
 // <button> component with preset `formaction` and `formmethod` attributes
@@ -50,10 +50,10 @@ const post = new Post((c) => {
 
 For `Post`, ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
 
-You can also set the pattern manually:
+You can also set the pattern manually if you need a stable pattern or if you are using parameters.
 
 ```tsx
-const post = new Post("/custom/pattern", (c) => {
+const post = new Post("/custom/:pattern", (c) => {
 	// ...
 });
 ```
@@ -129,6 +129,8 @@ get.pattern; // "/hello/:name"
 ### Pathname
 
 The `pathname` method inserts params into the pattern. It provides type safety to ensure you always pass the correct params (or no params) to create the pathname.
+
+In this case, given the pattern `/hello/:name`, the `name` property must be passed in on the `params` object.
 
 ```ts
 get.pathname({ name: "world" }); // `/hello/${string}`

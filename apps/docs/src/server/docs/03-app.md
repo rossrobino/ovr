@@ -87,7 +87,7 @@ app.on("METHOD", "/pattern", () => {
 
 ## Multiple patterns
 
-Add the same middleware to multiple patterns, ovr will maintain type-safe params.
+Add the same middleware to multiple patterns.
 
 ```ts
 app.get(["/multi/:param", "/pattern/:another"], (c) => {

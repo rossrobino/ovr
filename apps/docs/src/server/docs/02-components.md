@@ -3,7 +3,7 @@ title: Components
 description: Async generator JSX
 ---
 
-While components in ovr are authored like components in frameworks such as [React](https://react.dev/) or [Solid](https://docs.solidjs.com/), there two main distinctions between ovr and other frameworks:
+While components in ovr are authored like components in frameworks like [React](https://react.dev/), there two main distinctions between ovr and other frameworks:
 
 1. ovr only runs on the _server_, there is no client runtime.
 2. JSX evaluates to an `AsyncGenerator` that yields escaped `Chunk`s of HTML.
@@ -26,10 +26,19 @@ function Component(props: { children?: JSX.Element; color: string }) {
 Now the component can be used as it's own tag within other components.
 
 ```tsx
-<Component color="blue">Children</Component>
+function Page() {
+	return (
+		<div>
+			<h1>Hello world</h1>
+			<Component color="blue">Children</Component>
+		</div>
+	);
+}
 ```
 
-Props are passed in as attributes while `children` is a special prop that is used when you put an element in between the opening and closing tags.
+Props are passed in as attributes, while `children` is a special prop that is used to reference the element(s) in between the opening and closing tags.
+
+ovr uses aligns with the standard (all lowercase) HTML attributes---attributes will be rendered exactly as they are written. If you're coming from React, this means you'll need to use `class` instead of `className` for example.
 
 ## Async
 
@@ -119,14 +128,14 @@ To evaluate components (for example, if you aren't using `App` or need to call t
 
 ### toGenerator
 
-Convert any `Element` into `AsyncGenerator<Chunk>` with `toGenerator`.
+Convert any `JSX.Element` into `AsyncGenerator<Chunk>` with `toGenerator`.
 
 ```tsx
 import { toGenerator } from "ovr";
 
-const el = () => <p>element</p>;
+const Component = () => <p>element</p>;
 
-const gen = toGenerator(el);
+const gen = toGenerator(Component);
 
 for await (const chunk of gen) {
 	// ...
@@ -135,12 +144,12 @@ for await (const chunk of gen) {
 
 ### toString
 
-Convert any `Element` into a string of HTML with `toString`. This buffers all the elements into a single string.
+Convert any `JSX.Element` into a `string` of HTML with `toString`. This runs `toGenerator` joins the results into a single string.
 
 ```tsx
 import { toString } from "ovr";
 
-const el = () => <p>element</p>;
+const Component = () => <p>element</p>;
 
-const str = await toString(el);
+const str = await toString(Component);
 ```

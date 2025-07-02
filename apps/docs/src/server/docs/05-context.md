@@ -7,31 +7,31 @@ description: Understanding the ovr request context.
 
 ## Request information
 
-Access information about the current request like the `url` or [`params`](/06-routing#parameters).
+Access information about the current request such as the `url` or [`params`](/06-routing#parameters).
 
 ```ts
 app.get("/api/:id", (c) => {
 	c.req; // original Request
 	c.url; // parsed URL
-	c.params; // type-safe route parameters ({ id: "123" })
+	c.params; // type-safe route parameters { id: "123" }
 	c.route; // matched Route (contains pattern, store)
 });
 ```
 
 ## Response builders
 
-The context also contains methods to build your final `Response`.
+The context contains methods to build your final `Response`.
 
 ### Content types
 
-Easily set the response with common content types.
+Easily set the response with common [content type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type) headers.
 
 ```tsx
 app.get("/api/:id", (c) => {
-	c.html(body, status); // set HTML response
-	c.text(body, status); // set plain text response
-	c.json(data, status); // set JSON response
-	c.redirect(location, status); // set redirect response
+	c.html(body, status); // HTML
+	c.text(body, status); // plain text
+	c.json(data, status); // JSON
+	c.redirect(location, status); // redirect
 	c.res(body, init); // generic response (like `new Response()`)
 });
 ```

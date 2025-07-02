@@ -5,7 +5,7 @@ description: How to deduplicate and cache function calls in ovr.
 
 ## Context cache
 
-If you need to display a component in multiple locations, you need to ensure you aren't fetching the same data multiple times. ovr provides built in memoization on the request context you can utilize on any function to memoize it for the request.
+If you need to display a component in multiple locations with the same dynamic information, you need to ensure you aren't fetching the same data multiple times. ovr provides built in memoization on the request context you can utilize on any function to memoize it for the request.
 
 ```tsx
 import { Context } from "ovr";
@@ -22,7 +22,7 @@ async function Data(props: { id: number }) {
 }
 ```
 
-This will deduplicate multiple calls to the same function with the with the same arguments and cache the result.
+This will deduplicate multiple calls to the same function with the with the same arguments and cache the result. Every time `<Data />` is called with the same `id`, the result will be reused.
 
 ## Create your own cache
 
