@@ -11,15 +11,21 @@ Have a library you'd recommend with ovr? Feel free to [submit a PR](https://gith
 
 ## Data
 
-- [drizzle](https://orm.drizzle.team/) ORM
-- [Prisma](https://www.prisma.io/) ORM
+- Database services
+  - [Convex](https://www.convex.dev/)
+  - [PlanetScale](https://planetscale.com/)
+  - [Prisma Postgres](https://www.prisma.io/postgres)
+  - [Supabase](https://supabase.com/)
+- ORMs
+  - [drizzle](https://orm.drizzle.team/)
+  - [Prisma](https://www.prisma.io/)
 
 ## Interactivity
 
 - [Adobe Spectrum Web Components](https://opensource.adobe.com/spectrum-web-components/index.html) - full featured web component library based on Adobe's Spectrum design system
 - [drab](https://drab.robino.dev) - SSR first custom elements
 - [htmx](https://htmx.org/) - server based interactivity using HTML attributes
-- [Lit](https://lit.dev/) - web component framework
+- [Lit](https://lit.dev/) - framework for building your own web components
 - [Kelp](https://kelpui.com/) - HTML web components and CSS
 
 ## Styling

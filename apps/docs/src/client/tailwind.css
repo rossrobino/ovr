@@ -109,6 +109,12 @@
 		@apply font-normal;
 	}
 
+	p,
+	blockquote,
+	li {
+		@apply leading-6.5;
+	}
+
 	p code,
 	li code {
 		@apply border-secondary border shadow-xs;

@@ -11,14 +11,12 @@ If you need to display a component in multiple locations, you need to ensure you
 import { Context } from "ovr";
 import { db } from "@/lib/db";
 
-function getData(id: number) {
-	const c = Context.get(); // acquire the context
-
-	return c.memo(db.query)(id); // memoize the function/argument
-}
-
 async function Data(props: { id: number }) {
-	const data = await getData(props.id); // automatically deduped and cached
+	// acquire the context
+	const c = Context.get();
+
+	// automatically deduped and cached for the current request
+	const data = await c.memo(db.query)(props.id);
 
 	return <span>{data}<span>;
 }
@@ -28,7 +26,7 @@ This will deduplicate multiple calls to the same function with the with the same
 
 ## Create your own cache
 
-The `Memo` class can also be utilized outside of the application context if you need to cache across requests. It's generally safer to cache per request using `Context.memo`---especially for user specific or sensitive information.
+The `Memo` class can also be utilized outside of the application context if you need to cache across requests. It's generally safer to cache per request using `Context.memo`---especially for user specific or sensitive information. But if you have a long running server and need to cache public data, you can create a `Memo` outside of the app.
 
 ```ts
 import { Memo } from "ovr";

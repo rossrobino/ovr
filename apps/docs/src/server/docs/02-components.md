@@ -10,6 +10,8 @@ While components in ovr are authored like components in frameworks such as [Reac
 
 ## Basic
 
+If you aren't familiar with components, they are functions that return JSX elements. You can use them to declaratively describe and reuse parts of your HTML.
+
 Define a `props` object as a parameter for a component to pass arguments to it.
 
 ```tsx
@@ -48,7 +50,7 @@ async function* Generator() {
 
 ## Parallelization
 
-These three components await in parallel when this component is evaluated. Then they will stream in order as soon as they are ready.
+These three components await in [parallel](/demo/parallel) when this component is evaluated. Then they will stream in order as soon as they are ready.
 
 ```tsx
 function Page() {
@@ -107,18 +109,26 @@ function Component() {
 
 Convert any `Element` into `AsyncGenerator<Chunk>` with `toGenerator`.
 
-```ts
+```tsx
 import { toGenerator } from "ovr";
 
+const el = () => <p>element</p>;
+
 const gen = toGenerator(el);
+
+for await (const chunk of gen) {
+	// ...
+}
 ```
 
 ## To String
 
 Convert any `Element` into a string of HTML with `toString`. This buffers all the elements into a single string.
 
-```ts
+```tsx
 import { toString } from "ovr";
+
+const el = () => <p>element</p>;
 
 const str = await toString(el);
 ```

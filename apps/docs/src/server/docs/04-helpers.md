@@ -7,7 +7,7 @@ ovr provides helpers to encapsulate a route, allowing you to easily create a rou
 
 ## Get
 
-`Get` creates a GET route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
+`Get` creates a [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/GET) route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
 
 ```tsx
 import { Get } from "ovr";
@@ -28,7 +28,7 @@ const get = new Get("/", () => {
 
 ## Post
 
-There is also an `Post` helper that will create a POST handler and corresponding `Form` and `Button` elements.
+There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) handler and corresponding `Form` and `Button` elements.
 
 ```tsx
 import { Post } from "ovr";
@@ -60,7 +60,7 @@ const post = new Post("/custom/pattern", (c) => {
 
 ## Add
 
-Use the `add` method to register a `Get` or `Post` to your app.
+Use the `add` method to register a helper to your app.
 
 ```tsx
 app.add(get); // single
@@ -70,7 +70,7 @@ app.add([get, post]); // array
 // any combination of these also works
 ```
 
-This makes it easy to create a module of routes,
+This makes it easy to create a module of helpers,
 
 ```tsx
 // home.tsx
@@ -135,7 +135,7 @@ get.pathname({ name: "world" }); // `/hello/${string}`
 get.pathname({ name: "world" } as const); // "/hello/world"
 ```
 
-Using incorrect params results in an error:
+Using incorrect params results in a type error:
 
 ```ts
 get.pathname({ id: "world" });

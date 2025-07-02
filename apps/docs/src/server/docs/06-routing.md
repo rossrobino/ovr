@@ -25,7 +25,7 @@ Use an asterisk `*` to match all remaining segments in the route.
 
 ```ts
 app.get("/files/*", (c) => {
-	c.params["*"]; // matched wildcard path (e.g., "images/logo.png")
+	c.params["*"]; // matched wildcard path (ex: "images/logo.png")
 });
 ```
 

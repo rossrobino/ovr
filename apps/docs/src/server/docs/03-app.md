@@ -11,6 +11,8 @@ import { App } from "ovr";
 const app = new App();
 ```
 
+The `App` API is inspired by and works similar to frameworks such as [Hono](https://hono.dev/) and [Express](https://expressjs.com/).
+
 ## Configuration
 
 The following values can be customized after creating the `App`. You can also configure most of these per route within middleware by modifying the value on the `Context`.
@@ -45,18 +47,14 @@ app.error = (c, error) => {
 
 ### Base HTML
 
-Change the base HTML to inject elements into with the context's `head` and `page` methods, this is the default.
+Change the base HTML to inject elements into with the [`Context.head` and `Context.page`](/05-context#page-builders) methods, this is the default.
 
 ```ts
 app.base =
 	'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
 ```
 
-## Overview
-
-The `App` API is inspired by and works similar to frameworks such as [Hono](https://hono.dev/) and [Express](https://expressjs.com/).
-
-### Response
+## Response
 
 At the most basic level, you can create a route and return a `Response` from the middleware to handle a request.
 
@@ -66,9 +64,9 @@ app.get("/", () => new Response("Hello world"));
 
 You can also return a `ReadableStream` to use as the `Response.body`.
 
-### JSX
+## JSX
 
-Returning JSX or other non `null` or `undefined` values from middleware will generate an HTML streamed response.
+Returning JSX from middleware will generate an HTML streamed response.
 
 ```tsx
 app.get("/", () => <h1>Hello world</h1>);
@@ -89,7 +87,7 @@ app.on("METHOD", "/pattern", () => {
 
 ## Multiple patterns
 
-Add the same middleware to multiple patterns.
+Add the same middleware to multiple patterns, ovr will maintain type-safe params.
 
 ```ts
 app.get(["/multi/:param", "/pattern/:another"], (c) => {

@@ -7,7 +7,7 @@ A [lightweight](https://npmgraph.js.org/?q=ovr) server framework built for strea
 
 ## Introduction
 
-Designed to optimize performance and Time-To-First-Byte, ovr evaluates components in parallel and streams HTML in order by producing an `AsyncGenerator` of HTML that feeds directly into the streamed response.
+Designed to optimize performance and Time-To-First-Byte, ovr evaluates components in parallel and streams HTML in order by producing an [`AsyncGenerator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator) of HTML that feeds directly into the streamed response.
 
 For the following component:
 
@@ -65,7 +65,7 @@ Web browsers are [built for streaming](https://developer.mozilla.org/en-US/docs/
 
 <video aria-label="A video showing the network waterfall of a website loading. The HTML head element is streamed immediately, allowing JavaScript and CSS files to download while the rest of the HTML body streams in simultaneously." src="https://zsbsjhwuth2a2ck8.public.blob.vercel-storage.com/html-streaming-network-Owka5ZckQQIo791h0LQ771O5ZZV3Wb.mp4" autoplay loop muted loading="lazy" playsinline></video>
 
-ovr's architecture gives you true streaming SSR and progressive rendering out of the box. No hydration bundle, no buffering---just HTML delivered _in order_, as soon as it's ready.
+ovr's architecture gives you streaming server-side rendering out of the box. No hydration bundle, no buffering---just HTML delivered _in order_, as soon as it's ready.
 
 <div class="flex justify-center my-12">
 <a href="/01-get-started" class="button text-lg px-5 h-12">Get Started</a>
