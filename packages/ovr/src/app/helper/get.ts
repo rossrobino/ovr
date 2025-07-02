@@ -24,7 +24,7 @@ export class Get<Pattern extends string = string> extends Helper<Pattern> {
 	 * 	return <page.Anchor>Home</page.Anchor>
 	 * }
 	 *
-	 * app.add(page); register
+	 * app.add(page); // register
 	 * ```
 	 */
 	constructor(

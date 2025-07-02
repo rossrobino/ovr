@@ -72,6 +72,7 @@
 
 @layer base {
 	:root {
+		--accent: var(--base-500);
 		--light-end: 0.002;
 
 		--font-family-sans: "Geist Variable", sans-serif;
@@ -106,6 +107,11 @@
 	a:not(h1 a, h2 a, h3 a, h4 a),
 	button {
 		@apply font-normal;
+	}
+
+	p code,
+	li code {
+		@apply border-secondary border;
 	}
 
 	h1,

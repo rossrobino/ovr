@@ -17,7 +17,7 @@ function Component() {
 }
 ```
 
-ovr generates three chunks of HTML:
+ovr generates three `Chunk`s of HTML:
 
 ```ts
 "<p>"; // streamed immediately

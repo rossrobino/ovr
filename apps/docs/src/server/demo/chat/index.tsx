@@ -36,7 +36,7 @@ export const chat = new Get("/demo/chat", (c) => {
 
 			<hr />
 
-			<stream.Form class="grid gap-4">
+			<stream.Form class="bg-muted border-secondary grid max-w-sm gap-4 rounded-md border p-4">
 				<div>
 					<label for="message">Message</label>
 					<textarea

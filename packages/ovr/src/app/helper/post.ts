@@ -24,7 +24,7 @@ export class Post<Pattern extends string = string> extends Helper<Pattern> {
 	 * 	</post.Form>
 	 * ));
 	 *
-	 * app.add(page, post); register
+	 * app.add(page, post); // register
 	 * ```
 	 */
 	constructor(...middleware: Middleware<{}>[]);

@@ -14,7 +14,7 @@ export const form = new Get("/demo/form", (c) => {
 
 			<hr />
 
-			<post.Form class="bg-muted grid max-w-xs gap-3 rounded-md p-3">
+			<post.Form class="bg-muted border-secondary grid max-w-sm gap-4 rounded-md border p-4">
 				<div>
 					<label for="name">Name</label>
 					<input type="text" name="name" id="name" />
