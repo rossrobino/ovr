@@ -45,7 +45,7 @@ app.error = (c, error) => {
 
 ### Base HTML
 
-Change the base HTML to inject elements into, this is the default.
+Change the base HTML to inject elements into with the context's `head` and `page` methods, this is the default.
 
 ```ts
 app.base =
@@ -93,7 +93,7 @@ Add the same middleware to multiple patterns.
 
 ```ts
 app.get(["/multi/:param", "/pattern/:another"], (c) => {
-	c.param; // { param: string } | { another: string }
+	c.params; // { param: string } | { another: string }
 });
 ```
 
