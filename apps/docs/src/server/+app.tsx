@@ -2,12 +2,36 @@ import * as demo from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as home from "@/server/home";
 import { Layout } from "@/server/layout";
+import { Head } from "@/ui/head";
 import { html } from "client:page";
 import { App, csrf } from "ovr";
 
 const app = new App();
 
 app.base = html;
+
+app.notFound = (c) => {
+	c.head(<Head title="Not Found" description="Content not found" />);
+
+	return c.page(
+		<>
+			<h1>Not Found</h1>
+
+			<p>
+				<button
+					type="button"
+					class="mb-6 cursor-pointer"
+					onclick="history.back()"
+				>
+					Back
+				</button>
+
+				<a href="/">Return home</a>
+			</p>
+		</>,
+		404,
+	);
+};
 
 app.prerender = [
 	home.page.pathname(),
