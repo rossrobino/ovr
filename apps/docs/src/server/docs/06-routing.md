@@ -12,7 +12,6 @@ The router is forked and adapted from [memoirist](https://github.com/SaltyAom/me
 Create a parameter for a route using the colon before a path segment. `/api/:id` will create a `params` object on the `Context` with a property of `id` containing the actual path segment requested.
 
 ```ts
-// Params
 app.post("/api/:id", (c) => {
 	// matches "/api/123"
 	c.params; // { id: "123" }
