@@ -66,7 +66,9 @@ function Page() {
 }
 ```
 
-The order of your components does not affect when they are evaluated, but it does impact when they will display. If `Username` is the slowest component, `Generator` and `Data` will be queued but only streamed after `Username` completes. In the case you need a slow component to display visually above a faster component, you can use CSS properties like `flex-direction: column-reverse` to swap their order.
+The order of your components does not affect when they are evaluated, but it does impact when they will display. If `Username` is the slowest component, `Generator` and `Data` will be queued but only streamed after `Username` completes.
+
+Check out the [Loading](/demo/loading) demo for an example of how to display a slow component visually above a faster component with a fallback state.
 
 ## Return Types
 
