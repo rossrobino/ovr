@@ -3,7 +3,7 @@ title: Form
 description: Create a page and POST request handler with ovr.
 ---
 
-Here is a page and post route created with ovr's [`Get` and `Post` helpers](/04-helpers). The generated `<post.Form>` can be used directly within the `Get` handler.
+This is a page and post route created with ovr's [`Get` and `Post` helpers](/04-helpers). The generated `<post.Form>` can be used directly within the `Get` handler.
 
 ```tsx
 import { Get, Post } from "ovr";

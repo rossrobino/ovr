@@ -111,7 +111,7 @@
 
 	p code,
 	li code {
-		@apply border-secondary border;
+		@apply border-secondary border shadow-xs;
 	}
 
 	h1,
@@ -121,5 +121,9 @@
 	h5,
 	h6 {
 		@apply font-semibold;
+	}
+
+	h1 {
+		@apply text-shadow-xs;
 	}
 }

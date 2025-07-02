@@ -1,9 +1,9 @@
 ---
-title: Progressive HTML Rendering
-description: Introduction to ovr.
+title: ovr
+description: Progressive HTML Rendering
 ---
 
-ovr is a [lightweight](https://npmgraph.js.org/?q=ovr) server framework built for streaming HTML with asynchronous generator JSX.
+A [lightweight](https://npmgraph.js.org/?q=ovr) server framework built for streaming HTML with asynchronous generator JSX.
 
 ## Introduction
 
@@ -25,7 +25,9 @@ ovr generates three `Chunk`s of HTML:
 "</p>"; // last
 ```
 
-While this is trivial for a paragraph, consider when a component is asynchronous:
+## Asynchronous streaming
+
+While this streaming is trivial for a paragraph, consider when a component is asynchronous:
 
 ```tsx
 async function Username() {
@@ -57,12 +59,16 @@ Instead of waiting for `Username` to resolve before sending the entire `Componen
 "</p>";
 ```
 
-Web browsers are built for streaming, they parse and paint HTML as it arrives. Most critically, the `<head>` of the document can be sent immediately to start the requests for linked assets (JavaScript, CSS, etc.) before the page has finished rendering.
+## Render how browsers read
+
+Web browsers are [built for streaming](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work#parsing), they parse and paint HTML as it arrives. [Most critically, the head](https://web.dev/learn/performance/understanding-the-critical-path#what_resources_are_on_the_critical_rendering_path) of the document can be sent immediately to start the requests for linked assets (JavaScript, CSS, etc.) and start parsing before the HTML has finished streaming.
 
 <video aria-label="A video showing the network waterfall of a website loading. The HTML head element is streamed immediately, allowing JavaScript and CSS files to download while the rest of the HTML body streams in simultaneously." src="https://zsbsjhwuth2a2ck8.public.blob.vercel-storage.com/html-streaming-network-Owka5ZckQQIo791h0LQ771O5ZZV3Wb.mp4" autoplay loop muted loading="lazy" playsinline></video>
 
-ovr's architecture gives you true streaming SSR and progressive rendering out of the box. No hydration bundle, no buffering---just HTML delivered in order, as soon as it's ready.
+ovr's architecture gives you true streaming SSR and progressive rendering out of the box. No hydration bundle, no buffering---just HTML delivered _in order_, as soon as it's ready.
 
 <div class="flex justify-center my-12">
-<a href="/01-get-started" class="button">Get Started</a>
+<a href="/01-get-started" class="button text-lg px-5 h-12">Get Started</a>
 </div>
+
+---

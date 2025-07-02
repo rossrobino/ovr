@@ -94,9 +94,9 @@ import * as home from "./home";
 app.add(home); // adds all exports
 ```
 
-## Properties
+## Other properties
 
-In addition to the components helpers have a few other useful properties.
+Given the following `Get` helper, a variety of other properties are available to use in addition to the components.
 
 ```tsx
 const get = new Get("/hello/:name", (c) => <h1>Hello {c.params.name}</h1>);
