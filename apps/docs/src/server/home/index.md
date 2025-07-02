@@ -7,7 +7,7 @@ A [lightweight](https://npmgraph.js.org/?q=ovr) server framework built for strea
 
 ## Introduction
 
-Designed to optimize performance and Time-To-First-Byte, ovr evaluates components in parallel and streams HTML in order by producing an [`AsyncGenerator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator) of HTML that feeds directly into the streamed response.
+Designed to optimize [Time-To-First-Byte](https://web.dev/articles/ttfb#what_is_ttfb), ovr evaluates components in parallel and streams HTML in order by producing an [`AsyncGenerator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator) of HTML that feeds directly into the streamed response.
 
 For the following component:
 
