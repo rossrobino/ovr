@@ -68,8 +68,6 @@ function Page() {
 
 The order of your components does not affect when they are evaluated, but it does impact when they will display. If `Username` is the slowest component, `Generator` and `Data` will be queued but only streamed after `Username` completes.
 
-Check out the [Loading](/demo/loading) demo for an example of how to display a slow component visually above a faster component with a fallback state.
-
 ## Return Types
 
 You can `return` or `yield` most data types from a component, they will be rendered as you might expect:

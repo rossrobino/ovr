@@ -3,6 +3,8 @@ title: Loading
 description: How to create a fallback loading component with CSS.
 ---
 
+Work in progress - currently does not work in safari.
+
 A `Loading` component created _without_ client-side JavaScript using CSS and ovr streaming.
 
 ```tsx

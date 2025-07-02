@@ -18,14 +18,15 @@ const Loading = (props: {
 	after?: JSX.Element;
 }) => (
 	<>
+		{props.fallback && (
+			<div class="contents has-[+*>.loading-children:not(:empty)]:hidden">
+				{props.fallback}
+			</div>
+		)}
+
 		<div class="flex flex-col-reverse">
 			{props.after && <div>{props.after}</div>}
-
-			{props.fallback && (
-				<div class="contents not-last:hidden">{props.fallback}</div>
-			)}
-
-			<>{props.children}</>
+			<div class="loading-children contents">{props.children}</div>
 		</div>
 	</>
 );
