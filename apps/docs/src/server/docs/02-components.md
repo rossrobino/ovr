@@ -18,10 +18,18 @@ Define a `props` object as a parameter for a component to pass arguments to it.
 import type { JSX } from "ovr";
 
 // Basic component with children
-function Component(props: { children?: JSX.Element }) {
-	return <div>{props.children}</div>;
+function Component(props: { children?: JSX.Element; color: string }) {
+	return <div style={`color: ${props.color}`}>{props.children}</div>;
 }
 ```
+
+Now the component can be used as it's own tag within other components.
+
+```tsx
+<Component color="blue">Children</Component>
+```
+
+Props are passed in as attributes while `children` is a special prop that is used when you put an element in between the opening and closing tags.
 
 ## Async
 
@@ -105,7 +113,11 @@ function Component() {
 }
 ```
 
-## To Generator
+## Running components
+
+To evaluate components (for example, if you aren't using `App` or need to call them separately), you can use the `toGenerator` and `toString` functions.
+
+### toGenerator
 
 Convert any `Element` into `AsyncGenerator<Chunk>` with `toGenerator`.
 
@@ -121,7 +133,7 @@ for await (const chunk of gen) {
 }
 ```
 
-## To String
+### toString
 
 Convert any `Element` into a string of HTML with `toString`. This buffers all the elements into a single string.
 
