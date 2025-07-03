@@ -11,6 +11,8 @@ const app = new App();
 app.base = html;
 
 app.notFound = (c) => {
+	c.layout(Layout);
+
 	c.head(<Head title="Not Found" description="Content not found" />);
 
 	return c.page(
