@@ -29,10 +29,11 @@ export const memory = new Get("/demo/memory", async (c) => {
 
 			{new Chunk(memoryContent.html, true)}
 
-			<div
-				class="flex flex-wrap gap-px"
-				aria-label="This is div element that displays five thousand div elements that are streamed in. When the page is reloaded each div is streamed in order."
-			>
+			<div class="flex flex-wrap gap-px">
+				<div class="sr-only">
+					This is div element that displays five thousand div elements that are
+					streamed in. When the page is reloaded each div is streamed in order.
+				</div>
 				<Numbers />
 			</div>
 		</>
