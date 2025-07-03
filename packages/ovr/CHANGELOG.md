@@ -1,5 +1,11 @@
 # ovr
 
+## 4.2.7
+
+### Patch Changes
+
+- 363b93c: fix: `crossorigin` attribute should be `boolean` instead of `true`
+
 ## 4.2.6
 
 ### Patch Changes
