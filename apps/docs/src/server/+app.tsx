@@ -3,7 +3,7 @@ import * as docs from "@/server/docs";
 import * as home from "@/server/home";
 import { Layout } from "@/server/layout";
 import { Head } from "@/ui/head";
-import { html } from "client:page";
+import { chunk, html } from "client:page";
 import { App, csrf } from "ovr";
 
 const app = new App();
@@ -40,7 +40,21 @@ app.prerender = [
 
 app.use(
 	(c, next) => {
+		// preload font
+		c.head(
+			chunk.src.assets.map((path) => (
+				<link
+					rel="preload"
+					href={`/${path}`}
+					as="font"
+					type="font/woff2"
+					crossorigin
+				/>
+			)),
+		);
+
 		c.layout(Layout);
+
 		return next();
 	},
 	csrf({
