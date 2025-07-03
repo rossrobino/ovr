@@ -1,5 +1,11 @@
 # ovr
 
+## 4.2.6
+
+### Patch Changes
+
+- 5796b5d: fix: allow `crossorigin` boolean attribute
+
 ## 4.2.5
 
 ### Patch Changes
