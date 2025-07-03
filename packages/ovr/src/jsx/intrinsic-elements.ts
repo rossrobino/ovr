@@ -159,7 +159,7 @@ type SharedAttributes = {
 		// https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete#token-list
 		| (string & {});
 	blocking: "render";
-	crossorigin: true | "anonymous" | "use-credentials";
+	crossorigin: boolean | "anonymous" | "use-credentials";
 	referrerpolicy:
 		| "no-referrer"
 		| "no-referrer-when-downgrade"
