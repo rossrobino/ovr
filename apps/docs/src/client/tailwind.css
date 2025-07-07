@@ -152,8 +152,4 @@
 	h6 {
 		@apply font-semibold;
 	}
-
-	h1 {
-		@apply text-shadow-xs;
-	}
 }
