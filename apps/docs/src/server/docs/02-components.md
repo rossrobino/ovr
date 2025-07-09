@@ -17,7 +17,6 @@ Define a `props` object as a parameter for a component to pass arguments to it.
 ```tsx
 import type { JSX } from "ovr";
 
-// Basic component with children
 function Component(props: { children?: JSX.Element; color: string }) {
 	return <div style={`color: ${props.color}`}>{props.children}</div>;
 }
