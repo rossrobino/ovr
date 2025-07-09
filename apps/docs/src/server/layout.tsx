@@ -75,7 +75,7 @@ const TOC = () => {
 						return (
 							<li>
 								<a
-									class="button ghost h-8 justify-start truncate px-3 capitalize"
+									class="button ghost text-muted-foreground h-8 justify-start truncate px-3 capitalize"
 									href={`#${heading.id}`}
 								>
 									{heading.name}

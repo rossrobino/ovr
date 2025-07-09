@@ -152,4 +152,13 @@
 	h6 {
 		@apply font-semibold;
 	}
+
+	strong {
+		@apply font-medium;
+	}
+
+	button,
+	.button {
+		@apply transition-colors;
+	}
 }
