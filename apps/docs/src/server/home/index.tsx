@@ -22,6 +22,7 @@ export const page = new Get("/", (c) => {
 
 			<a
 				href="/demo/memory"
+				data-no-prefetch
 				class="bg-foreground block rounded-md p-5 no-underline transition-shadow hover:shadow-sm"
 			>
 				<h2 class="text-background mt-0 mb-2 text-2xl">Demo</h2>
@@ -56,6 +57,7 @@ function* Features() {
 		{
 			title: "Performance First",
 			href: "/demo/parallel",
+			noPrefetch: true,
 			content:
 				"Evaluate components in parallel and stream them as they are generated.",
 		},
@@ -86,6 +88,7 @@ function* Features() {
 			<a
 				href={feature.href}
 				class="bg-muted/25 hover:bg-background border-secondary/50 hover:border-secondary rounded-md border p-4 no-underline transition-colors hover:shadow-xs"
+				data-no-prefetch={feature.noPrefetch}
 			>
 				<h2 class="my-0 text-base">{feature.title}</h2>
 				<p class="text-muted-foreground mt-1 mb-0 text-sm font-light">
