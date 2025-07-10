@@ -3,49 +3,57 @@ title: Helpers
 description: ovr route helpers.
 ---
 
-ovr provides helpers to encapsulate a route, allowing you to easily create a route in a separate module from `App`. Helpers are the best way to create pages and API endpoints for an ovr application.
+ovr provides helpers to encapsulate a route, allowing you to easily create a route in a separate module from `App`. Helpers are the best way to create pages, API endpoints, links, and forms in an ovr application.
 
 ## Get
 
-`Get` creates a [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/GET) route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application.
+`Get` creates a [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/GET) route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application. Anytime you need to generate a link to a page use the `Anchor` component from the `Get` helper.
 
 ```tsx
 import { Get } from "ovr";
 
 const page = new Get("/", () => {
-	return <p>hello world</p>;
+	return (
+		<main>
+			<p>Hello world!</p>
+
+			{/* <a> tag with preset `href` attribute */}
+			<page.Anchor>Home</page.Anchor>
+
+			{/* <button> component with preset `formaction` and `formmethod` attributes */}
+			<page.Button>Submit</page.Button>
+
+			{/* <form> tag with preset `action` attribute */}
+			<page.Form>...</page.Form>
+		</main>
+	);
 });
-
-// <a> tag with preset `href` attribute
-<page.Anchor>Home</page.Anchor>;
-
-// <button> component with preset `formaction` and `formmethod` attributes
-<page.Button>Submit</page.Button>
-
-// <form> tag with preset `action` attribute
-<page.Form>...</page.Form>;
 ```
 
 ## Post
 
-There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) handler and corresponding `Form` and `Button` elements.
+There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) handler and corresponding `Form` and `Button` elements. Anytime you need to handle a form submission, use the generated `Form` component from the `Post` helper.
 
 ```tsx
-import { Post } from "ovr";
+import { Get, Post } from "ovr";
 
-const login = new Post((c) => {
+const login = new Post(async (c) => {
 	const data = await c.req.formData();
-
 	// ...
-
 	c.redirect("/", 303);
-})
+});
 
-// <form> with preset `method` and `action` attributes
-<login.Form>...</login.Form>;
+const page = new Get("/", () => {
+	return (
+		<main>
+			{/* <form> with preset `method` and `action` attributes */}
+			<login.Form>...</login.Form>
 
-// <button> component with preset `formaction` and `formmethod` attributes
-<login.Button>Submit</login.Button>
+			{/* <button> component with preset `formaction` and `formmethod` attributes */}
+			<login.Button>Submit</login.Button>
+		</main>
+	);
+});
 ```
 
 For `Post`, ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
