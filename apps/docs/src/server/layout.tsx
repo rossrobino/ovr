@@ -175,7 +175,8 @@ const NavLink = (props: { slug?: string; anchor?: JSX.Element }) => {
 				)}
 				href={href}
 			>
-				{props.slug.split("-").slice(1).join(" ") || props.slug}
+				{props.slug.split("-").slice(1).join(" ") ||
+					props.slug.split(".").at(0)}
 			</a>
 		</li>
 	);
