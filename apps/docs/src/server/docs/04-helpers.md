@@ -3,7 +3,7 @@ title: Helpers
 description: ovr route helpers.
 ---
 
-ovr provides helpers to encapsulate a route, allowing you to easily create a route in a separate module from `App`.
+ovr provides helpers to encapsulate a route, allowing you to easily create a route in a separate module from `App`. Helpers are the best way to create pages and API endpoints for an ovr application.
 
 ## Get
 

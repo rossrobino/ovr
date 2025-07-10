@@ -7,14 +7,14 @@ description: Understanding the ovr request context.
 
 ## Request information
 
-Access information about the current request such as the `url` or [`params`](/06-routing#parameters).
+Access information about the current request such as the [`url`](https://developer.mozilla.org/en-US/docs/Web/API/URL) or [`params`](/06-routing#parameters).
 
 ```ts
 app.get("/api/:id", (c) => {
-	c.req; // original Request
-	c.url; // parsed URL
+	c.req; // original `Request`
+	c.url; // parsed web `URL`
 	c.params; // type-safe route parameters { id: "123" }
-	c.route; // matched Route (contains pattern, store)
+	c.route; // matched `Route` (contains `pattern`, `store`)
 });
 ```
 
@@ -55,16 +55,32 @@ app.get("/api/:id", (c) => {
 
 ## Utilities
 
+### Memo
+
+Memoize a function to dedupe async operations and cache the results. See [memoization](/07-memo) for more details.
+
 ```tsx
 app.get("/api/:id", (c) => {
-	// memoize a function to dedupe async operations and cache the results
 	c.memo(fn);
+});
+```
 
-	// generate and check ETag for caching
-	c.etag("content-to-hash");
+### Entity tag
 
-	// internal
-	c.build(); // builds the final Response object
+Generates an [entity tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag) from a hash of the string provided. If the tag matches, the response will be set to [`304: Not Modified`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304) and the funciton will return `true`.
+
+```tsx
+app.get("/api/:id", (c) => {
+	const html = `<p>Content</p>`;
+
+	const matched = c.etag(html);
+
+	if (matched) {
+		// 304: Not Modified
+		return;
+	}
+
+	return c.html(html);
 });
 ```
 
