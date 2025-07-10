@@ -1,5 +1,11 @@
 # ovr
 
+## 4.3.0
+
+### Minor Changes
+
+- 46da501: feat: Add `toStream` helper function to create a `ReadableStream` from a `JSX.Element`.
+
 ## 4.2.7
 
 ### Patch Changes
