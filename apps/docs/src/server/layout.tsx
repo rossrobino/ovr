@@ -115,6 +115,7 @@ const NavList = () => {
 				{docs.getSlugs().map((slug) => {
 					return <NavLink slug={slug} />;
 				})}
+				<NavLink slug={docs.llms.pathname().slice(1)} />
 			</ul>
 
 			<hr />
@@ -174,7 +175,7 @@ const NavLink = (props: { slug?: string; anchor?: JSX.Element }) => {
 				)}
 				href={href}
 			>
-				{props.slug.split("-").slice(1).join(" ")}
+				{props.slug.split("-").slice(1).join(" ") || props.slug}
 			</a>
 		</li>
 	);

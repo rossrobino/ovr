@@ -35,9 +35,13 @@ app.notFound = (c) => {
 	);
 };
 
+const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
+
 app.prerender = [
 	home.page.pathname(),
-	...docs.getSlugs().map((slug) => "/" + slug),
+	docs.llms.pathname(),
+	...docPrerender,
+	...docPrerender.map((p) => p + ".md"),
 ];
 
 app.use(
@@ -87,6 +91,6 @@ if (import.meta.env.DEV) {
 	});
 }
 
-app.add(home, docs.page, demo);
+app.add(home, docs.page, docs.llms, demo);
 
 export default app;

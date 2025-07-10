@@ -1,4 +1,5 @@
 import type { FrontmatterSchema } from "@/lib/md";
+import * as homeResult from "@/server/home/index.md";
 import { Head } from "@/ui/head";
 import type { Result } from "@robino/md";
 import clsx from "clsx";
@@ -20,10 +21,37 @@ export const getSlugs = () => {
 
 export const getContent = (slug: string) => content[`/server/docs/${slug}.md`];
 
+const getMd = (result: Result<typeof FrontmatterSchema>) => {
+	return `# ${result.frontmatter.title}\n\n${
+		result.frontmatter.description
+	}${result.article}`;
+};
+
+export const llms = new Get("/llms.txt", (c) =>
+	c.text(
+		[homeResult, ...Object.values(content)]
+			.map((result) => getMd(result))
+			.join("\n"),
+	),
+);
+
 export const page = new Get("/:slug", (c) => {
+	let md = false;
+
+	if (c.params.slug.endsWith(".md")) {
+		md = true;
+		c.params.slug = c.params.slug.slice(0, -3);
+	}
+
 	const result = getContent(c.params.slug);
 
 	if (!result) return;
+
+	if (md) {
+		return c.res(getMd(result), {
+			headers: { "Content-Type": "text/markdown; charset=UTF-8" },
+		});
+	}
 
 	c.head(<Head {...result.frontmatter} />);
 
