@@ -123,7 +123,7 @@ function Component() {
 
 ## Running components
 
-To evaluate components (for example, if you aren't using `App` or need to call them separately), you can use the `toGenerator` and `toString` functions.
+To evaluate components (for example, if you aren't using `App` or need to call them separately), you can use these functions.
 
 ### toGenerator
 
@@ -139,6 +139,22 @@ const gen = toGenerator(Component);
 for await (const chunk of gen) {
 	// ...
 }
+```
+
+### toStream
+
+Turn a `JSX.Element` into a `ReadableStream<Uint8Array>`, this pipes the result of `toGenerator` into a `ReadableStream`.
+
+```tsx
+import { toStream } from "ovr";
+
+const Component = () => <p>element</p>;
+
+const stream = toStream(Component);
+
+const response = new Response(stream, {
+	"Content-Type": "text/html; charset=utf-8",
+});
 ```
 
 ### toString

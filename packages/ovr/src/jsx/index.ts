@@ -109,7 +109,7 @@ export async function* Fragment(props: { children?: JSX.Element } = {}) {
 
 /**
  * @param element
- * @yields Chunks of HTML as the `Element` resolves.
+ * @yields `Chunk`s of HTML as the `Element` resolves.
  */
 export async function* toGenerator(
 	element: JSX.Element,
@@ -233,3 +233,39 @@ export async function* toGenerator(
  */
 export const toString = async (element: JSX.Element) =>
 	(await Array.fromAsync(toGenerator(element))).join("");
+
+/** Single encoder to use across requests. */
+const encoder = new TextEncoder();
+
+/**
+ * `toGenerator` piped into a `ReadableStream`.
+ * Use `toGenerator` when possible to avoid the overhead of the stream.
+ *
+ * @param element
+ * @returns `ReadableStream` of HTML
+ */
+export const toStream = (element: JSX.Element) => {
+	const gen = toGenerator(element);
+
+	return new ReadableStream<Uint8Array>({
+		async pull(c) {
+			const result = await gen.next();
+
+			if (result.done) {
+				c.close();
+				gen.return();
+				return;
+			}
+
+			c.enqueue(
+				// need to encode for Node JS (ex: during prerendering)
+				// faster than piping through a `TextEncoderStream`
+				encoder.encode(result.value.value),
+			);
+		},
+
+		cancel() {
+			gen.return();
+		},
+	});
+};

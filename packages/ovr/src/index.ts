@@ -1,4 +1,4 @@
-export { jsx, toGenerator, toString, type JSX } from "./jsx/index.js";
+export { jsx, toGenerator, toStream, toString, type JSX } from "./jsx/index.js";
 export { Chunk } from "./jsx/chunk/index.js";
 export { Trie, Route } from "./trie/index.js";
 export { App, type Middleware } from "./app/index.js";

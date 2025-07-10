@@ -1,5 +1,5 @@
 import { Chunk } from "../jsx/chunk/index.js";
-import { type JSX, toGenerator } from "../jsx/index.js";
+import { type JSX, toStream } from "../jsx/index.js";
 import type { Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import {
@@ -79,9 +79,6 @@ export class Context<P extends Params = Params> {
 
 	/** Check if the `Response` has been built already */
 	#finalized = false;
-
-	/** Used across requests */
-	static readonly #encoder = new TextEncoder();
 
 	static readonly #headClose = "</head>";
 	static readonly #bodyClose = "</body>";
@@ -242,7 +239,7 @@ export class Context<P extends Params = Params> {
 			Page = this.#layouts[i]!({ children: Page });
 		}
 
-		let gen: AsyncGenerator<Chunk, void>;
+		let stream: ReadableStream<Uint8Array>;
 
 		if (this.base) {
 			// inject into base
@@ -265,37 +262,17 @@ export class Context<P extends Params = Params> {
 			elements[3] = bodyParts[0];
 			elements.push(Page, Context.#bodyClose + bodyParts[1]);
 
-			gen = toGenerator(
+			stream = toStream(
 				elements.map((el) =>
 					typeof el === "string" ? new Chunk(el, true) : el,
 				),
 			);
 		} else {
 			// HTML partial - just use the layouts + page
-			gen = toGenerator(Page);
+			stream = toStream(Page);
 		}
 
-		this.html(
-			new ReadableStream<Uint8Array>({
-				async pull(c) {
-					const result = await gen.next();
-
-					if (result.done) {
-						c.close();
-						gen.return();
-						return;
-					}
-
-					// need to encode for Node JS (ex: during prerendering)
-					c.enqueue(Context.#encoder.encode(result.value.value));
-				},
-
-				cancel() {
-					gen.return();
-				},
-			}),
-			status,
-		);
+		this.html(stream, status);
 	}
 
 	/**
