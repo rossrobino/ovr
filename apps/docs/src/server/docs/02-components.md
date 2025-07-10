@@ -37,7 +37,9 @@ function Page() {
 
 Props are passed in as attributes, while `children` is a special prop that is used to reference the element(s) in between the opening and closing tags.
 
-ovr uses aligns with the standard (all lowercase) HTML attributes---attributes will be rendered exactly as they are written. If you're coming from React, this means you'll need to use `class` instead of `className` for example.
+ovr uses aligns with the standard (all lowercase) HTML attributes---attributes will be rendered exactly as they are written.
+
+If you're coming from React, use `class` and `for` instead of `className` and `htmlFor` respectively. There is also no need to provide a `key` attribute in when rendering lists.
 
 ## Async
 

@@ -12,18 +12,18 @@ ovr provides helpers to encapsulate a route, allowing you to easily create a rou
 ```tsx
 import { Get } from "ovr";
 
-const get = new Get("/", () => {
+const page = new Get("/", () => {
 	return <p>hello world</p>;
 });
 
 // <a> tag with preset `href` attribute
-<get.Anchor>Home</get.Anchor>;
+<page.Anchor>Home</page.Anchor>;
 
 // <button> component with preset `formaction` and `formmethod` attributes
-<get.Button>Submit</get.Button>
+<page.Button>Submit</page.Button>
 
 // <form> tag with preset `action` attribute
-<get.Form>...</get.Form>;
+<page.Form>...</page.Form>;
 ```
 
 ## Post
@@ -33,7 +33,7 @@ There is also a `Post` helper that will create a [POST](https://developer.mozill
 ```tsx
 import { Post } from "ovr";
 
-const post = new Post((c) => {
+const login = new Post((c) => {
 	const data = await c.req.formData();
 
 	// ...
@@ -42,10 +42,10 @@ const post = new Post((c) => {
 })
 
 // <form> with preset `method` and `action` attributes
-<post.Form>...</post.Form>;
+<login.Form>...</login.Form>;
 
 // <button> component with preset `formaction` and `formmethod` attributes
-<post.Button>Submit</post.Button>
+<login.Button>Submit</login.Button>
 ```
 
 For `Post`, ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
@@ -53,7 +53,7 @@ For `Post`, ovr will automatically create a unique pattern for the route based o
 You can also set the pattern manually if you need a stable pattern or if you are using parameters.
 
 ```tsx
-const post = new Post("/custom/:pattern", (c) => {
+const custom = new Post("/custom/:pattern", (c) => {
 	// ...
 });
 ```
@@ -63,10 +63,10 @@ const post = new Post("/custom/:pattern", (c) => {
 Use the `add` method to register a helper to your app.
 
 ```tsx
-app.add(get); // single
-app.add(get, post); // multiple
-app.add({ get, post }); // object
-app.add([get, post]); // array
+app.add(page); // single
+app.add(page, login); // multiple
+app.add({ page, login }); // object
+app.add([page, login]); // array
 // any combination of these also works
 ```
 
@@ -76,11 +76,11 @@ This makes it easy to create a module of helpers,
 // home.tsx
 import { Get, Post } from "ovr";
 
-export const get = new Get("/", (c) => {
+export const page = new Get("/", (c) => {
 	// ...
 });
 
-export const post = new Post((c) => {
+export const login = new Post((c) => {
 	// ...
 });
 ```
@@ -99,7 +99,7 @@ app.add(home); // adds all exports
 Given the following `Get` helper, a variety of other properties are available to use in addition to the components.
 
 ```tsx
-const get = new Get("/hello/:name", (c) => <h1>Hello {c.params.name}</h1>);
+const page = new Get("/hello/:name", (c) => <h1>Hello {c.params.name}</h1>);
 ```
 
 ### Middleware
@@ -107,7 +107,7 @@ const get = new Get("/hello/:name", (c) => <h1>Hello {c.params.name}</h1>);
 All `Middleware` added to the route.
 
 ```ts
-get.middleware; // Middleware[]
+page.middleware; // Middleware[]
 ```
 
 ### Params
@@ -115,7 +115,7 @@ get.middleware; // Middleware[]
 `Params` is a type helper to get the specific params of the route based on the pattern.
 
 ```ts
-typeof get.Params; // { name: string }
+typeof page.Params; // { name: string }
 ```
 
 ### Pattern
@@ -123,7 +123,7 @@ typeof get.Params; // { name: string }
 The route pattern.
 
 ```ts
-get.pattern; // "/hello/:name"
+page.pattern; // "/hello/:name"
 ```
 
 ### Pathname
@@ -133,14 +133,14 @@ The `pathname` method inserts params into the pattern. It provides type safety t
 In this case, given the pattern `/hello/:name`, the `name` property must be passed in on the `params` object.
 
 ```ts
-get.pathname({ name: "world" }); // `/hello/${string}`
-get.pathname({ name: "world" } as const); // "/hello/world"
+page.pathname({ name: "world" }); // `/hello/${string}`
+page.pathname({ name: "world" } as const); // "/hello/world"
 ```
 
 Using incorrect params results in a type error:
 
 ```ts
-get.pathname({ id: "world" });
+page.pathname({ id: "world" });
 // Error: 'id' does not exist in type '{ name: string; }'
 ```
 
@@ -150,9 +150,9 @@ You can even create a list of exact pathnames for given params.
 const params = [
 	{ name: "world" },
 	{ name: "ross" },
-] as const satisfies (typeof get.Params)[];
+] as const satisfies (typeof page.Params)[];
 
-const pathnames = params.map((p) => get.pathname(p));
+const pathnames = params.map((p) => page.pathname(p));
 
 // ("/hello/world" | "/hello/ross")[]
 ```
