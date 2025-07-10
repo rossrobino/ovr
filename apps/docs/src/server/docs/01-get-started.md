@@ -11,7 +11,7 @@ Install the `ovr` package from npm using your preferred package manager.
 npm i ovr
 ```
 
-Alternatively, you can setup ovr with a pre-configured template using [Vite with domco](https://domco.robino.dev). This includes live reload and options for Tailwind, deployment adapters, and more.
+Alternatively, you can setup ovr with a pre-configured template using [Vite with domco](https://domco.robino.dev). This includes live reload and options for Tailwind, deployment adapters, and more. domco will create a server entry point in `src/server/+app.tsx` with ovr pre-configured.
 
 ```bash
 npx create-domco@latest --framework=ovr
