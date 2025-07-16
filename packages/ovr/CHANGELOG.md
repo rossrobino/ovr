@@ -1,5 +1,24 @@
 # ovr
 
+## 4.4.0
+
+### Minor Changes
+
+- 68ed951: feat: Adds [`Helper.url`](http://ovr.robino.dev/04-helpers#relative-url) to create a _relative_ URL for a route.
+- 68ed951: feat: Adds [`search` and `hash` props](http://localhost:5173/04-helpers#props) to `Helper` components to append search params or a hash to the `href` or `action` accordingly.
+
+### Patch Changes
+
+- 68ed951: types: Add JSDoc to helper component props
+- 68ed951: types: Add `number` type in addition to `string` for a variety of common HTML attributes (no runtime changes).
+
+  For example, you can now pass a `number` directly to the `<input>`'s `value` attribute without getting a type error.
+
+  ```diff
+  - <input value={String(1)} />
+  + <input value={1} />
+  ```
+
 ## 4.3.0
 
 ### Minor Changes
