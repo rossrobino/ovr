@@ -1,7 +1,7 @@
 import * as formContent from "@/server/demo/form/index.md";
 import { Head } from "@/ui/head";
 import { Chunk, Get, Post } from "ovr";
-import * as z from "zod/v4";
+import * as z from "zod";
 
 export const form = new Get("/demo/form", (c) => {
 	c.head(<Head {...formContent.frontmatter} />);

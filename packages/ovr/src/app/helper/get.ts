@@ -1,11 +1,14 @@
 import { type JSX, jsx } from "../../jsx/index.js";
-import type { AnchorProps, ExtractParams } from "../../types/index.js";
+import type { ExtractParams } from "../../types/index.js";
 import type { Middleware } from "../index.js";
-import { Helper } from "./index.js";
+import { Helper, type HelperComponentProps } from "./index.js";
 
 export class Get<Pattern extends string = string> extends Helper<Pattern> {
 	/** `<a>` component with preset `href` attribute. */
-	Anchor: (props: AnchorProps<ExtractParams<Pattern>>) => JSX.Element;
+	Anchor: (
+		props: JSX.IntrinsicElements["a"] &
+			HelperComponentProps<ExtractParams<Pattern>>,
+	) => JSX.Element;
 
 	/**
 	 * @param pattern Route pattern
@@ -33,16 +36,12 @@ export class Get<Pattern extends string = string> extends Helper<Pattern> {
 	) {
 		super("GET", pattern, ...middleware);
 
-		this.Anchor = (props) => {
-			const { params, ...rest } = props;
-
-			return jsx("a", {
-				href: this.pathname(
-					// @ts-expect-error - do not have to pass in {} if no params
-					params,
-				),
+		this.Anchor = ({ params, search, hash, ...rest }) =>
+			jsx("a", {
+				href: this.url({ params, search, hash } as HelperComponentProps<
+					ExtractParams<Pattern>
+				>),
 				...rest,
 			});
-		};
 	}
 }

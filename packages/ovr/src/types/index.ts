@@ -1,4 +1,3 @@
-import type { JSX } from "../jsx/index.js";
 import type { Params } from "../trie/index.js";
 
 export type MaybePromise<T> = T | Promise<T>;
@@ -41,12 +40,3 @@ export type InsertParams<
 				? `${Start}${P["*"]}`
 				: Pattern
 			: Pattern;
-
-export type AnchorProps<P extends Params> = JSX.IntrinsicElements["a"] &
-	(keyof P extends never ? { params?: never } : { params: P });
-
-export type FormProps<P extends Params> = JSX.IntrinsicElements["form"] &
-	(keyof P extends never ? { params?: never } : { params: P });
-
-export type ButtonProps<P extends Params> = JSX.IntrinsicElements["button"] &
-	(keyof P extends never ? { params?: never } : { params: P });

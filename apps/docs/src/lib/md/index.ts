@@ -5,7 +5,7 @@ import langBash from "shiki/langs/bash.mjs";
 import langHtml from "shiki/langs/html.mjs";
 import langJson from "shiki/langs/json.mjs";
 import langTsx from "shiki/langs/tsx.mjs";
-import * as z from "zod/v4-mini";
+import * as z from "zod";
 
 export const options: Options = {
 	highlighter: {

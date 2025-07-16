@@ -106,7 +106,7 @@ type Attributes<
 	slot: string;
 	spellcheck: "true" | "false";
 	style: string;
-	tabindex: number;
+	tabindex: string | number;
 	title: string;
 	translate: string;
 	virtualkeyboardpolicy: string;
@@ -159,7 +159,22 @@ type SharedAttributes = {
 		// https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete#token-list
 		| (string & {});
 	blocking: "render";
+	controlslist:
+		| "nodownload"
+		| "nofullscreen"
+		| "noremoteplayback"
+		// allows multiple
+		| (string & {});
 	crossorigin: boolean | "anonymous" | "use-credentials";
+	enctype:
+		| "application/x-www-form-urlencoded"
+		| "multipart/form-data"
+		| "text/plain";
+	fetchpriority: "high" | "low" | "auto";
+	loading: "eager" | "lazy";
+	method: "get" | "post" | "dialog";
+	popovertargetaction: "hide" | "show" | "toggle";
+	preload: "none" | "metadata" | "auto";
 	referrerpolicy:
 		| "no-referrer"
 		| "no-referrer-when-downgrade"
@@ -170,21 +185,6 @@ type SharedAttributes = {
 		| "strict-origin-when-cross-origin"
 		| "unsafe-url";
 	target: "_self" | "_blank" | "_parent" | "_top";
-	preload: "none" | "metadata" | "auto";
-	controlslist:
-		| "nodownload"
-		| "nofullscreen"
-		| "noremoteplayback"
-		// allows multiple
-		| (string & {});
-	enctype:
-		| "application/x-www-form-urlencoded"
-		| "multipart/form-data"
-		| "text/plain";
-	method: "get" | "post" | "dialog";
-	loading: "eager" | "lazy";
-	fetchpriority: "high" | "low" | "auto";
-	popovertargetaction: "hide" | "show" | "toggle";
 };
 
 type AAttributes = Attributes<{
@@ -295,14 +295,14 @@ type ButtonAttributes = Attributes<{
 }>;
 
 type CanvasAttributes = Attributes<{
-	height: string;
+	height: string | number;
 	["moz-opaque"]: boolean;
-	width: string;
+	width: string | number;
 }>;
 
-type ColAttributes = Attributes<{ span: string }, undefined>;
+type ColAttributes = Attributes<{ span: string | number }, undefined>;
 
-type ColgroupAttributes = Attributes<{ span: string }>;
+type ColgroupAttributes = Attributes<{ span: string | number }>;
 
 type DataAttributes = Attributes<{ value: string }>;
 
@@ -313,7 +313,12 @@ type DetailsAttributes = Attributes<{ open: boolean; name: string }>;
 type DialogAttributes = Attributes<{ open: boolean }>;
 
 type EmbedAttributes = Attributes<
-	{ height: string; src: string; type: string; width: string },
+	{
+		height: string | number;
+		src: string;
+		type: string;
+		width: string | number;
+	},
 	undefined
 >;
 
@@ -350,14 +355,14 @@ type HtmlAttributes = Attributes<{ xmlns: string }>;
 type IframeAttributes = Attributes<{
 	allow: string;
 	allowfullscreen: boolean;
-	height: string;
+	height: string | number;
 	loading: SharedAttributes["loading"];
 	name: string;
 	referrerpolicy: SharedAttributes["referrerpolicy"];
 	sandbox: string;
 	src: string;
 	srcdoc: string;
-	width: string;
+	width: string | number;
 }>;
 
 type ImgAttributes = Attributes<
@@ -367,14 +372,14 @@ type ImgAttributes = Attributes<
 		decoding: "sync" | "async" | "auto";
 		elementtiming: string;
 		fetchpriority: SharedAttributes["fetchpriority"];
-		height: string;
+		height: string | number;
 		ismap: boolean;
 		loading: SharedAttributes["loading"];
 		referrerpolicy: SharedAttributes["referrerpolicy"];
 		sizes: string;
 		src: string;
 		srcset: string;
-		width: string;
+		width: string | number;
 		usemap: string;
 	},
 	undefined
@@ -397,10 +402,10 @@ type InputAttributes = Attributes<
 		formtarget: SharedAttributes["target"];
 		height: string;
 		list: string;
-		max: string;
-		maxlength: string;
-		min: string;
-		minlength: string;
+		max: string | number;
+		maxlength: string | number;
+		min: string | number;
+		minlength: string | number;
 		multiple: boolean;
 		name: string;
 		pattern: string;
@@ -409,9 +414,9 @@ type InputAttributes = Attributes<
 		popovertargetaction: SharedAttributes["popovertargetaction"];
 		readonly: boolean;
 		required: boolean;
-		size: string;
+		size: string | number;
 		src: string;
-		step: string;
+		step: string | number;
 		type:
 			| "button"
 			| "checkbox"
@@ -435,7 +440,7 @@ type InputAttributes = Attributes<
 			| "time"
 			| "url"
 			| "week";
-		value: string;
+		value: string | number;
 		webkitdirectory: boolean;
 		width: string;
 	},
@@ -446,9 +451,9 @@ type InsAttributes = Attributes<{ cite: string; datetime: string }>;
 
 type LabelAttributes = Attributes<{ for: string }>;
 
-type LiAttributes = Attributes<{ value: string }>;
+type LiAttributes = Attributes<{ value: string | number }>;
 
-type AnchorAttributes = Attributes<
+type LinkAttributes = Attributes<
 	{
 		as:
 			| "audio"
@@ -540,27 +545,27 @@ type MetaAttributes = Attributes<
 >;
 
 type MeterAttributes = Attributes<{
-	value: string;
-	min: string;
-	max: string;
-	low: string;
-	high: string;
-	optimum: string;
+	value: string | number;
+	min: string | number;
+	max: string | number;
+	low: string | number;
+	high: string | number;
+	optimum: string | number;
 	form: string;
 }>;
 
 type ObjectAttributes = Attributes<{
 	data: string;
 	form: string;
-	height: string;
+	height: string | number;
 	name: string;
 	type: string;
-	width: string;
+	width: string | number;
 }>;
 
 type OlAttributes = Attributes<{
 	reversed: boolean;
-	start: string;
+	start: string | number;
 	type: "a" | "A" | "i" | "I" | "1";
 }>;
 
@@ -575,7 +580,10 @@ type OptionAttributes = Attributes<{
 
 type OutputAttributes = Attributes<{ for: string; form: string; name: string }>;
 
-type ProgressAttributes = Attributes<{ max: string; value: string }>;
+type ProgressAttributes = Attributes<{
+	max: string | number;
+	value: string | number;
+}>;
 
 type QAttributes = Attributes<{ cite: string }>;
 
@@ -599,20 +607,20 @@ type SelectAttributes = Attributes<{
 	multiple: boolean;
 	name: string;
 	required: boolean;
-	size: string;
+	size: string | number;
 }>;
 
 type SlotAttributes = Attributes<{ name: string }>;
 
 type SourceAttributes = Attributes<
 	{
-		type: string;
+		height: string | number;
+		media: string;
+		sizes: string;
 		src: string;
 		srcset: string;
-		sizes: string;
-		media: string;
-		height: string;
-		width: string;
+		type: string;
+		width: string | number;
 	},
 	undefined
 >;
@@ -623,9 +631,9 @@ type StyleAttributes = Attributes<{
 }>;
 
 type TdAttributes = Attributes<{
-	colspan: string;
+	colspan: string | number;
 	headers: string;
-	rowspan: string;
+	rowspan: string | number;
 }>;
 
 type TemplateAttributes = Attributes<{
@@ -637,25 +645,25 @@ type TemplateAttributes = Attributes<{
 
 type TextareaAttributes = Attributes<{
 	autocomplete: SharedAttributes["autocomplete"];
-	cols: string;
+	cols: string | number;
 	dirname: string;
 	disabled: boolean;
 	form: string;
-	maxlength: string;
-	minlength: string;
+	maxlength: string | number;
+	minlength: string | number;
 	name: string;
 	placeholder: string;
 	readonly: boolean;
 	required: boolean;
-	rows: string;
+	rows: string | number;
 	wrap: "hard" | "soft" | "off";
 }>;
 
 type ThAttributes = Attributes<{
 	abbr: string;
-	colspan: string;
+	colspan: string | number;
 	headers: string;
-	rowspan: string;
+	rowspan: string | number;
 	scope: "row" | "col" | "rowgroup" | "colgroup" | (string & {});
 }>;
 
@@ -679,14 +687,14 @@ type VideoAttributes = Attributes<{
 	crossorigin: SharedAttributes["crossorigin"];
 	disablepictureinpicture: boolean;
 	disableremoteplayback: boolean;
-	height: string;
+	height: string | number;
 	loop: boolean;
 	muted: boolean;
 	playsinline: boolean;
 	poster: string;
 	preload: SharedAttributes["preload"];
 	src: string;
-	width: string;
+	width: string | number;
 }>;
 
 export type IntrinsicElements =
@@ -749,7 +757,7 @@ export type IntrinsicElements =
 		label: LabelAttributes;
 		legend: Attributes;
 		li: LiAttributes;
-		link: AnchorAttributes;
+		link: LinkAttributes;
 		main: Attributes;
 		map: MapAttributes;
 		mark: Attributes;

@@ -2,7 +2,7 @@ import * as chatContent from "@/server/demo/chat/index.md";
 import { Head } from "@/ui/head";
 import "dotenv/config";
 import { Chunk, Get, Post } from "ovr";
-import * as z from "zod/v4-mini";
+import * as z from "zod";
 
 async function* Poet(props: { message: string }) {
 	const { Agent, run } = await import("@openai/agents");

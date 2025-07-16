@@ -124,6 +124,13 @@
 	body {
 		font-weight: 300;
 	}
+
+	input,
+	input::placeholder,
+	textarea,
+	textarea::placeholder {
+		font-weight: 300;
+	}
 }
 
 @layer components {

@@ -12,22 +12,22 @@
 	"dependencies": {
 		"@fontsource-variable/geist": "^5.2.6",
 		"@fontsource-variable/geist-mono": "^5.2.6",
-		"@openai/agents": "^0.0.10",
+		"@openai/agents": "^0.0.11",
 		"@robino/md": "^4.0.3",
 		"clsx": "^2.1.1",
-		"dotenv": "^17.0.1",
-		"drab": "^7.0.2",
+		"dotenv": "^17.2.0",
+		"drab": "^7.0.3",
 		"ovr": "*",
 		"uico": "^0.10.3",
-		"zod": "^3.25.71"
+		"zod": "^4.0.5"
 	},
 	"devDependencies": {
 		"@domcojs/vercel": "^3.0.0",
-		"@iconify-json/lucide": "^1.2.54",
+		"@iconify-json/lucide": "^1.2.57",
 		"@iconify/tailwind4": "^1.0.6",
 		"@tailwindcss/vite": "^4.1.11",
 		"domco": "^4.3.0",
 		"tailwindcss": "^4.1.11",
-		"vite": "^7.0.1"
+		"vite": "^7.0.4"
 	}
 }

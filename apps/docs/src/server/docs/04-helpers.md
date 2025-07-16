@@ -15,15 +15,13 @@ import { Get } from "ovr";
 const page = new Get("/", () => {
 	return (
 		<main>
-			<p>Hello world!</p>
-
-			{/* <a> tag with preset `href` attribute */}
+			{/* <a href="/"> */}
 			<page.Anchor>Home</page.Anchor>
 
-			{/* <button> component with preset `formaction` and `formmethod` attributes */}
+			{/* <button formmethod="GET" formaction="/"> */}
 			<page.Button>Submit</page.Button>
 
-			{/* <form> tag with preset `action` attribute */}
+			{/* <form method="GET" action="/"> */}
 			<page.Form>...</page.Form>
 		</main>
 	);
@@ -33,6 +31,8 @@ const page = new Get("/", () => {
 ## Post
 
 There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) handler and corresponding `Form` and `Button` elements. Anytime you need to handle a form submission, use the generated `Form` component from the `Post` helper.
+
+For `Post`, ovr will automatically generate a unique pathname for the route based on a hash of the middleware provided.
 
 ```tsx
 import { Get, Post } from "ovr";
@@ -46,23 +46,44 @@ const login = new Post(async (c) => {
 const page = new Get("/", () => {
 	return (
 		<main>
-			{/* <form> with preset `method` and `action` attributes */}
+			{/* <form method="POST" action="/_p/generated-hash"> */}
 			<login.Form>...</login.Form>
 
-			{/* <button> component with preset `formaction` and `formmethod` attributes */}
+			{/* <button formmethod="POST" formaction="/_p/generated-hash"> */}
 			<login.Button>Submit</login.Button>
 		</main>
 	);
 });
 ```
 
-For `Post`, ovr will automatically create a unique pattern for the route based on a hash of the middleware provided.
-
-You can also set the pattern manually if you need a stable pattern or if you are using parameters.
+You can set the pattern manually if you need a stable pattern or if you are using parameters.
 
 ```tsx
 const custom = new Post("/custom/:pattern", (c) => {
 	// ...
+});
+```
+
+## Props
+
+If the route's pattern has `params`, they must be passed as a prop into the corresponding component to construct the URL.
+
+You can also pass the [`search`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) and [`hash`](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash) props to each component. `search` will be passed into [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) constructor, while `hash` will be appended with a `#` at the end.
+
+```tsx
+import { Get } from "ovr";
+
+const page = new Get("/hello/:name", () => {
+	return (
+		// <form method="GET" action="/hello/world?search=param#hash">
+		<page.Form
+			params={{ name: "world" }}
+			search={{ search: "param" }}
+			hash="hash"
+		>
+			...
+		</page.Form>
+	);
 });
 ```
 
@@ -102,7 +123,7 @@ import * as home from "./home";
 app.add(home); // adds all exports
 ```
 
-## Other properties
+## Properties
 
 Given the following `Get` helper, a variety of other properties are available to use in addition to the components.
 
@@ -152,7 +173,7 @@ page.pathname({ id: "world" });
 // Error: 'id' does not exist in type '{ name: string; }'
 ```
 
-You can even create a list of exact pathnames for given params.
+You can create a list of exact pathnames for given params.
 
 ```ts
 const params = [
@@ -163,4 +184,20 @@ const params = [
 const pathnames = params.map((p) => page.pathname(p));
 
 // ("/hello/world" | "/hello/ross")[]
+```
+
+### Relative URL
+
+The `url` method creates a _relative_ URL (without the `origin`) for the route. This method is similar to `pathname`, but also provides the ability to also pass [`search`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) and [`hash`](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash) options to create the URL.
+
+```ts
+// /hello/world?search=param#hash
+const relativeUrl = page.url({
+	params: { name: "world" },
+	search: { search: "param" },
+	hash: "hash",
+});
+
+const absoluteUrl = new URL(relativeUrl, "https://example.com");
+absoluteUrl.href; // https://example.com/hello/world?search=param#hash
 ```
