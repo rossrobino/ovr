@@ -31,8 +31,8 @@ export const todo = new Get("/demo/todo", (c) => {
 		<>
 			<h1>Todo</h1>
 
-			<div class="border-muted mb-12 grid max-w-sm gap-4 rounded-md border p-4">
-				<add.Form search={c.url.search} class="flex gap-4">
+			<div class="border-muted mb-12 grid max-w-md gap-4 rounded-md border p-4">
+				<add.Form search class="flex gap-4">
 					<input name="text" placeholder="Add todo" />
 					<button>Add</button>
 				</add.Form>
@@ -45,7 +45,7 @@ export const todo = new Get("/demo/todo", (c) => {
 
 								<div class="flex items-center gap-4">
 									<toggle.Button
-										search={c.url.search}
+										search
 										class="ghost icon"
 										aria-label="toggle todo"
 									>
@@ -62,7 +62,7 @@ export const todo = new Get("/demo/todo", (c) => {
 								</div>
 
 								<remove.Button
-									search={c.url.search}
+									search
 									class="icon secondary"
 									aria-label="delete todo"
 								>

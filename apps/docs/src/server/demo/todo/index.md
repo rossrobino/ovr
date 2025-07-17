@@ -33,7 +33,7 @@ export const remove = new Post(async () => {
 export const todo = new Get("/demo/todo", (c) => {
 	return (
 		<div>
-			<add.Form search={c.url.search}>
+			<add.Form search>
 				<input name="text" placeholder="Add todo" />
 				<button>Add</button>
 			</add.Form>
@@ -45,14 +45,14 @@ export const todo = new Get("/demo/todo", (c) => {
 							<input type="hidden" name="id" value={t.id} />
 
 							<div>
-								<toggle.Button search={c.url.search} aria-label="toggle todo">
+								<toggle.Button search aria-label="toggle todo">
 									{t.done ? "done" : "todo"}
 								</toggle.Button>
 
 								<span>{t.text}</span>
 							</div>
 
-							<remove.Button search={c.url.search} aria-label="delete todo">
+							<remove.Button search aria-label="delete todo">
 								x
 							</remove.Button>
 						</form>

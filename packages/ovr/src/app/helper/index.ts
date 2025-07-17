@@ -1,15 +1,21 @@
 import { type JSX, jsx } from "../../jsx/index.js";
 import type { Params } from "../../trie/index.js";
 import type { ExtractParams, InsertParams } from "../../types/index.js";
+import { Context } from "../context.js";
 import type { Middleware } from "../index.js";
 
-export type HelperComponentProps<P extends Params> = {
+export type UrlOptions<P extends Params> = {
 	/**
-	 * Passed into `URLSearchParams` constructor.
+	 * If `true` the current request's `url.search` is forwarded, this option
+	 * can only be used in the context of a request.
+	 *
+	 * Otherwise the value is passed into `URLSearchParams` constructor to
+	 * create new params.
 	 *
 	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
 	 */
 	search?:
+		| boolean
 		| string
 		// Iterable is more accurate than the built in string[][] + URLSearchParams
 		// https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/2070
@@ -44,14 +50,12 @@ export class Helper<Pattern extends string> {
 
 	/** `<button>` component with preset `formaction` and `formmethod` attributes. */
 	Button: (
-		props: JSX.IntrinsicElements["button"] &
-			HelperComponentProps<ExtractParams<Pattern>>,
+		props: JSX.IntrinsicElements["button"] & UrlOptions<ExtractParams<Pattern>>,
 	) => JSX.Element;
 
 	/** `<form>` component with preset `method` and `action` attributes. */
 	Form: (
-		props: JSX.IntrinsicElements["form"] &
-			HelperComponentProps<ExtractParams<Pattern>>,
+		props: JSX.IntrinsicElements["form"] & UrlOptions<ExtractParams<Pattern>>,
 	) => JSX.Element;
 
 	/** Pattern parts */
@@ -68,7 +72,7 @@ export class Helper<Pattern extends string> {
 
 		this.Button = ({ params, search, hash, ...rest }) =>
 			jsx("button", {
-				formaction: this.url({ params, search, hash } as HelperComponentProps<
+				formaction: this.url({ params, search, hash } as UrlOptions<
 					ExtractParams<Pattern>
 				>),
 				formmethod: method,
@@ -77,7 +81,7 @@ export class Helper<Pattern extends string> {
 
 		this.Form = ({ params, search, hash, ...rest }) =>
 			jsx("form", {
-				action: this.url({ params, search, hash } as HelperComponentProps<
+				action: this.url({ params, search, hash } as UrlOptions<
 					ExtractParams<Pattern>
 				>),
 				method,
@@ -93,24 +97,35 @@ export class Helper<Pattern extends string> {
 	 */
 	url(
 		...[options]: keyof ExtractParams<Pattern> extends never
-			? [HelperComponentProps<ExtractParams<Pattern>>] | []
-			: [HelperComponentProps<ExtractParams<Pattern>>]
+			? [UrlOptions<ExtractParams<Pattern>>] | []
+			: [UrlOptions<ExtractParams<Pattern>>]
 	) {
 		const pathname = this.pathname(
 			// @ts-expect-error - do not have to pass in {} if no params
 			options?.params,
 		);
-		const search = options?.search
-			? "?" +
-				new URLSearchParams(
-					options.search as ConstructorParameters<typeof URLSearchParams>[0],
-				)
-			: "";
 
-		// adding # prefix if not present matches the URL setter:
-		// https://developer.mozilla.org/en-US/docs/Web/API/URL/hash
+		let search: string;
+		if (options?.search) {
+			if (options.search === true) {
+				// forward current request's search
+				search = Context.get().url.search;
+			} else {
+				// use the value as the init
+				search =
+					"?" +
+					new URLSearchParams(
+						options.search as ConstructorParameters<typeof URLSearchParams>[0],
+					);
+			}
+		} else {
+			search = "";
+		}
+
 		let hash: string;
 		if (options?.hash) {
+			// adding # prefix if not present matches the URL setter:
+			// https://developer.mozilla.org/en-US/docs/Web/API/URL/hash
 			if (options.hash.startsWith("#")) {
 				hash = options.hash;
 			} else {

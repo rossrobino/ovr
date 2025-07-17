@@ -1,13 +1,12 @@
 import { type JSX, jsx } from "../../jsx/index.js";
 import type { ExtractParams } from "../../types/index.js";
 import type { Middleware } from "../index.js";
-import { Helper, type HelperComponentProps } from "./index.js";
+import { Helper, type UrlOptions } from "./index.js";
 
 export class Get<Pattern extends string = string> extends Helper<Pattern> {
 	/** `<a>` component with preset `href` attribute. */
 	Anchor: (
-		props: JSX.IntrinsicElements["a"] &
-			HelperComponentProps<ExtractParams<Pattern>>,
+		props: JSX.IntrinsicElements["a"] & UrlOptions<ExtractParams<Pattern>>,
 	) => JSX.Element;
 
 	/**
@@ -38,7 +37,7 @@ export class Get<Pattern extends string = string> extends Helper<Pattern> {
 
 		this.Anchor = ({ params, search, hash, ...rest }) =>
 			jsx("a", {
-				href: this.url({ params, search, hash } as HelperComponentProps<
+				href: this.url({ params, search, hash } as UrlOptions<
 					ExtractParams<Pattern>
 				>),
 				...rest,

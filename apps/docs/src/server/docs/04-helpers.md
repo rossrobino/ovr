@@ -66,9 +66,13 @@ const custom = new Post("/custom/:pattern", (c) => {
 
 ## Props
 
-If the route's pattern has `params`, they must be passed as a prop into the corresponding component to construct the URL.
+Components created via helpers have the following props available:
 
-You can also pass the [`search`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) and [`hash`](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash) props to each component. `search` will be passed into [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) constructor, while `hash` will be appended with a `#` at the end.
+- `params` - if the route's pattern has parameters, they must be passed as a prop to properly construct the URL.
+- `search` - [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) to append to the URL.
+  - If `true` the current request's `url.search` will be used (this option can only be used in the context of a request).
+  - Other values are passed into `URLSearchParams` constructor to create the query string.
+- `hash` - [fragment hash](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash) appended with a `#` at the end of the URL.
 
 ```tsx
 import { Get } from "ovr";
