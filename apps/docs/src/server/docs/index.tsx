@@ -10,6 +10,11 @@ export const content = import.meta.glob<Result<typeof FrontmatterSchema>>(
 	{ eager: true },
 );
 
+const demos = import.meta.glob<Result<typeof FrontmatterSchema>>(
+	`@/server/demo/*/index.md`,
+	{ eager: true },
+);
+
 export const getSlugs = () => {
 	return Object.keys(content)
 		.map((path) => {
@@ -27,13 +32,13 @@ const getMd = (result: Result<typeof FrontmatterSchema>) => {
 	}${result.article}`;
 };
 
-export const llms = new Get("/llms.txt", (c) =>
+export const llms = new Get("/llms.txt", (c) => {
 	c.text(
-		[homeResult, ...Object.values(content)]
+		[homeResult, ...Object.values(content), ...Object.values(demos)]
 			.map((result) => getMd(result))
 			.join("\n"),
-	),
-);
+	);
+});
 
 export const page = new Get("/:slug", (c) => {
 	let md = false;
