@@ -2,7 +2,7 @@ import type { FrontmatterSchema } from "@/lib/md";
 import * as homeResult from "@/server/home/index.md";
 import { Head } from "@/ui/head";
 import type { Result } from "@robino/md";
-import clsx from "clsx";
+import { clsx } from "clsx";
 import { Chunk, Get } from "ovr";
 
 export const content = import.meta.glob<Result<typeof FrontmatterSchema>>(
