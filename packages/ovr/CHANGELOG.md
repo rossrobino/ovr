@@ -1,5 +1,20 @@
 # ovr
 
+## 4.5.0
+
+### Minor Changes
+
+- 3d77e9c: feat: Adds the `true` option to the `search` option in `Helper.url` and component props to forward the current requests search params.
+
+  ```tsx
+  import { Get } from "ovr";
+
+  const page = new Get("/", () => {
+  	// `search={true}` forwards the search params to the `href` attribute
+  	return <page.Anchor search>Home</page.Anchor>;
+  });
+  ```
+
 ## 4.4.0
 
 ### Minor Changes
