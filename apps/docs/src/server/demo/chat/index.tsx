@@ -5,23 +5,18 @@ import { Chunk, Get, Post } from "ovr";
 import * as z from "zod";
 
 async function* Poet(props: { message: string }) {
-	const { Agent, run } = await import("@openai/agents");
+	const { OpenAI } = await import("openai");
+	const client = new OpenAI();
 
-	const agent = new Agent({
-		name: "Poet",
+	const response = await client.responses.create({
+		input: props.message,
 		instructions: "You turn messages into poems.",
 		model: "gpt-4.1-nano",
+		stream: true,
 	});
 
-	const result = await run(agent, props.message, { stream: true });
-
-	for await (const event of result) {
-		if (
-			event.type === "raw_model_stream_event" &&
-			event.data.type === "output_text_delta"
-		) {
-			yield event.data.delta;
-		}
+	for await (const event of response) {
+		if (event.type === "response.output_text.delta") yield event.delta;
 	}
 }
 

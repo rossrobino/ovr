@@ -3,25 +3,23 @@ title: Chat
 description: Learn how to build a basic chat interface with ovr.
 ---
 
-Here's a chat example with the [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/). The response is streamed _without_ client-side JavaScript using the async generator `Poet` component.
+Here's a chat example with the [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses). The response is streamed _without_ client-side JavaScript using the async generator `Poet` component.
 
 ```tsx
+import { OpenAI } from "openai";
+
+const client = new OpenAI();
+
 async function* Poet(props: { message: string }) {
-	const agent = new Agent({
-		name: "Poet",
+	const response = await client.responses.create({
+		input: props.message,
 		instructions: "You turn messages into poems.",
 		model: "gpt-4.1-nano",
+		stream: true,
 	});
 
-	const result = await run(agent, props.message, { stream: true });
-
-	for await (const event of result) {
-		if (
-			event.type === "raw_model_stream_event" &&
-			event.data.type === "output_text_delta"
-		) {
-			yield event.data.delta;
-		}
+	for await (const event of response) {
+		if (event.type === "response.output_text.delta") yield event.delta;
 	}
 }
 ```

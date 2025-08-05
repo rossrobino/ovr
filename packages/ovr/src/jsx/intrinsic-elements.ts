@@ -278,7 +278,14 @@ type BodyAttributes = Attributes<{
 }>;
 
 type ButtonAttributes = Attributes<{
-	command: string;
+	command:
+		| "show-modal"
+		| "close"
+		| "request-close"
+		| "show-popover"
+		| "hide-popover"
+		| "toggle-popover"
+		| (string & {});
 	commandfor: string;
 	disabled: boolean;
 	form: string;
@@ -310,7 +317,10 @@ type DelAttributes = Attributes<{ cite: string; datetime: string }>;
 
 type DetailsAttributes = Attributes<{ open: boolean; name: string }>;
 
-type DialogAttributes = Attributes<{ open: boolean }>;
+type DialogAttributes = Attributes<{
+	closedby: "any" | "closerequest" | "none";
+	open: boolean;
+}>;
 
 type EmbedAttributes = Attributes<
 	{

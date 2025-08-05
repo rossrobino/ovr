@@ -5,3 +5,4 @@ export * from "@/server/demo/parallel";
 export * from "@/server/demo/form";
 export * from "@/server/demo/layout";
 export * from "@/server/demo/todo";
+export * from "@/server/demo/wordle";
