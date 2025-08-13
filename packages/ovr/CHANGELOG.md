@@ -1,5 +1,11 @@
 # ovr
 
+## 4.5.1
+
+### Patch Changes
+
+- 3e9cca7: types: add `command` attribute to `button`, add `closedby` attribute to `dialog`
+
 ## 4.5.0
 
 ### Minor Changes
