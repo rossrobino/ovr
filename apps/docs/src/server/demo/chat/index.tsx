@@ -11,7 +11,9 @@ async function* Poet(props: { message: string }) {
 	const response = await client.responses.create({
 		input: props.message,
 		instructions: "You turn messages into poems.",
-		model: "gpt-4.1-nano",
+		model: "gpt-5-nano",
+		reasoning: { effort: "minimal" },
+		text: { verbosity: "low" },
 		stream: true,
 	});
 

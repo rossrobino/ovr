@@ -11,7 +11,7 @@ ovr is open source with the MIT license. Feel free to create an issue on GitHub 
 
 ## Conventions
 
-- Casing - try to match built-in methods/casing whenever possible
+- Casing - try to match built-in JS methods/casing whenever possible
   - Variables including constants are camelCase
   - Classes and types are PascalCase
   - File names are kebab-case

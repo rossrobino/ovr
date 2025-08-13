@@ -10,7 +10,6 @@ import {
 	type TrailingSlash,
 } from "./index.js";
 import { Memo } from "./memo/index.js";
-import { Buffer } from "node:buffer";
 
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
 
@@ -84,8 +83,6 @@ export class Context<P extends Params = Params> {
 	static readonly #contentType = "content-type";
 	static readonly #headClose = "</head>";
 	static readonly #bodyClose = "</body>";
-	static readonly #newLine = "\r\n";
-	static readonly #doubleNewLine = "\r\n\r\n";
 
 	constructor(
 		req: Request,
@@ -331,137 +328,6 @@ export class Context<P extends Params = Params> {
 		this.#finalized = true;
 
 		return new Response(this.body, this);
-	}
-
-	/**
-	 * Gets the key/value pairs from a string.
-	 * Values can be in double quotations.
-	 *
-	 * @param str
-	 * @returns An object containing the key/value pairs
-	 */
-	#parsePairs(str: string | null) {
-		const pairs: Record<string, string> = {};
-
-		if (!str) return pairs;
-
-		let key = "";
-		let value = "";
-		let inKey = true;
-		let inQuote = false;
-
-		const set = () => {
-			key = key.trim();
-			if (key) pairs[key] = value;
-			key = "";
-			value = "";
-			inKey = true;
-			inQuote = false;
-		};
-
-		for (let i = 0; i < str.length; i++) {
-			const char = str[i];
-
-			if (inKey) {
-				if (char === "=") {
-					inKey = false;
-					if (str[i + 1] === '"') {
-						inQuote = true;
-						i++;
-					}
-				} else if (char === ";") {
-					key = ""; // ignore keys without values
-				} else {
-					key += char;
-				}
-			} else {
-				if (inQuote && char === '"') {
-					set();
-					if (str[i + 1] === ";") i++;
-				} else if (!inQuote && char === ";") {
-					set();
-				} else {
-					value += char;
-				}
-			}
-		}
-
-		set(); // last pair
-
-		return pairs;
-	}
-
-	/**
-	 * Parses a raw HTTP header string into a `Headers` instance.
-	 *
-	 * @param raw Header string (one or more lines).
-	 */
-	#parseHeaders(raw: string) {
-		const headers = new Headers();
-
-		for (const line of raw.split(Context.#newLine)) {
-			const [name, value] = line.split(":").map((s) => s.trim());
-			if (name && value) headers.append(name, value);
-		}
-
-		return headers;
-	}
-
-	async *data() {
-		const reader = this.req.body?.getReader();
-		if (!reader) return;
-
-		let { boundary } = this.#parsePairs(
-			this.req.headers.get(Context.#contentType),
-		);
-		if (!boundary) return;
-
-		boundary = "--" + boundary;
-		let headers: Headers | null = null;
-		let buffer = Buffer.alloc(0);
-
-		chunks: while (true) {
-			const { value, done } = await reader.read();
-
-			if (value) {
-				buffer = Buffer.concat([buffer, value]);
-
-				let boundaryIndex: number;
-
-				while ((boundaryIndex = buffer.indexOf(boundary)) !== -1) {
-					// before boundary
-					const chunk = buffer
-						.subarray(0, boundaryIndex)
-						.subarray(0, -Context.#newLine.length) // why does this have to be separate?
-						.toString();
-
-					if (chunk) yield { chunk };
-
-					// after boundary - next chunk
-					buffer = buffer.subarray(boundaryIndex + boundary.length);
-
-					// find headers
-					const headerEnd = buffer.indexOf(Context.#doubleNewLine);
-					if (headerEnd === -1) continue chunks; // incomplete headers, throw error?
-
-					headers = this.#parseHeaders(
-						buffer.subarray(0, headerEnd).toString(),
-					);
-
-					const pairs = this.#parsePairs(headers.get("content-disposition"));
-
-					yield { headers, pairs };
-
-					buffer = buffer.subarray(headerEnd + Context.#doubleNewLine.length);
-				}
-
-				// if partial boundary
-				// continue to next chunk
-				// else yield current and clear buffer
-			}
-
-			if (done) break;
-		}
 	}
 
 	/**

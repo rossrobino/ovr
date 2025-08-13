@@ -52,7 +52,7 @@ function* Features() {
 			title: "Async Generator JSX",
 			href: "/#introduction",
 			content:
-				"Create a stream of HTML with familiar JSX components, no client-side JS required.",
+				"Stream HTML with familiar JSX components, no client-side JS required.",
 		},
 		{
 			title: "Performance First",
