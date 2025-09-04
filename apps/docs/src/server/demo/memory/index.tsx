@@ -6,9 +6,8 @@ export const memory = new Get("/demo/memory", async (c) => {
 	c.head(<Head {...memoryContent.frontmatter} />);
 
 	function* Numbers() {
-		let i = 0;
 		// const time = performance.now();
-		while (i++ < 4_998) {
+		for (let i = 0; i < 4_998; i++) {
 			yield <div class="bg-foreground rounded-sm p-0.5" />;
 		}
 		// console.log(performance.now() - time);
