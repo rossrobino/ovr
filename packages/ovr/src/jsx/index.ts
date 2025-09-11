@@ -162,8 +162,8 @@ export async function* toGenerator(
 					yield* toGenerator(result.value);
 
 					if (performance.now() > deadline) {
-						// yields back to the event loop to send chunks
-						// or check if the request has been cancelled
+						// yields back to the event loop if deadline is reached
+						// to send chunks or check if the request has been cancelled
 						await setImmediate();
 						deadline = performance.now() + ms;
 					}
