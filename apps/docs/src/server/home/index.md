@@ -11,16 +11,18 @@ For example, for the following component:
 
 ```tsx
 function Component() {
-	return <p>hello world</p>;
+	return <p class="font-bold">hello world</p>;
 }
 ```
 
-ovr generates three `Chunk`s of HTML:
+ovr generates five `Chunk`s of HTML:
 
-```ts
-"<p>"; // streamed immediately
-"hello world"; // next
-"</p>"; // last
+```txt
+<p
+class="font-bold"
+>
+hello world
+</p>
 ```
 
 ## Asynchronous streaming
@@ -45,16 +47,19 @@ function Component() {
 
 Instead of waiting for `Username` to resolve before sending the entire `Component`, ovr will send what it has immediately and stream the rest as it becomes available.
 
-```ts
-"<p>";
-"hello ";
+```txt
+<p
+>
+hello
 // streamed immediately
 
 // for await (const chunk of Username()) { ...
-"<span>";
-"username";
-"</span>";
-"</p>";
+<span
+>
+username
+</span>
+
+</p>
 ```
 
 ## Render how browsers read

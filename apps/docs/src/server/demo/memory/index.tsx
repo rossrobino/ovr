@@ -26,7 +26,7 @@ export const memory = new Get("/demo/memory", async (c) => {
 		<>
 			<h1>{memoryContent.frontmatter.title}</h1>
 
-			{new Chunk(memoryContent.html, true)}
+			{Chunk.safe(memoryContent.html)}
 
 			<div class="flex flex-wrap gap-px">
 				<div class="sr-only">

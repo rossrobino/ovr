@@ -10,7 +10,7 @@ export const form = new Get("/demo/form", (c) => {
 		<>
 			<h1>{formContent.frontmatter.title}</h1>
 
-			{new Chunk(formContent.html, true)}
+			{Chunk.safe(formContent.html)}
 
 			<hr />
 

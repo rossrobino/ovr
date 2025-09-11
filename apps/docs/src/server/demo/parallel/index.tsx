@@ -19,7 +19,7 @@ export const parallel = new Get("/demo/parallel", (c) => {
 		<>
 			<h1>{parallelContent.frontmatter.title}</h1>
 
-			{new Chunk(parallelContent.html, true)}
+			{Chunk.safe(parallelContent.html)}
 
 			<div class="grid grid-cols-3 gap-2 sm:grid-cols-6">
 				<Delays />

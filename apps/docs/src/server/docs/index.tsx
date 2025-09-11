@@ -64,7 +64,7 @@ export const page = new Get("/:slug", (c) => {
 		<>
 			<h1>{result.frontmatter.title}</h1>
 
-			{new Chunk(result.html, true)}
+			{Chunk.safe(result.html)}
 
 			<hr />
 

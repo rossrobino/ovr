@@ -123,6 +123,12 @@ function Component() {
 }
 ```
 
+Or use the `Chunk.safe` helper function:
+
+```tsx
+<div>{Chunk.safe(html)}</div>
+```
+
 ## Running components
 
 To evaluate components (for example, if you aren't using `App` or need to call them separately), you can use these functions.

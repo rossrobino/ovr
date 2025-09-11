@@ -31,6 +31,18 @@ export class Chunk {
 	}
 
 	/**
+	 * Wraps `new Chunk("html", true)`.
+	 *
+	 * Use to create a new `Chunk` and bypass escaping.
+	 *
+	 * @param html Safe string of HTML
+	 * @returns New _safe_ `Chunk`
+	 */
+	static safe(html: unknown) {
+		return new Chunk(html, true);
+	}
+
+	/**
 	 * Escapes strings of HTML.
 	 *
 	 * @param html String to escape

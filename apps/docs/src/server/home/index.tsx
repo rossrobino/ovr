@@ -33,7 +33,7 @@ export const page = new Get("/", (c) => {
 
 			<hr />
 
-			{new Chunk(result.html, true)}
+			{Chunk.safe(result.html)}
 
 			<hr />
 

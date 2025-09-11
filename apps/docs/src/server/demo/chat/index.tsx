@@ -29,7 +29,7 @@ export const chat = new Get("/demo/chat", (c) => {
 		<div>
 			<h1>{chatContent.frontmatter.title}</h1>
 
-			{new Chunk(chatContent.html, true)}
+			{Chunk.safe(chatContent.html)}
 
 			<hr />
 

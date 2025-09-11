@@ -80,7 +80,7 @@ export const todo = new Get("/demo/todo", (c) => {
 
 			<hr />
 
-			{new Chunk(todoContent.html, true)}
+			{Chunk.safe(todoContent.html)}
 		</>
 	);
 });

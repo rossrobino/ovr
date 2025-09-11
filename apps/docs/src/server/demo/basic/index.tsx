@@ -9,7 +9,7 @@ export const page = new Get("/demo/basic", (c) => {
 		<>
 			<h1>{basicContent.frontmatter.title}</h1>
 
-			{new Chunk(basicContent.html, true)}
+			{Chunk.safe(basicContent.html)}
 		</>
 	);
 });

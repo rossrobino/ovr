@@ -26,7 +26,7 @@ export namespace JSX {
 	>;
 }
 
-/** Unknown component props. */
+/** Unknown component props */
 export type Props = Record<string, JSX.Element>;
 
 /**
@@ -52,11 +52,12 @@ const voidElements = new Set([
 
 /**
  * The main function of the JSX transform cycle, each time JSX is encountered
- * it is passed into this function to be resolved.
+ * it is passed into this function to be resolved. This function doesn't need to be
+ * called recursively, JSX will be transformed into these `jsx()` function calls.
  *
  * @param tag string or function component
  * @param props object containing all the properties and attributes passed to the element or component
- * @returns an async generator that yields `Chunk`s of HTML
+ * @returns async generator that yields `Chunk`s of HTML
  */
 export async function* jsx<P extends Props = Props>(
 	tag: ((props: P) => JSX.Element) | string,
@@ -65,36 +66,35 @@ export async function* jsx<P extends Props = Props>(
 	if (typeof tag === "function") {
 		// component or fragment
 		yield* toGenerator(tag(props));
-
 		return;
 	}
 
 	// intrinsic element
-	const { children, ...rest } = props;
+	yield Chunk.safe(`<${tag}`);
 
-	let attributes = "";
+	const { children, ...attributes } = props;
 
-	for (const key in rest) {
-		const value = rest[key];
+	for (const attr in attributes) {
+		const value = attributes[attr];
 
 		if (value === true) {
 			// just put the key without the value
-			attributes += ` ${key}`;
+			yield Chunk.safe(` ${attr}`);
 		} else if (typeof value === "string") {
-			attributes += ` ${key}="${Chunk.escape(value, true)}"`;
+			yield Chunk.safe(` ${attr}="${Chunk.escape(value, true)}"`);
 		} else if (typeof value === "number" || typeof value === "bigint") {
-			attributes += ` ${key}="${value}"`;
+			yield Chunk.safe(` ${attr}="${value}"`);
 		}
 		// otherwise, don't include the attribute
 	}
 
-	yield new Chunk(`<${tag}${attributes}>`, true);
+	yield Chunk.safe(">");
 
 	if (voidElements.has(tag)) return;
 
 	yield* toGenerator(children);
 
-	yield new Chunk(`</${tag}>`, true);
+	yield Chunk.safe(`</${tag}>`);
 }
 
 /**
@@ -109,7 +109,7 @@ export async function* Fragment(props: { children?: JSX.Element } = {}) {
 
 /**
  * @param element
- * @yields `Chunk`s of HTML as the `Element` resolves.
+ * @yields `Chunk`s of HTML as the `Element` resolves
  */
 export async function* toGenerator(
 	element: JSX.Element,
@@ -127,7 +127,6 @@ export async function* toGenerator(
 	if (element instanceof Chunk) {
 		// already escaped or safe
 		yield element;
-
 		return;
 	}
 
@@ -135,7 +134,6 @@ export async function* toGenerator(
 		if (Symbol.asyncIterator in element) {
 			// async iterable - lazily resolve
 			for await (const children of element) yield* toGenerator(children);
-
 			return;
 		}
 
@@ -211,7 +209,6 @@ export async function* toGenerator(
 
 			// clear the queue
 			yield* queue.filter(Boolean) as Chunk[];
-
 			return;
 		}
 	}
@@ -258,7 +255,8 @@ export const toStream = (element: JSX.Element) => {
 			}
 
 			c.enqueue(
-				// need to encode for Node JS (ex: during prerendering)
+				// need to encode for Node JS (ex: during prerendering) or it will error
+				// doesn't seem to be needed for browsers
 				// faster than piping through a `TextEncoderStream`
 				encoder.encode(result.value.value),
 			);

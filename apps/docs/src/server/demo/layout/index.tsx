@@ -9,7 +9,7 @@ export const layout = new Get("/demo/layout", (c) => {
 		<>
 			<h1>{layoutContent.frontmatter.title}</h1>
 
-			{new Chunk(layoutContent.html, true)}
+			{Chunk.safe(layoutContent.html)}
 		</>
 	);
 });

@@ -264,9 +264,7 @@ export class Context<P extends Params = Params> {
 			elements.push(Page, Context.#bodyClose + bodyParts[1]);
 
 			stream = toStream(
-				elements.map((el) =>
-					typeof el === "string" ? new Chunk(el, true) : el,
-				),
+				elements.map((el) => (typeof el === "string" ? Chunk.safe(el) : el)),
 			);
 		} else {
 			// HTML partial - just use the layouts + page
