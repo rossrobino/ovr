@@ -6,11 +6,11 @@ export const memory = new Get("/demo/memory", async (c) => {
 	c.head(<Head {...memoryContent.frontmatter} />);
 
 	function* Numbers() {
-		// const time = performance.now();
+		const time = performance.now();
 		for (let i = 0; i < 4_998; i++) {
 			yield <div class="bg-foreground rounded-sm p-0.5" />;
 		}
-		// console.log(performance.now() - time);
+		console.log(performance.now() - time);
 	}
 
 	// const time = performance.now();

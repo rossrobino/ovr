@@ -2,6 +2,7 @@ import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
 import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
 import { merge } from "./merge-async-generators.js";
+import { performance } from "node:perf_hooks";
 import { setImmediate } from "node:timers/promises";
 
 /** ovr JSX namespace */
@@ -57,7 +58,7 @@ const voidElements = new Set([
  *
  * @param tag string or function component
  * @param props object containing all the properties and attributes passed to the element or component
- * @returns async generator that yields `Chunk`s of HTML
+ * @returns `AsyncGenerator` that yields `Chunk`s of HTML
  */
 export async function* jsx<P extends Props = Props>(
 	tag: ((props: P) => JSX.Element) | string,
@@ -70,29 +71,31 @@ export async function* jsx<P extends Props = Props>(
 	}
 
 	// intrinsic element
-	yield Chunk.safe(`<${tag}`);
+	// faster to concatenate attributes than to yield them as separate chunks
+	let attributes = "";
 
-	const { children, ...attributes } = props;
+	for (const key in props) {
+		// more memory efficient to skip children instead of destructuring and using ...rest
+		if (key === "children") continue;
 
-	for (const attr in attributes) {
-		const value = attributes[attr];
+		const value = props[key];
 
 		if (value === true) {
 			// just put the key without the value
-			yield Chunk.safe(` ${attr}`);
+			attributes += ` ${key}`;
 		} else if (typeof value === "string") {
-			yield Chunk.safe(` ${attr}="${Chunk.escape(value, true)}"`);
+			attributes += ` ${key}="${Chunk.escape(value, true)}"`;
 		} else if (typeof value === "number" || typeof value === "bigint") {
-			yield Chunk.safe(` ${attr}="${value}"`);
+			attributes += ` ${key}="${value}"`;
 		}
 		// otherwise, don't include the attribute
 	}
 
-	yield Chunk.safe(">");
+	yield Chunk.safe(`<${tag}${attributes}>`);
 
 	if (voidElements.has(tag)) return;
 
-	yield* toGenerator(children);
+	yield* toGenerator(props.children);
 
 	yield Chunk.safe(`</${tag}>`);
 }
@@ -148,20 +151,21 @@ export async function* toGenerator(
 			) {
 				// sync generator
 				// process lazily - avoids loading all in memory
-				const yieldIterations = 150;
-				let yieldCounter = yieldIterations;
+				const ms = 8;
+				let deadline = performance.now() + ms;
 
 				while (true) {
 					const result = iterator.next();
 
 					if (result.done) break;
+
 					yield* toGenerator(result.value);
 
-					if (--yieldCounter === 0) {
+					if (performance.now() > deadline) {
 						// yields back to the event loop to send chunks
 						// or check if the request has been cancelled
 						await setImmediate();
-						yieldCounter = yieldIterations;
+						deadline = performance.now() + ms;
 					}
 				}
 
@@ -179,12 +183,12 @@ export async function* toGenerator(
 			}
 
 			const queue: (Chunk | null)[] = new Array(generators.length);
-			const complete = new Set<number>();
+			const complete = new Uint8Array(generators.length);
 			let current = 0;
 
 			for await (const m of merge(generators)) {
 				if (m.result.done) {
-					complete.add(m.index);
+					complete[m.index] = 1;
 
 					if (m.index === current) {
 						while (++current < generators.length) {
@@ -195,7 +199,7 @@ export async function* toGenerator(
 							}
 
 							// if it hasn't completed, stop iterating to the next
-							if (!complete.has(current)) break;
+							if (!complete[current]) break;
 						}
 					}
 				} else if (m.index === current) {

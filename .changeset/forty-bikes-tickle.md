@@ -2,4 +2,4 @@
 "ovr": patch
 ---
 
-refactor: Generate each attribute as a separate `Chunk` instead of a full string of the opening tag + attributes.
+perf: Use a time based strategy to yield back to the event loop instead of iterations for more consistent streaming for sync iterators.
