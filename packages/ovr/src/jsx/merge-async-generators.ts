@@ -16,9 +16,9 @@ export async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
 	const iterators = generators.map((gen) => gen[Symbol.asyncIterator]());
 	const promises = new Map<number, ReturnType<typeof next<T, void>>>();
 
-	iterators.forEach((iterator, index) =>
-		promises.set(index, next(iterator, index)),
-	);
+	for (let i = 0; i < iterators.length; i++) {
+		promises.set(i, next(iterators[i]!, i));
+	}
 
 	let current: Awaited<ReturnType<typeof next>>;
 
@@ -37,8 +37,11 @@ export async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
 		}
 	} finally {
 		for (const iterator of iterators) {
-			// catch - could have already returned
-			iterator.return().catch(() => {});
+			try {
+				iterator.return();
+			} catch {
+				// could have already returned
+			}
 		}
 	}
 }

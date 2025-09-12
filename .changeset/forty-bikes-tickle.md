@@ -2,4 +2,4 @@
 "ovr": patch
 ---
 
-perf: Use a time based strategy to yield back to the event loop instead of iterations for more consistent streaming for sync iterators.
+perf: Use a time based strategy to yield back to the event loop instead of iterations for more consistent streaming for sync iterators. Other refactors and minor perf optimizations.

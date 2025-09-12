@@ -4,6 +4,7 @@ import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
 import { merge } from "./merge-async-generators.js";
 import { performance } from "node:perf_hooks";
 import { setImmediate } from "node:timers/promises";
+import { types } from "node:util";
 
 /** ovr JSX namespace */
 export namespace JSX {
@@ -135,31 +136,20 @@ export async function* toGenerator(
 
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
-			// async iterable - lazily resolve
+			// any async iterable - lazily resolve
 			for await (const children of element) yield* toGenerator(children);
 			return;
 		}
 
 		if (Symbol.iterator in element) {
 			// sync iterable
-			const iterator = element[Symbol.iterator]();
-
-			if (
-				typeof iterator.next === "function" &&
-				typeof iterator.throw === "function" &&
-				typeof iterator.return === "function"
-			) {
-				// sync generator
-				// process lazily - avoids loading all in memory
+			if (types.isGeneratorObject(element)) {
+				// sync generator - lazily resolve, avoids loading all in memory
 				const ms = 8;
 				let deadline = performance.now() + ms;
 
-				while (true) {
-					const result = iterator.next();
-
-					if (result.done) break;
-
-					yield* toGenerator(result.value);
+				for (const children of element) {
+					yield* toGenerator(children);
 
 					if (performance.now() > deadline) {
 						// yields back to the event loop if deadline is reached
@@ -174,16 +164,10 @@ export async function* toGenerator(
 
 			// other iterable - array, set, etc.
 			// process children in parallel
-			const generators: AsyncGenerator<Chunk, void, unknown>[] = [];
-
-			while (true) {
-				const result = iterator.next();
-				if (result.done) break;
-				generators.push(toGenerator(result.value));
-			}
-
-			const queue: (Chunk | null)[] = new Array(generators.length);
-			const complete = new Uint8Array(generators.length);
+			const generators = Array.from(element, toGenerator);
+			const n = generators.length;
+			const queue = new Array<Chunk | null>(n);
+			const complete = new Uint8Array(n);
 			let current = 0;
 
 			for await (const m of merge(generators)) {
@@ -191,7 +175,7 @@ export async function* toGenerator(
 					complete[m.index] = 1;
 
 					if (m.index === current) {
-						while (++current < generators.length) {
+						while (++current < n) {
 							if (queue[current]) {
 								// yield whatever is in the next queue even if it hasn't completed yet
 								yield queue[current]!;
@@ -212,7 +196,7 @@ export async function* toGenerator(
 			}
 
 			// clear the queue
-			yield* queue.filter(Boolean) as Chunk[];
+			yield* queue.filter((chunk) => chunk !== null);
 			return;
 		}
 	}
