@@ -1,5 +1,15 @@
 # ovr
 
+## 4.6.0
+
+### Minor Changes
+
+- 6935fc4: feat: Adds `Chunk.safe` method as an alias for `new Chunk(html, true)`.
+
+### Patch Changes
+
+- 6935fc4: perf: Use a time based strategy to yield back to the event loop instead of iterations for more consistent streaming for sync iterators. Other refactors and minor perf optimizations.
+
 ## 4.5.1
 
 ### Patch Changes
