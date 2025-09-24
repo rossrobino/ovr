@@ -5,20 +5,22 @@ import { Chunk, Get } from "ovr";
 export const memory = new Get("/demo/memory", async (c) => {
 	c.head(<Head {...memoryContent.frontmatter} />);
 
-	function* Numbers() {
+	function* OverNineThousand() {
 		const time = performance.now();
-		for (let i = 0; i < 4_998; i++) {
+
+		for (let i = 0; i < 9_114; i++) {
 			yield <div class="bg-foreground rounded-sm p-0.5" />;
 		}
+
 		console.log(performance.now() - time);
 	}
 
 	// const time = performance.now();
-	// const str = await toString(Numbers);
+	// const str = await toString(OverNineThousand);
 	// console.log(performance.now() - time);
 
-	// function Numbers() {
-	// 	const nums = Array.from({ length: 10_000 }, (_, i) => i);
+	// function OverNineThousand() {
+	// 	const nums = Array.from({ length: 9_114 }, (_, i) => i);
 	// 	return nums.map((item) => <li>{item}</li>);
 	// }
 
@@ -33,7 +35,7 @@ export const memory = new Get("/demo/memory", async (c) => {
 					This is div element that displays five thousand div elements that are
 					streamed in. When the page is reloaded each div is streamed in order.
 				</div>
-				<Numbers />
+				<OverNineThousand />
 			</div>
 		</>
 	);
