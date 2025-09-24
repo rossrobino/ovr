@@ -2,7 +2,8 @@ import * as demos from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as homeResult from "@/server/home/index.md";
 import { Popover } from "@/ui/popover";
-import clsx from "clsx";
+import { SkipLink } from "@/ui/skip-link";
+import { clsx } from "clsx";
 import { Context, type JSX } from "ovr";
 
 export const Layout = (props: { children?: JSX.Element }) => {
@@ -12,6 +13,7 @@ export const Layout = (props: { children?: JSX.Element }) => {
 			prerender
 			class="block"
 		>
+			<SkipLink />
 			<header class="flex justify-between gap-4 p-4 md:hidden">
 				<HomeLink />
 				<nav>
@@ -38,7 +40,10 @@ export const Layout = (props: { children?: JSX.Element }) => {
 				<div class="flex w-full min-w-0 flex-row-reverse justify-between">
 					<TOC />
 					<div class="flex w-full min-w-0 justify-center">
-						<div class="prose mb-16 w-full max-w-3xl min-w-0 px-4 pt-3.5 pb-4">
+						<div
+							id="content"
+							class="prose mb-16 w-full max-w-3xl min-w-0 px-4 pt-3.5 pb-4"
+						>
 							{props.children}
 						</div>
 					</div>
