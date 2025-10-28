@@ -56,11 +56,13 @@ export const stream = new Post(async (c) => {
 		<div>
 			<h1>Poem</h1>
 
-			<blockquote class="bg-muted rounded-md p-6 shadow-md">
-				<Poet message={message} />
-			</blockquote>
+			<div class="flex flex-col-reverse">
+				<chat.Anchor>Back to chat</chat.Anchor>
 
-			<chat.Anchor>Back to chat</chat.Anchor>
+				<blockquote class="bg-muted rounded-md p-6 shadow-md">
+					<Poet message={message} />
+				</blockquote>
+			</div>
 		</div>
 	);
 });

@@ -2,7 +2,6 @@ import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
 import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
 import { merge } from "./merge-async-generators.js";
-import { performance } from "node:perf_hooks";
 import { setImmediate } from "node:timers/promises";
 import { types } from "node:util";
 
