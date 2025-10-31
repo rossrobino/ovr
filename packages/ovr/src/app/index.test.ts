@@ -6,8 +6,7 @@ const app = new App();
 
 app.trailingSlash = "always";
 
-const get = (pathname: string) =>
-	app.fetch(new Request("http://localhost:5173" + pathname));
+const get = (pathname: string) => app.fetch("http://localhost:5173" + pathname);
 
 test("context", () => {
 	app
@@ -27,6 +26,7 @@ test("context", () => {
 		)
 		.get("/api/:id/", (c) => {
 			expect(c.params.id).toBeDefined();
+			return c.json(c.params);
 		})
 		.get("/wild/*", (c) => {
 			expect(c.params["*"]).toBeDefined();

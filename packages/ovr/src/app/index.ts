@@ -230,10 +230,20 @@ export class App {
 	}
 
 	/**
-	 * @param req [`Request` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
-	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+	 * Request a resource from the application.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch)
+	 *
+	 * @param resource [Resource](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch#resource) to fetch
+	 * @param options [Options](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch#options) to apply to the request
+	 * @returns Promise that resolves to the [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) to the request
 	 */
-	fetch = async (req: Request): Promise<Response> => {
+	fetch = async (
+		resource: RequestInfo | URL,
+		options?: RequestInit,
+	): Promise<Response> => {
+		const req = new Request(resource, options);
+
 		const c = new Context(
 			req,
 			new URL(req.url),
