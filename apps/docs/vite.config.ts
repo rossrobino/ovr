@@ -9,11 +9,7 @@ export default defineConfig({
 	build: { minify: true },
 	plugins: [
 		tailwindcss(),
-		domco({
-			adapter: adapter({
-				config: { runtime: "bun1.x", supportsResponseStreaming: true },
-			}),
-		}),
+		domco({ adapter: adapter({}) }),
 		md({ ...options, FrontmatterSchema }),
 	],
 });
