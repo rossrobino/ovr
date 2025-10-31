@@ -2,7 +2,6 @@ import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
 import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
 import { merge } from "./merge-async-generators.js";
-import { types } from "node:util";
 
 /** ovr JSX namespace */
 export namespace JSX {
@@ -141,7 +140,7 @@ export async function* toGenerator(
 
 		if (Symbol.iterator in element) {
 			// sync iterable
-			if (types.isGeneratorObject(element)) {
+			if ("next" in element) {
 				// sync generator - lazily resolve, avoids loading all in memory
 				for (const children of element) yield* toGenerator(children);
 				return;
