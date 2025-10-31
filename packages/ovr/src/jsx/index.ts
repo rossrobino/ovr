@@ -89,6 +89,8 @@ export async function* jsx<P extends Props = Props>(
 		// otherwise, don't include the attribute
 	}
 
+	if (tag === "html") yield Chunk.safe("<!doctype html>");
+
 	yield Chunk.safe(`<${tag}${attributes}>`);
 
 	if (voidElements.has(tag)) return;

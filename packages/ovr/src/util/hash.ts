@@ -9,8 +9,8 @@
  */
 export const hash = (s: string) => {
 	let hash = 5381;
-
 	let i = s.length;
+
 	while (i) hash = (hash * 33) ^ s.charCodeAt(--i);
 
 	return (hash >>> 0).toString(36);
