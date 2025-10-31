@@ -3,7 +3,6 @@ import { type JSX, toStream } from "../jsx/index.js";
 import type { Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import {
-	App,
 	type ErrorHandler,
 	type Middleware,
 	type NotFoundHandler,
@@ -326,40 +325,5 @@ export class Context<P extends Params = Params> {
 		this.#finalized = true;
 
 		return new Response(this.body, this);
-	}
-
-	/**
-	 * Call within the scope of a handler to get the current context.
-	 *
-	 * @returns Request context
-	 *
-	 * @example
-	 *
-	 * ```ts
-	 * import { Context } from "ovr";
-	 *
-	 * const app = new Router();
-	 *
-	 * const fn = () => {
-	 * 	const c = Context.get();
-	 * 	// ...
-	 * }
-	 *
-	 * app.get("/", () => {
-	 * 	fn(); // OK
-	 * });
-	 *
-	 * fn() // ReferenceError - outside AsyncLocalStorage scope
-	 * ```
-	 */
-	static get() {
-		const c = App.storage.getStore();
-
-		if (!c)
-			throw new ReferenceError(
-				"Context can only be obtained within a handler.",
-			);
-
-		return c;
 	}
 }

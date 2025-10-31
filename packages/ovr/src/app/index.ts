@@ -7,7 +7,6 @@ import type {
 import { Context } from "./context.js";
 import { Get } from "./helper/get.js";
 import { Post } from "./helper/post.js";
-import { AsyncLocalStorage } from "node:async_hooks";
 
 export type Middleware<P extends Params = Params> = (
 	context: Context<P>,
@@ -28,7 +27,10 @@ type Method =
 	| "PATCH"
 	| (string & {});
 
-type UnmatchedContext<P extends Params = Params> = Omit<Context<P>, "route"> &
+export type UnmatchedContext<P extends Params = Params> = Omit<
+	Context<P>,
+	"route"
+> &
 	// route might be defined
 	Partial<Pick<Context<P>, "route">>;
 
@@ -50,8 +52,8 @@ export class App {
 	/** Added routes per HTTP method. */
 	#routesMap = new Map<Method, Route<Middleware[]>[]>();
 
-	/** Global middleware. */
-	#use: Middleware[] = [];
+	/** Global middleware added by `use`. */
+	#globalMiddleware: Middleware[] = [];
 
 	/**
 	 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
@@ -99,9 +101,6 @@ export class App {
 	 */
 	notFound: NotFoundHandler = (c) => c.html("Not found", 404);
 
-	/** Stores context per request. */
-	static storage = new AsyncLocalStorage<Context>();
-
 	/**
 	 * @param helpers `Helper` to add to `App`
 	 * @returns `App` instance
@@ -129,7 +128,7 @@ export class App {
 	 * @returns `App` instance
 	 */
 	use(...middleware: Middleware[]) {
-		this.#use.push(...middleware);
+		this.#globalMiddleware.push(...middleware);
 		return this;
 	}
 
@@ -234,7 +233,7 @@ export class App {
 	 * @param req [`Request` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
 	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
 	 */
-	fetch = (req: Request): Promise<Response> => {
+	fetch = async (req: Request): Promise<Response> => {
 		const c = new Context(
 			req,
 			new URL(req.url),
@@ -244,57 +243,55 @@ export class App {
 			this.notFound,
 		);
 
-		return App.storage.run(c, async () => {
-			try {
-				// check to see if the method is already built
-				let trie = this.#trieMap.get(req.method);
+		try {
+			// check to see if the method is already built
+			let trie = this.#trieMap.get(req.method);
 
-				if (!trie) {
-					// check if there are any routes with the method
-					const routes = this.#routesMap.get(req.method);
+			if (!trie) {
+				// check if there are any routes with the method
+				const routes = this.#routesMap.get(req.method);
 
-					if (routes) {
-						// build trie
-						trie = new Trie<Middleware[]>();
-						for (const route of routes) trie.add(route);
-						this.#trieMap.set(req.method, trie);
-					}
+				if (routes) {
+					// build trie
+					trie = new Trie<Middleware[]>();
+					for (const route of routes) trie.add(route);
+					this.#trieMap.set(req.method, trie);
 				}
-
-				if (trie) {
-					const match = trie.find(c.url.pathname);
-
-					if (match) {
-						Object.assign(c, match);
-
-						const middleware = [...this.#use, ...match.route.store];
-
-						// compose
-						let i = -1;
-						const dispatch = async (current: number): Promise<void> => {
-							if (current <= i) throw new Error("next() called multiple times");
-							i = current;
-
-							if (middleware[current]) {
-								const result: unknown = await middleware[current](c, () =>
-									dispatch(current + 1),
-								);
-
-								if (result instanceof Response) c.res(result.body, result);
-								else if (result instanceof ReadableStream) c.body = result;
-								else if (result != null) c.page(result);
-							}
-						};
-
-						await dispatch(0);
-					}
-				}
-			} catch (error) {
-				if (c.error) c.error(c, error);
-				else throw error;
 			}
 
-			return c.build();
-		});
+			if (trie) {
+				const match = trie.find(c.url.pathname);
+
+				if (match) {
+					Object.assign(c, match);
+
+					const middleware = [...this.#globalMiddleware, ...match.route.store];
+
+					// compose
+					let i = -1;
+					const dispatch = async (current: number): Promise<void> => {
+						if (current <= i) throw new Error("next() called multiple times");
+						i = current;
+
+						if (middleware[current]) {
+							const result: unknown = await middleware[current](c, () =>
+								dispatch(current + 1),
+							);
+
+							if (result instanceof Response) c.res(result.body, result);
+							else if (result instanceof ReadableStream) c.body = result;
+							else if (result != null) c.page(result);
+						}
+					};
+
+					await dispatch(0);
+				}
+			}
+		} catch (error) {
+			if (c.error) c.error(c, error);
+			else throw error;
+		}
+
+		return c.build();
 	};
 }

@@ -4,57 +4,58 @@ import * as homeResult from "@/server/home/index.md";
 import { Popover } from "@/ui/popover";
 import { SkipLink } from "@/ui/skip-link";
 import { clsx } from "clsx";
-import { Context, type JSX } from "ovr";
+import { type Context, type JSX, type UnmatchedContext } from "ovr";
 
-export const Layout = (props: { children?: JSX.Element }) => {
-	return (
-		<drab-prefetch
-			trigger="a[href^='/']:not([data-no-prefetch])"
-			prerender
-			class="block"
-		>
-			<SkipLink />
-			<header class="flex justify-between gap-4 p-4 md:hidden">
-				<HomeLink />
-				<nav>
-					<Popover
-						title="ovr"
-						titleHref="/"
-						trigger={{
-							children: <span class="icon-[lucide--align-justify]"></span>,
-						}}
-					>
-						<div class="flex flex-col gap-4">
-							<NavList />
-						</div>
-					</Popover>
-				</nav>
-			</header>
-			<main class="flex">
-				<div>
-					<nav class="sticky top-0 z-10 hidden max-h-dvh min-w-52 flex-col gap-4 overflow-y-auto p-4 md:flex">
-						<HomeLink />
-						<NavList />
-					</nav>
-				</div>
-				<div class="flex w-full min-w-0 flex-row-reverse justify-between">
-					<TOC />
-					<div class="flex w-full min-w-0 justify-center">
-						<div
-							id="content"
-							class="prose mb-16 w-full max-w-3xl min-w-0 px-4 pt-3.5 pb-4"
+export const Layout =
+	(c: Context | UnmatchedContext) => (props: { children?: JSX.Element }) => {
+		return (
+			<drab-prefetch
+				trigger="a[href^='/']:not([data-no-prefetch])"
+				prerender
+				class="block"
+			>
+				<SkipLink />
+				<header class="flex justify-between gap-4 p-4 md:hidden">
+					<HomeLink />
+					<nav>
+						<Popover
+							title="ovr"
+							titleHref="/"
+							trigger={{
+								children: <span class="icon-[lucide--align-justify]"></span>,
+							}}
 						>
-							{props.children}
+							<div class="flex flex-col gap-4">
+								<NavList c={c} />
+							</div>
+						</Popover>
+					</nav>
+				</header>
+				<main class="flex">
+					<div>
+						<nav class="sticky top-0 z-10 hidden max-h-dvh min-w-52 flex-col gap-4 overflow-y-auto p-4 md:flex">
+							<HomeLink />
+							<NavList c={c} />
+						</nav>
+					</div>
+					<div class="flex w-full min-w-0 flex-row-reverse justify-between">
+						<TOC c={c} />
+						<div class="flex w-full min-w-0 justify-center">
+							<div
+								id="content"
+								class="prose mb-16 w-full max-w-3xl min-w-0 px-4 pt-3.5 pb-4"
+							>
+								{props.children}
+							</div>
 						</div>
 					</div>
-				</div>
-			</main>
-		</drab-prefetch>
-	);
-};
+				</main>
+			</drab-prefetch>
+		);
+	};
 
-const TOC = () => {
-	const { pathname } = Context.get().url;
+const TOC = ({ c }: { c: Context | UnmatchedContext }) => {
+	const { pathname } = c.url;
 
 	let result: ReturnType<typeof docs.getContent>;
 
@@ -110,7 +111,7 @@ const NavHeading = (props: { children: JSX.Element }) => {
 	);
 };
 
-const NavList = () => {
+const NavList = ({ c }: { c: Context | UnmatchedContext }) => {
 	return (
 		<>
 			<hr />
@@ -118,9 +119,9 @@ const NavList = () => {
 			<NavHeading>Docs</NavHeading>
 			<ul class="grid gap-1">
 				{docs.getSlugs().map((slug) => {
-					return <NavLink slug={slug} />;
+					return <NavLink slug={slug} c={c} />;
 				})}
-				<NavLink slug={docs.llms.pathname().slice(1)} />
+				<NavLink slug={docs.llms.pathname().slice(1)} c={c} />
 			</ul>
 
 			<hr />
@@ -138,7 +139,7 @@ const NavList = () => {
 									data-no-prefetch
 									class={clsx(
 										"button secondary justify-start capitalize",
-										demo.pattern !== Context.get().url.pathname && "ghost",
+										demo.pattern !== c.url.pathname && "ghost",
 									)}
 								>
 									{demo.pattern.split("/").at(2)}
@@ -166,10 +167,14 @@ const NavList = () => {
 	);
 };
 
-const NavLink = (props: { slug?: string; anchor?: JSX.Element }) => {
+const NavLink = (props: {
+	slug?: string;
+	anchor?: JSX.Element;
+	c: Context | UnmatchedContext;
+}) => {
 	if (!props.slug) return;
 	const href = `/${props.slug}`;
-	const current = href === Context.get().url.pathname;
+	const current = href === props.c.url.pathname;
 
 	return (
 		<li>

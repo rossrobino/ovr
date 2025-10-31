@@ -8,17 +8,14 @@ description: How to deduplicate and cache function calls in ovr.
 If you need to display a component in multiple locations with the same dynamic information, you need to ensure you aren't fetching the same data multiple times. ovr provides built in memoization on the request context you can utilize on any function to memoize it for the request.
 
 ```tsx
-import { Context } from "ovr";
 import { db } from "@/lib/db";
+import type { Context } from "ovr";
 
-async function Data(props: { id: number }) {
-	// acquire the context
-	const c = Context.get();
-
+async function Data({ id, c }: { id: number; c: Context }) {
 	// automatically deduped and cached for the current request
-	const data = await c.memo(db.query)(props.id);
+	const data = await c.memo(db.query)(id);
 
-	return <span>{data}<span>;
+	return <span>{data}</span>;
 }
 ```
 

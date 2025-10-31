@@ -11,7 +11,7 @@ const app = new App();
 app.base = html;
 
 app.notFound = (c) => {
-	c.layout(Layout);
+	c.layout(Layout(c));
 
 	c.head(<Head title="Not Found" description="Content not found" />);
 
@@ -59,7 +59,7 @@ app.use(
 			)),
 		);
 
-		c.layout(Layout);
+		c.layout(Layout(c));
 
 		return next();
 	},

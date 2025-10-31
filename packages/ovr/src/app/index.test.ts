@@ -27,7 +27,6 @@ test("context", () => {
 		)
 		.get("/api/:id/", (c) => {
 			expect(c.params.id).toBeDefined();
-			Context.get().json(c.params);
 		})
 		.get("/wild/*", (c) => {
 			expect(c.params["*"]).toBeDefined();

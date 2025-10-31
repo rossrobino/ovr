@@ -9,59 +9,72 @@ A server driven todo app that stores data in the URL.
 import { Chunk, Context, Get, Post } from "ovr";
 import * as z from "zod";
 
-export const add = new Post(async () => {
-	const todos = getTodos();
-	const { text } = await data();
+export const add = new Post(async (c) => {
+	const todos = getTodos(c);
+	const { text } = await data(c);
 	todos.push({ id: (todos.at(-1)?.id ?? 0) + 1, text, done: false });
-	redirect(todos);
+	redirect(c, todos);
 });
 
-export const toggle = new Post(async () => {
-	const todos = getTodos();
-	const { id } = await data();
+export const toggle = new Post(async (c) => {
+	const todos = getTodos(c);
+	const { id } = await data(c);
 	const current = todos.find((t) => t.id === id);
 	if (current) current.done = !current.done;
-	redirect(todos);
+	redirect(c, todos);
 });
 
-export const remove = new Post(async () => {
-	const todos = getTodos();
-	const { id } = await data();
-	redirect(todos.filter((t) => t.id !== id));
+export const remove = new Post(async (c) => {
+	const todos = getTodos(c);
+	const { id } = await data(c);
+	redirect(
+		c,
+		todos.filter((t) => t.id !== id),
+	);
 });
 
 export const todo = new Get("/demo/todo", (c) => {
+	c.head(<Head {...todoContent.frontmatter} />);
+
 	return (
-		<div>
-			<add.Form search>
-				<input name="text" placeholder="Add todo" />
-				<button>Add</button>
-			</add.Form>
+		<>
+			<h1>Todo</h1>
 
-			<ul>
-				{getTodos().map((t) => (
-					<li>
-						<form>
-							<input type="hidden" name="id" value={t.id} />
+			<div>
+				<add.Form search={c.url.search}>
+					<input name="text" placeholder="Add todo" />
+					<button>Add</button>
+				</add.Form>
 
-							<div>
-								<toggle.Button search aria-label="toggle todo">
-									{t.done ? "done" : "todo"}
-								</toggle.Button>
+				<ul>
+					{getTodos(c).map((t) => (
+						<li class="m-0">
+							<form>
+								<input type="hidden" name="id" value={t.id} />
 
-								<span>{t.text}</span>
-							</div>
+								<div>
+									<toggle.Button search={c.url.search} aria-label="toggle todo">
+										{t.done ? "done" : "todo"}
+									</toggle.Button>
 
-							<remove.Button search aria-label="delete todo">
-								x
-							</remove.Button>
-						</form>
-					</li>
-				))}
-			</ul>
+									<span>{t.text}</span>
+								</div>
 
-			<todo.Anchor>Reset</todo.Anchor>
-		</div>
+								<remove.Button search={c.url.search} aria-label="delete todo">
+									x
+								</remove.Button>
+							</form>
+						</li>
+					))}
+				</ul>
+
+				<todo.Anchor>Reset</todo.Anchor>
+			</div>
+
+			<hr />
+
+			{Chunk.safe(todoContent.html)}
+		</>
 	);
 });
 
@@ -71,21 +84,20 @@ const TodoSchema = z.object({
 	text: z.coerce.string(),
 });
 
-const redirect = (todos: z.infer<(typeof TodoSchema)[]>) => {
-	const c = Context.get();
+const redirect = (c: Context, todos: z.infer<(typeof TodoSchema)[]>) => {
 	const location = new URL(todo.pathname(), c.url);
 	location.searchParams.set("todos", JSON.stringify(todos));
 	c.redirect(location, 303);
 };
 
-const getTodos = () => {
-	const todos = Context.get().url.searchParams.get("todos");
+const getTodos = (c: Context) => {
+	const todos = c.url.searchParams.get("todos");
 	if (!todos) return [{ done: false, id: 0, text: "Build a todo app" }];
 	return z.array(TodoSchema).parse(JSON.parse(todos));
 };
 
-const data = async () => {
-	const data = await Context.get().req.formData();
+const data = async (c: Context) => {
+	const data = await c.req.formData();
 	return TodoSchema.parse({ id: data.get("id"), text: data.get("text") });
 };
 ```

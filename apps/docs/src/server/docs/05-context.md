@@ -46,10 +46,40 @@ app.get("/api/:id", (c) => {
 	c.head(<meta name="description" content="..." />);
 
 	// wrap page content with layout components
-	c.layout(Layout);
+	c.layout(RootLayout, PageLayout);
 
 	// stream JSX page (same as returning JSX)
 	c.page(<UserProfilePage userId={c.params.id} />);
+});
+```
+
+#### Layouts
+
+Since `Context.layout` expects layout _components_, if you need to pass other props besides `children` to a layout, create a function that returns the layout component.
+
+```tsx
+// layout.tsx
+import type { Context, JSX } from "ovr";
+
+export const Layout = (c: Context) => (props: { children: JSX.Element }) => {
+	return (
+		<>
+			<header>{c.url.pathname}</header>
+			<main>{props.children}</main>
+		</>
+	);
+};
+```
+
+```tsx
+// app.tsx
+import { Layout } from "./layout.tsx";
+
+// ...
+
+app.use((c, next) => {
+	c.layout(Layout(c));
+	return next();
 });
 ```
 
@@ -82,16 +112,4 @@ app.get("/api/:id", (c) => {
 
 	return c.html(html);
 });
-```
-
-## Get
-
-Context can be acquired from anywhere within the scope of a request handler with the `Context.get` method. `get` uses [`AsyncLocalStorage`](https://blog.robino.dev/posts/async-local-storage) to accomplish this and ensure the correct context is only accessed in the scope of the current request. This prevents you from having to prop drill the context to each component from the handler.
-
-```tsx
-import { Context } from "ovr";
-
-function Component() {
-	const c = Context.get(); // current request context
-}
 ```
