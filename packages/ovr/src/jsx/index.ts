@@ -2,7 +2,6 @@ import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
 import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
 import { merge } from "./merge-async-generators.js";
-import { setImmediate } from "node:timers/promises";
 import { types } from "node:util";
 
 /** ovr JSX namespace */
@@ -144,20 +143,7 @@ export async function* toGenerator(
 			// sync iterable
 			if (types.isGeneratorObject(element)) {
 				// sync generator - lazily resolve, avoids loading all in memory
-				const ms = 8;
-				let deadline = performance.now() + ms;
-
-				for (const children of element) {
-					yield* toGenerator(children);
-
-					if (performance.now() > deadline) {
-						// yields back to the event loop if deadline is reached
-						// to send chunks or check if the request has been cancelled
-						await setImmediate();
-						deadline = performance.now() + ms;
-					}
-				}
-
+				for (const children of element) yield* toGenerator(children);
 				return;
 			}
 
