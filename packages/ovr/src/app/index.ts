@@ -69,14 +69,11 @@ export class App {
 	/**
 	 * Base HTML to inject the `head` and `page` elements into.
 	 *
-	 * @default
+	 * If left empty, components will be returned as partials.
 	 *
-	 * ```html
-	 * <!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>
-	 * ```
+	 * @default ""
 	 */
-	base =
-		'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
+	base = "";
 
 	/**
 	 * Assign a handler to run when an `Error` is thrown.

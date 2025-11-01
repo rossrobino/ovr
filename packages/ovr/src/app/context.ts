@@ -208,8 +208,7 @@ export class Context<P extends Params = Params> {
 	 * - [308 Permanent Redirect](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/308)
 	 */
 	redirect(location: string | URL, status: 301 | 302 | 303 | 307 | 308 = 302) {
-		this.headers.set("location", location.toString());
-		this.status = status;
+		this.res(null, { status, headers: { location: location.toString() } });
 	}
 
 	/**
@@ -236,10 +235,11 @@ export class Context<P extends Params = Params> {
 	 */
 	page(Page: JSX.Element, status?: number) {
 		for (let i = this.#layouts.length - 1; i >= 0; i--) {
+			// add layouts around the page in reverse order (1st is the root layout)
 			Page = this.#layouts[i]!({ children: Page });
 		}
 
-		let stream: ReadableStream<Uint8Array>;
+		let element: JSX.Element;
 
 		if (this.base) {
 			// inject into base
@@ -262,15 +262,16 @@ export class Context<P extends Params = Params> {
 			elements[3] = bodyParts[0];
 			elements.push(Page, Context.#bodyClose + bodyParts[1]);
 
-			stream = toStream(
-				elements.map((el) => (typeof el === "string" ? Chunk.safe(el) : el)),
+			element = elements.map((el) =>
+				typeof el === "string" ? Chunk.safe(el) : el,
 			);
 		} else {
-			// HTML partial - just use the layouts + page
-			stream = toStream(Page);
+			element = Page;
 		}
 
-		this.html(stream, status);
+		// HTML partial - just use the layouts + page
+		// head elements are ignored if no base is set
+		return this.html(toStream(element), status);
 	}
 
 	/**

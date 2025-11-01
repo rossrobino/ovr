@@ -1,5 +1,5 @@
 ---
-"ovr": minor
+"ovr": major
 ---
 
 feat!: prefix `<html>` opening tag with `<!doctype html>`.
