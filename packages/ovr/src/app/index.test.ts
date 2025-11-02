@@ -4,8 +4,6 @@ import { describe, expect, test } from "vitest";
 
 const app = new App();
 
-app.trailingSlash = "always";
-
 const get = (pathname: string) => app.fetch("http://localhost:5173" + pathname);
 
 test("context", () => {
@@ -48,17 +46,8 @@ test("context", () => {
 		c.json(formData.get("key"));
 	});
 
-	app.get("/error/", (c) => {
-		c.error = (c, error) => {
-			expect(error).toBeInstanceOf(Error);
-			c.text((error as Error).message, 500);
-		};
-
-		throw new Error("An error occurred");
-	});
-
 	app.get("/page", (c) => {
-		c.layout(function* ({ children }) {
+		c.layouts.push(function* ({ children }) {
 			yield "Layout";
 
 			yield children;
@@ -66,16 +55,19 @@ test("context", () => {
 			yield "END LAYOUT";
 		});
 
-		c.head("<meta name='description' content='desc'>");
+		c.head.push("<meta name='description' content='desc'>");
 
-		c.layout(function ({ children }) {
+		c.layouts.push(function ({ children }) {
 			return `nested ${children} nested`;
 		});
 
 		c.page("page");
 	});
 
-	app.use(async (_, next) => {
+	app.use(async (c, next) => {
+		c.trailingSlash = "always";
+		c.base =
+			'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
 		await next();
 	});
 
@@ -150,11 +142,6 @@ test("GET /not-found/", async () => {
 	expect(res.status).toBe(404);
 });
 
-test("GET /error/ (custom)", async () => {
-	const res = await get("/error/");
-	expect(await res.text()).toBe("An error occurred");
-});
-
 describe("trailing slash", () => {
 	test("always", async () => {
 		const res = await get("/api/123");
@@ -175,7 +162,10 @@ describe("trailing slash", () => {
 
 	test("ignore", async () => {
 		const ignore = new App();
-		ignore.trailingSlash = "ignore";
+		ignore.use((c, next) => {
+			c.trailingSlash = "ignore";
+			return next();
+		});
 
 		ignore.get("/nope", (c) => c.text("nope"));
 		ignore.get("/yup/", (c) => c.text("yup"));

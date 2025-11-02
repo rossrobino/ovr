@@ -13,7 +13,7 @@ export const parallel = new Get("/demo/parallel", (c) => {
 		return delays.map((ms) => <Delay ms={ms} />);
 	};
 
-	c.head(<Head {...parallelContent.frontmatter} />);
+	c.head.push(<Head {...parallelContent.frontmatter} />);
 
 	return (
 		<>

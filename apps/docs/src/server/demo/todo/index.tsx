@@ -28,7 +28,7 @@ export const remove = new Post(async (c) => {
 });
 
 export const todo = new Get("/demo/todo", (c) => {
-	c.head(<Head {...todoContent.frontmatter} />);
+	c.head.push(<Head {...todoContent.frontmatter} />);
 
 	return (
 		<>

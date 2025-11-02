@@ -3,7 +3,7 @@ import { Head } from "@/ui/head";
 import { Chunk, Get } from "ovr";
 
 export const layout = new Get("/demo/layout", (c) => {
-	c.head(<Head {...layoutContent.frontmatter} />);
+	c.head.push(<Head {...layoutContent.frontmatter} />);
 
 	return (
 		<>

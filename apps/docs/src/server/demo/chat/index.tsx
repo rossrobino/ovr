@@ -23,7 +23,7 @@ async function* Poet(props: { message: string }) {
 }
 
 export const chat = new Get("/demo/chat", (c) => {
-	c.head(<Head {...chatContent.frontmatter} />);
+	c.head.push(<Head {...chatContent.frontmatter} />);
 
 	return (
 		<div>

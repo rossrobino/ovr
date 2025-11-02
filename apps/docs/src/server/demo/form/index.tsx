@@ -4,7 +4,7 @@ import { Chunk, Get, Post } from "ovr";
 import * as z from "zod";
 
 export const form = new Get("/demo/form", (c) => {
-	c.head(<Head {...formContent.frontmatter} />);
+	c.head.push(<Head {...formContent.frontmatter} />);
 
 	return (
 		<>

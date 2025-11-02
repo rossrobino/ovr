@@ -4,16 +4,32 @@ import * as home from "@/server/home";
 import { Layout } from "@/server/layout";
 import { Head } from "@/ui/head";
 import { chunk, html } from "client:page";
-import { App, csrf } from "ovr";
+import { App, type Middleware, csrf } from "ovr";
 
 const app = new App();
 
-app.base = html;
+const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
 
-app.notFound = (c) => {
-	c.layout(Layout(c));
+app.prerender = [
+	home.page.pathname(),
+	docs.llms.pathname(),
+	...docPrerender,
+	...docPrerender.map((p) => p + ".md"),
+];
 
-	c.head(<Head title="Not Found" description="Content not found" />);
+// preload font
+const preload = chunk.src.assets.map((path) => (
+	<link
+		rel="preload"
+		href={`/${path}`}
+		as="font"
+		type="font/woff2"
+		crossorigin
+	/>
+));
+
+const notFound: Middleware = (c) => {
+	c.head.push(<Head title="Not Found" description="Content not found" />);
 
 	return c.page(
 		<>
@@ -35,32 +51,12 @@ app.notFound = (c) => {
 	);
 };
 
-const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
-
-app.prerender = [
-	home.page.pathname(),
-	docs.llms.pathname(),
-	...docPrerender,
-	...docPrerender.map((p) => p + ".md"),
-];
-
 app.use(
 	(c, next) => {
-		// preload font
-		c.head(
-			chunk.src.assets.map((path) => (
-				<link
-					rel="preload"
-					href={`/${path}`}
-					as="font"
-					type="font/woff2"
-					crossorigin
-				/>
-			)),
-		);
-
-		c.layout(Layout(c));
-
+		c.base = html;
+		c.layouts.push(Layout(c));
+		c.head.push(preload);
+		c.notFound = notFound;
 		return next();
 	},
 	csrf({

@@ -2,7 +2,7 @@
 "ovr": major
 ---
 
-feat!: Move to web standard APIs.
+refactor(app)!: Move to web standard APIs.
 
 ovr now runs more reliably in non-NodeJS runtimes. Removes reliance on `node:` built-in APIs, specifically `async_hooks` created various issues across platforms.
 

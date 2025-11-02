@@ -2,7 +2,7 @@
 "ovr": minor
 ---
 
-feat: Align `App.fetch` signature to `window.fetch`.
+feat(app): Align `App.fetch` signature to `window.fetch`.
 
 The `App.fetch` method now has the same call signature as the standard [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch).
 

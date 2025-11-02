@@ -1,13 +1,8 @@
 import { Chunk } from "../jsx/chunk/index.js";
 import { type JSX, toStream } from "../jsx/index.js";
-import type { Params, Route } from "../trie/index.js";
+import { type Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
-import {
-	type ErrorHandler,
-	type Middleware,
-	type NotFoundHandler,
-	type TrailingSlash,
-} from "./index.js";
+import { type Middleware, type TrailingSlash } from "./index.js";
 import { Memo } from "./memo/index.js";
 
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
@@ -16,17 +11,6 @@ class TagNotFound extends Error {
 	override name = "TagNotFound";
 	constructor(tag: string) {
 		super(`No closing ${tag} tag found`);
-	}
-}
-
-class ResponseFinalized extends Error {
-	override name = "ResponseFinalized";
-	constructor(property: string) {
-		super(
-			`Cannot set \`${property}\` after the \`Response\` has been finalized. ` +
-				`This can occur if \`${property}\` is set within a component since ` +
-				"components are evaluated during streaming.",
-		);
 	}
 }
 
@@ -45,85 +29,70 @@ export class Context<P extends Params = Params> {
 	 *
 	 * @example { slug: "my-post" }
 	 */
-	params!: P; // set after match
+	params: P = {} as P; // set after match
 
 	/** The matched `Route` instance. */
-	route!: Route<Middleware<P>[]>; // set after match
+	route: Route<Middleware<P>[]> = new Route<Middleware<P>[]>(null, []);
 
-	#body: BodyInit | null = null;
+	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
+	body: BodyInit | null = null;
 
-	#status?: number;
+	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) */
+	status?: number;
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers) */
 	headers = new Headers();
 
-	#layouts: Layout[] = [];
+	/** `layouts` for the `Page` to be passed into before being injected into the `<body>` */
+	layouts: Layout[] = [];
 
-	#headElements: JSX.Element[] = [];
+	/** `JSX.Element`(s) to add to the head */
+	head: JSX.Element[] = [];
 
-	#trailingSlash: TrailingSlash;
+	/**
+	 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
+	 * - `"always"` - Not found requests without a trailing slash will be redirected to the same path with a trailing slash
+	 * - `"ignore"` - no redirects (not recommended, bad for SEO)
+	 *
+	 * [Trailing Slash for Frameworks by Bjorn Lu](https://bjornlu.com/blog/trailing-slash-for-frameworks)
+	 *
+	 * @default "never"
+	 */
+	trailingSlash: TrailingSlash = "never";
 
-	#base: string;
+	/**
+	 * Middleware to run when no `body` or `status` has been set on the `context`.
+	 * Set to a new function to override the default.
+	 *
+	 * @default
+	 *
+	 * ```ts
+	 * (c) => c.html("Not found", 404)
+	 * ```
+	 */
+	notFound: Middleware<P> = (c) => c.html("Not found", 404);
 
-	/** Passed from `app.error` */
-	error: ErrorHandler<P>;
-
-	/** Passed from `app.notFound` */
-	notFound: NotFoundHandler<P>;
+	/**
+	 * Base HTML to inject the `head` and `page` elements into.
+	 *
+	 * If left empty, components will be returned as partials.
+	 *
+	 * @default ""
+	 */
+	base = "";
 
 	/** `Memo` unique to the current `Request` context */
 	#memo = new Memo();
 
 	memo = this.#memo.use;
 
-	/** Check if the `Response` has been built already */
-	#finalized = false;
-
 	static readonly #contentType = "content-type";
 	static readonly #headClose = "</head>";
 	static readonly #bodyClose = "</body>";
 
-	constructor(
-		req: Request,
-		url: URL,
-		trailingSlash: TrailingSlash,
-		base: string,
-		error: ErrorHandler<P>,
-		notFound: NotFoundHandler<P>,
-	) {
+	constructor(req: Request) {
 		this.req = req;
-		this.url = url;
-		this.#trailingSlash = trailingSlash;
-		this.#base = base;
-		this.error = error;
-		this.notFound = notFound;
-	}
-
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) */
-	get status() {
-		return this.#status;
-	}
-	set status(status) {
-		if (this.#finalized) throw new ResponseFinalized("status");
-		this.#status = status;
-	}
-
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
-	get body() {
-		return this.#body;
-	}
-	set body(body) {
-		if (this.#finalized) throw new ResponseFinalized("body");
-		this.#body = body;
-	}
-
-	/** Passed from `app.base` */
-	get base() {
-		return this.#base;
-	}
-	set base(base) {
-		if (this.#finalized) throw new ResponseFinalized("base");
-		this.#base = base;
+		this.url = new URL(req.url);
 	}
 
 	/**
@@ -212,31 +181,15 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * @param Element `JSX.Element` to add to the head
-	 */
-	head(...Element: JSX.Element[]) {
-		if (this.#finalized) throw new ResponseFinalized("head");
-		this.#headElements.push(...Element);
-	}
-
-	/**
-	 * @param Layout `Layout`(s) for the `Page` to be passed into before being injected into the `<body>`
-	 */
-	layout(...Layout: Layout[]) {
-		if (this.#finalized) throw new ResponseFinalized("layout");
-		this.#layouts.push(...Layout);
-	}
-
-	/**
 	 * Creates an HTML response based on the `head` elements, `Layout`(s), and `Page` provided.
 	 *
 	 * @param Page `JSX.Element` to inject into the `<body>`
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
 	page(Page: JSX.Element, status?: number) {
-		for (let i = this.#layouts.length - 1; i >= 0; i--) {
+		for (let i = this.layouts.length - 1; i >= 0; i--) {
 			// add layouts around the page in reverse order (1st is the root layout)
-			Page = this.#layouts[i]!({ children: Page });
+			Page = this.layouts[i]!({ children: Page });
 		}
 
 		let element: JSX.Element;
@@ -246,7 +199,7 @@ export class Context<P extends Params = Params> {
 			const elements: JSX.Element[] = this.base.split(Context.#headClose);
 			if (!elements[1]) throw new TagNotFound(Context.#headClose);
 
-			elements.splice(1, 0, this.#headElements, Context.#headClose);
+			elements.splice(1, 0, this.head, Context.#headClose);
 
 			const bodyParts = (elements[3] as string).split(Context.#bodyClose);
 			if (!bodyParts[1]) throw new TagNotFound(Context.#bodyClose);
@@ -304,15 +257,15 @@ export class Context<P extends Params = Params> {
 	build() {
 		if (
 			(!this.status || this.status === 404) &&
-			this.#trailingSlash !== "ignore"
+			this.trailingSlash !== "ignore"
 		) {
 			const last = this.url.pathname.at(-1);
 
-			if (this.#trailingSlash === "always" && last !== "/") {
+			if (this.trailingSlash === "always" && last !== "/") {
 				this.url.pathname += "/";
 				this.redirect(this.url, 308);
 			} else if (
-				this.#trailingSlash === "never" &&
+				this.trailingSlash === "never" &&
 				this.url.pathname !== "/" &&
 				last === "/"
 			) {
@@ -321,9 +274,7 @@ export class Context<P extends Params = Params> {
 			}
 		}
 
-		if (!this.body && !this.status) this.notFound(this);
-
-		this.#finalized = true;
+		if (!this.body && !this.status) this.notFound(this, Promise.resolve);
 
 		return new Response(this.body, this);
 	}

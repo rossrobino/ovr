@@ -58,7 +58,7 @@ export const page = new Get("/:slug", (c) => {
 		});
 	}
 
-	c.head(<Head {...result.frontmatter} />);
+	c.head.push(<Head {...result.frontmatter} />);
 
 	return (
 		<>

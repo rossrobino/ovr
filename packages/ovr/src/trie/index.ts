@@ -7,7 +7,14 @@ export class Route<Store> {
 	/** Store returned when route is found */
 	store: Store;
 
-	constructor(pattern: string, store: Store) {
+	constructor(pattern: string | null, store: Store) {
+		this.store = store;
+
+		if (pattern === null) {
+			this.pattern = "";
+			return;
+		}
+
 		if (pattern[0] !== "/") {
 			throw new Error(
 				`Invalid route: ${pattern} - route pattern must begin with "/"`,
@@ -15,7 +22,6 @@ export class Route<Store> {
 		}
 
 		this.pattern = pattern;
-		this.store = store;
 	}
 }
 

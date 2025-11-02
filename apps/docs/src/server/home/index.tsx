@@ -3,7 +3,7 @@ import { Head } from "@/ui/head";
 import { Chunk, Get } from "ovr";
 
 export const page = new Get("/", (c) => {
-	c.head(<Head {...result.frontmatter} />);
+	c.head.push(<Head {...result.frontmatter} />);
 
 	return (
 		<>
