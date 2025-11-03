@@ -2,13 +2,13 @@
 "ovr": major
 ---
 
-refactor(app)!: Refactor properties on `App` and `Context`.
+refactor(app)!: Refactor properties between `App` and `Context`.
 
 BREAKING CHANGES:
 
 ### base
 
-Move `App.base` to `Context.base` and default to `""` instead of preset html template.
+Remove `App.base` in favor of setting `Context.base` and default to `""` instead of preset html template.
 
 If the default HTML template was being used, you will now need to set it instead. The default was rarely used, in most cases you either set your own, or send partials. So this change saves you from having to set it to the empty string before sending partials.
 
@@ -29,6 +29,29 @@ app.use((c, next) => {
 
 ### trailingSlash
 
+Trailing slash preference is now set in the `App` config instead of a property.
+
+```diff
++ new App({ trailingSlash: "always" })
+- app.trailingSlash = "always"
+```
+
 ### notFound
 
+`notFound` is now set exclusively within `Context`, not on the `App`.
+
 ### error
+
+`error` has been removed in favor of using user middleware instead.
+
+```ts
+const app = new App();
+
+app.use(async (c, next) => {
+	try {
+		await next();
+	} catch (error) {
+		return c.text("Internal server error", 500);
+	}
+});
+```

@@ -1,8 +1,7 @@
-import { Context } from "./context.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
-const app = new App();
+const app = new App({ trailingSlash: "always" });
 
 const get = (pathname: string) => app.fetch("http://localhost:5173" + pathname);
 
@@ -65,7 +64,6 @@ test("context", () => {
 	});
 
 	app.use(async (c, next) => {
-		c.trailingSlash = "always";
 		c.base =
 			'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
 		await next();
@@ -78,7 +76,7 @@ test("context", () => {
 	app.get("/memo", (c) => {
 		let i = 0;
 
-		const add = c.memo((a: number, b: number) => {
+		const add = c.memo.use((a: number, b: number) => {
 			i++;
 			return a + b;
 		});
@@ -116,7 +114,11 @@ test("POST /post/", async () => {
 	body.append("key", "value");
 
 	const res = await app.fetch(
-		new Request("http://localhost:5173/post/", { method: "post", body }),
+		new Request("http://localhost:5173/post/", {
+			method: "post",
+			body,
+			headers: { origin: "http://localhost:5173" },
+		}),
 	);
 
 	const json = await res.json();
@@ -161,11 +163,7 @@ describe("trailing slash", () => {
 	});
 
 	test("ignore", async () => {
-		const ignore = new App();
-		ignore.use((c, next) => {
-			c.trailingSlash = "ignore";
-			return next();
-		});
+		const ignore = new App({ trailingSlash: "ignore" });
 
 		ignore.get("/nope", (c) => c.text("nope"));
 		ignore.get("/yup/", (c) => c.text("yup"));

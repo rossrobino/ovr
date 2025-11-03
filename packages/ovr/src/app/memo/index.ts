@@ -12,7 +12,7 @@ export class Memo {
 	 * @param fn Function to memoize.
 	 * @returns The memoized function.
 	 */
-	use = <A extends any[], R>(fn: (...args: A) => R) => {
+	use<A extends any[], R>(fn: (...args: A) => R) {
 		if (this.#memoized.has(fn)) return this.#memoized.get(fn) as typeof fn;
 
 		// closure will GC automatically
@@ -36,5 +36,5 @@ export class Memo {
 		this.#memoized.set(fn, memo);
 
 		return memo;
-	};
+	}
 }

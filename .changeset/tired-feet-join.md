@@ -8,7 +8,12 @@ ovr now runs more reliably in non-NodeJS runtimes. Removes reliance on `node:` b
 
 BREAKING CHANGES:
 
-- Synchronous generators are now distinguished from other iterables by checking if they have a `next` property, instead of `util.types.isGeneratorObject`.
+### Generator type
+
+Synchronous generators are now distinguished from other iterables by checking if they have a `next` property, instead of `util.types.isGeneratorObject`.
+
+### Async Local Storage removal
+
 - Without Async Local Storage, the `search` option within `Helper.url` and the `search` component prop no longer can take `true` as a value. You must pass in `Context.url.search` manually.
 - `Context.get` has been removed. You can easily implement the feature if needed, see below.
 

@@ -4,18 +4,11 @@ import * as home from "@/server/home";
 import { Layout } from "@/server/layout";
 import { Head } from "@/ui/head";
 import { chunk, html } from "client:page";
-import { App, type Middleware, csrf } from "ovr";
+import { App, type Middleware } from "ovr";
 
 const app = new App();
 
 const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
-
-app.prerender = [
-	home.page.pathname(),
-	docs.llms.pathname(),
-	...docPrerender,
-	...docPrerender.map((p) => p + ".md"),
-];
 
 // preload font
 const preload = chunk.src.assets.map((path) => (
@@ -51,20 +44,13 @@ const notFound: Middleware = (c) => {
 	);
 };
 
-app.use(
-	(c, next) => {
-		c.base = html;
-		c.layouts.push(Layout(c));
-		c.head.push(preload);
-		c.notFound = notFound;
-		return next();
-	},
-	csrf({
-		origin: import.meta.env.DEV
-			? "http://localhost:5173"
-			: "https://ovr.robino.dev",
-	}),
-);
+app.use(async (c, next) => {
+	c.base = html;
+	c.layouts.push(Layout(c));
+	c.head.push(preload);
+	c.notFound = notFound;
+	await next();
+});
 
 if (import.meta.env.DEV) {
 	app.get("/backpressure", async (c) => {
@@ -89,4 +75,12 @@ if (import.meta.env.DEV) {
 
 app.add(home, docs.page, docs.llms, demo);
 
-export default app;
+export default {
+	fetch: app.fetch,
+	prerender: [
+		home.page.pathname(),
+		docs.llms.pathname(),
+		...docPrerender,
+		...docPrerender.map((p) => p + ".md"),
+	],
+};

@@ -8,9 +8,11 @@ import { Context } from "./context.js";
 import { Get } from "./helper/get.js";
 import { Post } from "./helper/post.js";
 
+export type Next = () => Promise<void>;
+
 export type Middleware<P extends Params = Params> = (
 	context: Context<P>,
-	next: () => Promise<void>,
+	next: Next,
 ) => any;
 
 export type TrailingSlash = "always" | "never" | "ignore";
@@ -27,9 +29,46 @@ type Method =
 	| "PATCH"
 	| (string & {});
 
+/** `App` configuration options */
+type AppOptions = {
+	/**
+	 * Basic
+	 * [cross-site request forgery (CSRF)](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF)
+	 * protection that compares the request's `origin` header against its `url.origin`.
+	 *
+	 * For more robust protection requires a stateful server or a database to store
+	 * [CSRF tokens](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF#csrf_tokens).
+	 *
+	 * @default true
+	 */
+	csrf?: boolean;
+
+	/**
+	 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
+	 * - `"always"` - Not found requests without a trailing slash will be redirected to the same path with a trailing slash
+	 * - `"ignore"` - no redirects (not recommended, bad for SEO)
+	 *
+	 * [Trailing Slash for Frameworks by Bjorn Lu](https://bjornlu.com/blog/trailing-slash-for-frameworks)
+	 *
+	 * @default "never"
+	 */
+	trailingSlash?: TrailingSlash;
+};
+
 export class App {
-	// allows for users to put other properties on the app
-	[key: string | symbol | number]: any;
+	constructor(options?: AppOptions) {
+		const resolved: Required<AppOptions> = {
+			csrf: true,
+			trailingSlash: "never",
+		};
+		Object.assign(resolved, options);
+
+		if (resolved.csrf === true) this.#use.push(App.#csrf);
+
+		if (resolved.trailingSlash !== "ignore") {
+			this.#use.push(App.#trailingSlash(resolved.trailingSlash));
+		}
+	}
 
 	/** Built tries per HTTP method. */
 	#trieMap = new Map<Method, Trie<Middleware[]>>();
@@ -37,8 +76,8 @@ export class App {
 	/** Added routes per HTTP method. */
 	#routesMap = new Map<Method, Route<Middleware[]>[]>();
 
-	/** Global middleware added by `use`. */
-	#globalMiddleware: Middleware[] = [];
+	/** Global middleware. */
+	#use: Middleware[] = [];
 
 	/**
 	 * @param helpers `Helper` to add to `App`
@@ -67,7 +106,7 @@ export class App {
 	 * @returns `App` instance
 	 */
 	use(...middleware: Middleware[]) {
-		this.#globalMiddleware.push(...middleware);
+		this.#use.push(...middleware);
 		return this;
 	}
 
@@ -183,7 +222,7 @@ export class App {
 	): Promise<Response> => {
 		const c = new Context(new Request(resource, options));
 
-		// check to see if the method is already built
+		// see if the method is already built
 		let trie = this.#trieMap.get(c.req.method);
 
 		if (!trie) {
@@ -198,36 +237,48 @@ export class App {
 			}
 		}
 
-		const middleware = [...this.#globalMiddleware];
-
 		if (trie) {
 			const match = trie.find(c.url.pathname);
 
 			if (match) {
 				Object.assign(c, match);
-				middleware.push(...match.route.store);
+				return c.compose([...this.#use, ...match.route.store]);
 			}
 		}
 
-		// compose
-		let i = -1;
-		const dispatch = async (current: number): Promise<void> => {
-			if (current <= i) throw new Error("next() called multiple times");
-			i = current;
+		// no match, just run global middleware
+		return c.compose(this.#use);
+	};
 
-			if (middleware[current]) {
-				const result: unknown = await middleware[current](c, () =>
-					dispatch(current + 1),
-				);
+	/** Basic CSRF middleware. */
+	static async #csrf(c: Context, next: Next) {
+		if (
+			c.req.method === "GET" ||
+			c.req.method === "HEAD" ||
+			c.url.origin === c.req.headers.get("origin")
+		) {
+			return next();
+		}
 
-				if (result instanceof Response) c.res(result.body, result);
-				else if (result instanceof ReadableStream) c.body = result;
-				else if (result != null) c.page(result);
+		return c.text("Forbidden", 403);
+	}
+
+	/** @returns Trailing slash middleware */
+	static #trailingSlash(mode: TrailingSlash) {
+		return async (c: Context, next: Next) => {
+			await next();
+
+			if (c.status && c.status !== 404) return;
+
+			const last = c.url.pathname.at(-1);
+
+			if (mode === "always" && last !== "/") {
+				c.url.pathname += "/";
+				c.redirect(c.url, 308);
+			} else if (mode === "never" && c.url.pathname !== "/" && last === "/") {
+				c.url.pathname = c.url.pathname.slice(0, -1);
+				c.redirect(c.url, 308);
 			}
 		};
-
-		await dispatch(0);
-
-		return c.build();
-	};
+	}
 }

@@ -2,4 +2,4 @@
 "ovr": patch
 ---
 
-fix(app): `Context.redirect` should set Response body to `null`
+fix(context): `Context.redirect` sets Response body to `null`

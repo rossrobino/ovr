@@ -2,23 +2,32 @@ import { Chunk } from "../jsx/chunk/index.js";
 import { type JSX, toStream } from "../jsx/index.js";
 import { type Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
-import { type Middleware, type TrailingSlash } from "./index.js";
+import { type Middleware } from "./index.js";
 import { Memo } from "./memo/index.js";
 
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
 
 class TagNotFound extends Error {
 	override name = "TagNotFound";
+
 	constructor(tag: string) {
 		super(`No closing ${tag} tag found`);
 	}
 }
 
 export class Context<P extends Params = Params> {
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request) */
+	/**
+	 * Incoming `Request` to the server.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
+	 */
 	req: Request;
 
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URL) */
+	/**
+	 * Parsed `URL` created from `req.url`.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+	 */
 	url: URL;
 
 	/**
@@ -31,8 +40,8 @@ export class Context<P extends Params = Params> {
 	 */
 	params: P = {} as P; // set after match
 
-	/** The matched `Route` instance. */
-	route: Route<Middleware<P>[]> = new Route<Middleware<P>[]>(null, []);
+	/** Matched `Route` instance. */
+	route: Route<Middleware<P>[]> | null = null;
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
 	body: BodyInit | null = null;
@@ -50,27 +59,22 @@ export class Context<P extends Params = Params> {
 	head: JSX.Element[] = [];
 
 	/**
-	 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
-	 * - `"always"` - Not found requests without a trailing slash will be redirected to the same path with a trailing slash
-	 * - `"ignore"` - no redirects (not recommended, bad for SEO)
-	 *
-	 * [Trailing Slash for Frameworks by Bjorn Lu](https://bjornlu.com/blog/trailing-slash-for-frameworks)
-	 *
-	 * @default "never"
-	 */
-	trailingSlash: TrailingSlash = "never";
-
-	/**
 	 * Middleware to run when no `body` or `status` has been set on the `context`.
 	 * Set to a new function to override the default.
 	 *
 	 * @default
 	 *
 	 * ```ts
-	 * (c) => c.html("Not found", 404)
+	 * (c) => {
+	 * 	c.html("Not found", 404);
+	 * 	c.headers.set("cache-control", "no-cache");
+	 * }
 	 * ```
 	 */
-	notFound: Middleware<P> = (c) => c.html("Not found", 404);
+	notFound: Middleware<P> = (c) => {
+		c.html("Not found", 404);
+		c.headers.set("cache-control", "no-cache");
+	};
 
 	/**
 	 * Base HTML to inject the `head` and `page` elements into.
@@ -82,14 +86,17 @@ export class Context<P extends Params = Params> {
 	base = "";
 
 	/** `Memo` unique to the current `Request` context */
-	#memo = new Memo();
-
-	memo = this.#memo.use;
+	memo = new Memo();
 
 	static readonly #contentType = "content-type";
 	static readonly #headClose = "</head>";
 	static readonly #bodyClose = "</body>";
 
+	/**
+	 * Creates a new `Context` with the current `Request`.
+	 *
+	 * @param req Request
+	 */
 	constructor(req: Request) {
 		this.req = req;
 		this.url = new URL(req.url);
@@ -99,7 +106,7 @@ export class Context<P extends Params = Params> {
 	 * Mirrors `new Response()` constructor, set values with one function.
 	 *
 	 * @param body Response BodyInit
-	 * @param init Enhanced ResponseInit
+	 * @param init ResponseInit
 	 */
 	res(
 		body: BodyInit | null,
@@ -192,8 +199,6 @@ export class Context<P extends Params = Params> {
 			Page = this.layouts[i]!({ children: Page });
 		}
 
-		let element: JSX.Element;
-
 		if (this.base) {
 			// inject into base
 			const elements: JSX.Element[] = this.base.split(Context.#headClose);
@@ -215,16 +220,17 @@ export class Context<P extends Params = Params> {
 			elements[3] = bodyParts[0];
 			elements.push(Page, Context.#bodyClose + bodyParts[1]);
 
-			element = elements.map((el) =>
-				typeof el === "string" ? Chunk.safe(el) : el,
+			return this.html(
+				toStream(
+					elements.map((el) => (typeof el === "string" ? Chunk.safe(el) : el)),
+				),
+				status,
 			);
-		} else {
-			element = Page;
 		}
 
 		// HTML partial - just use the layouts + page
 		// head elements are ignored if no base is set
-		return this.html(toStream(element), status);
+		return this.html(toStream(Page), status);
 	}
 
 	/**
@@ -252,27 +258,43 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * @returns the constructed `Response`
+	 * Modifies the context based on the the return value of middleware.
+	 *
+	 * @param value value returned from middleware
 	 */
-	build() {
-		if (
-			(!this.status || this.status === 404) &&
-			this.trailingSlash !== "ignore"
-		) {
-			const last = this.url.pathname.at(-1);
-
-			if (this.trailingSlash === "always" && last !== "/") {
-				this.url.pathname += "/";
-				this.redirect(this.url, 308);
-			} else if (
-				this.trailingSlash === "never" &&
-				this.url.pathname !== "/" &&
-				last === "/"
-			) {
-				this.url.pathname = this.url.pathname.slice(0, -1);
-				this.redirect(this.url, 308);
-			}
+	#resolveReturn(value: unknown) {
+		if (value instanceof Response) {
+			this.res(value.body, value);
+		} else if (value instanceof ReadableStream) {
+			this.body = value;
+		} else if (value != null) {
+			// nullish are not used so `void` will not render empty page
+			this.page(value);
 		}
+	}
+
+	/**
+	 * Executes the stack of `middleware` provided.
+	 *
+	 * @param middleware stack to run
+	 * @param i current middleware index (default `0`)
+	 */
+	async #dispatch(middleware: Middleware<P>[], i = 0) {
+		if (!middleware[i]) return;
+
+		this.#resolveReturn(
+			await middleware[i](this, () => this.#dispatch(middleware, i + 1)),
+		);
+	}
+
+	/**
+	 * Composes a stack of `middleware` into a `Response`.
+	 *
+	 * @param middleware stack to compose
+	 * @returns constructed `Response`
+	 */
+	async compose(middleware: Middleware<P>[]) {
+		await this.#dispatch(middleware);
 
 		if (!this.body && !this.status) this.notFound(this, Promise.resolve);
 

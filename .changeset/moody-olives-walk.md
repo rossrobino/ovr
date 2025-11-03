@@ -19,3 +19,12 @@ Expose `layouts` and `head` directly instead of through helper methods. This pro
 - c.head(Layout);
 + c.head.push(Layout);
 ```
+
+### `memo`
+
+`Context.memo` is now the actual `Memo` instance instead of a wrapper for `memo.use`.
+
+```diff
+- c.memo(fn);
++ c.memo.use(fn);
+```
