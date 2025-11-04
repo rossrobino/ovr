@@ -10,8 +10,6 @@ import { Get, Post } from "ovr";
 import * as z from "zod";
 
 export const page = new Get("/demo/form", (c) => {
-	c.head(<title>Form</title>);
-
 	return (
 		<post.Form>
 			<div>

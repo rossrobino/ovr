@@ -36,7 +36,7 @@ app.get("/api/:id", (c) => {
 });
 ```
 
-### Page builders
+## Page builders
 
 There are also JSX page building properties which leverage streaming JSX.
 
@@ -53,9 +53,11 @@ app.get("/api/:id", (c) => {
 });
 ```
 
-#### Layouts
+## Layouts
 
-Since `Context.layout` expects layout _components_, if you need to pass other props besides `children` to a layout, create a function that returns the layout component.
+To use the same layout for all pages, create a middleware that sets the layout and apply it globally with [`app.use`](/03-app#global-middleware).
+
+Since `Context.layouts` expects layout _components_, if you need to pass other props besides `children` to a layout, create a function that returns the layout component.
 
 ```tsx
 // layout.tsx
@@ -79,13 +81,14 @@ import { Layout } from "./layout.tsx";
 
 app.use((c, next) => {
 	c.layouts.push(Layout(c));
+
 	return next();
 });
 ```
 
 ### Not found
 
-Customize the not found response handler.
+Customize the `notFound` handler by reassigning `Context.notFound`.
 
 ```ts
 c.notFound = (c) => {
@@ -99,7 +102,7 @@ c.notFound = (c) => {
 Change the base HTML to inject elements into with the [`Context.head` and `Context.page`](/05-context#page-builders) methods.
 
 ```ts
-c.base = "";
+c.base = ""; // defaults to empty string (send HTML partials)
 ```
 
 ## Utilities
@@ -109,9 +112,7 @@ c.base = "";
 Memoize a function to dedupe async operations and cache the results. See [memoization](/07-memo) for more details.
 
 ```tsx
-app.get("/api/:id", (c) => {
-	c.memo.use(fn);
-});
+c.memo.use(fn);
 ```
 
 ### Entity tag
