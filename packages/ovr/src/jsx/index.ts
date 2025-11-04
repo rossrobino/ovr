@@ -244,15 +244,15 @@ export const toStream = (element: JSX.Element) => {
 				gen.return();
 			},
 		},
-		// {
-		// 	// `highWaterMark` defaults to 1
-		// 	// https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream#highwatermark
-		// 	// setting this ensures at least a small buffer is maintained if the
-		// 	// underlying server does not have its own high water mark set
-		// 	// https://blog.cloudflare.com/unpacking-cloudflare-workers-cpu-performance-benchmarks/#inefficient-streams-adapters
-		// 	// in Node, the default is 16kb, so this stacks another 2kb in front
-		// 	// https://nodejs.org/api/http.html#outgoingmessagewritablehighwatermark
-		// 	highWaterMark: 2048,
-		// },
+		{
+			// `highWaterMark` defaults to 1
+			// https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream#highwatermark
+			// setting this ensures at least a small buffer is maintained if the
+			// underlying server does not have its own high water mark set
+			// https://blog.cloudflare.com/unpacking-cloudflare-workers-cpu-performance-benchmarks/#inefficient-streams-adapters
+			// in Node, the default is 16kb, so this stacks another 2kb in front
+			// https://nodejs.org/api/http.html#outgoingmessagewritablehighwatermark
+			highWaterMark: 2048,
+		},
 	);
 };
