@@ -274,16 +274,16 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * Executes the stack of `middleware` provided.
+	 * Dispatches the stack of `middleware` provided.
 	 *
 	 * @param middleware stack to run
 	 * @param i current middleware index (default `0`)
 	 */
-	async #dispatch(middleware: Middleware<P>[], i = 0) {
+	async #run(middleware: Middleware<P>[], i = 0) {
 		if (!middleware[i]) return;
 
 		this.#resolveReturn(
-			await middleware[i](this, () => this.#dispatch(middleware, i + 1)),
+			await middleware[i](this, () => this.#run(middleware, i + 1)),
 		);
 	}
 
@@ -293,8 +293,8 @@ export class Context<P extends Params = Params> {
 	 * @param middleware stack to compose
 	 * @returns constructed `Response`
 	 */
-	async compose(middleware: Middleware<P>[]) {
-		await this.#dispatch(middleware);
+	async build(middleware: Middleware<P>[]) {
+		await this.#run(middleware);
 
 		if (!this.body && !this.status) this.notFound(this, Promise.resolve);
 

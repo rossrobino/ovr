@@ -242,12 +242,12 @@ export class App {
 
 			if (match) {
 				Object.assign(c, match);
-				return c.compose([...this.#use, ...match.route.store]);
+				return c.build([...this.#use, ...match.route.store]);
 			}
 		}
 
 		// no match, just run global middleware
-		return c.compose(this.#use);
+		return c.build(this.#use);
 	};
 
 	/** Basic CSRF middleware. */
