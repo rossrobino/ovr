@@ -30,7 +30,7 @@ const page = new Get("/", () => {
 
 ## Post
 
-There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) handler and corresponding `Form` and `Button` elements. Anytime you need to handle a form submission, use the generated `Form` component from the `Post` helper.
+There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) route and corresponding `Form` and `Button` elements. Anytime you need to handle a form submission, use the generated `Form` component from the `Post` helper.
 
 For `Post`, ovr will automatically generate a unique pathname for the route based on a hash of the middleware provided.
 
@@ -151,7 +151,7 @@ typeof page.Params; // { name: string }
 
 ### Pattern
 
-The route pattern.
+The pattern the route was created with.
 
 ```ts
 page.pattern; // "/hello/:name"

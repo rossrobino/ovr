@@ -5,7 +5,7 @@ description: Libraries that work well with ovr.
 
 Here are some libraries that work nicely alongside ovr.
 
-Have a library you'd recommend with ovr? Feel free to [submit a PR](https://github.com/rossrobino/ovr/edit/main/apps/docs/src/server/docs/09-libraries.md).
+Have a library you'd recommend with ovr? Feel free to [submit a PR](https://github.com/rossrobino/ovr/edit/main/apps/docs/src/server/docs/08-libraries.md).
 
 ---
 

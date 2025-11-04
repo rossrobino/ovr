@@ -245,7 +245,7 @@ export class App {
 
 			if (match) {
 				Object.assign(c, match);
-				return c.build([...this.#use, ...match.route.store]);
+				return c.build(this.#use.concat(match.route.store));
 			}
 		}
 

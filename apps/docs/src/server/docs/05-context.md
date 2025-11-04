@@ -14,7 +14,7 @@ app.get("/api/:id", (c) => {
 	c.req; // original `Request`
 	c.url; // parsed web `URL`
 	c.params; // type-safe route parameters { id: "123" }
-	c.route; // matched `Route` (contains `pattern`, `store`)
+	c.route; // matched `Route` (contains `pattern`, `store`) | null
 });
 ```
 
@@ -38,15 +38,15 @@ app.get("/api/:id", (c) => {
 
 ### Page builders
 
-There are also JSX page building methods which leverage streaming JSX.
+There are also JSX page building properties which leverage streaming JSX.
 
 ```tsx
 app.get("/api/:id", (c) => {
 	// inject elements into <head>
-	c.head(<meta name="description" content="..." />);
+	c.head.push(<meta name="description" content="..." />);
 
 	// wrap page content with layout components
-	c.layout(RootLayout, PageLayout);
+	c.layouts.push(RootLayout, PageLayout);
 
 	// stream JSX page (same as returning JSX)
 	c.page(<UserProfilePage userId={c.params.id} />);
@@ -78,9 +78,28 @@ import { Layout } from "./layout.tsx";
 // ...
 
 app.use((c, next) => {
-	c.layout(Layout(c));
+	c.layouts.push(Layout(c));
 	return next();
 });
+```
+
+### Not found
+
+Customize the not found response handler.
+
+```ts
+c.notFound = (c) => {
+	c.text("Not found", 404);
+	c.headers.set("cache-control", "no-cache");
+};
+```
+
+### Base HTML
+
+Change the base HTML to inject elements into with the [`Context.head` and `Context.page`](/05-context#page-builders) methods.
+
+```ts
+c.base = "";
 ```
 
 ## Utilities
@@ -91,13 +110,13 @@ Memoize a function to dedupe async operations and cache the results. See [memoiz
 
 ```tsx
 app.get("/api/:id", (c) => {
-	c.memo(fn);
+	c.memo.use(fn);
 });
 ```
 
 ### Entity tag
 
-Generates an [entity tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag) from a hash of the string provided. If the tag matches, the response will be set to [`304: Not Modified`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304) and the funciton will return `true`.
+Generates an [entity tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag) from a hash of the string provided. If the tag matches, the response will be set to [`304: Not Modified`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304) and the function will return `true`.
 
 ```tsx
 app.get("/api/:id", (c) => {

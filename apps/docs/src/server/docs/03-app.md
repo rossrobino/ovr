@@ -15,44 +15,19 @@ The `App` API is inspired by and works similar to frameworks such as [Hono](http
 
 ## Configuration
 
-The following values can be customized after creating the `App`. You can also configure most of these per route within middleware by modifying the value on the `Context`.
+The following values can be configured when creating the `App`.
 
 ### Trailing Slash
 
 ovr handles [trailing slash](https://bjornlu.com/blog/trailing-slash-for-frameworks) redirects automatically, you can customize the redirect preference.
 
 ```ts
-app.trailingSlash = "never";
+new App({ trailingSlash: "always" });
 ```
 
-### Not Found
+### CSRF
 
-Customize the not found response handler.
-
-```ts
-app.notFound = (c) => c.html("Not found", 404);
-```
-
-### Error Handler
-
-Add an error handler, by default errors are thrown.
-
-```ts
-app.error = (c, error) => {
-	console.error(error);
-
-	c.html("An error occurred", 500);
-};
-```
-
-### Base HTML
-
-Change the base HTML to inject elements into with the [`Context.head` and `Context.page`](/05-context#page-builders) methods, this is the default.
-
-```ts
-app.base =
-	'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
-```
+TODO
 
 ## Response
 
@@ -71,8 +46,6 @@ Returning JSX from middleware will generate an HTML streamed response.
 ```tsx
 app.get("/", () => <h1>Hello world</h1>);
 ```
-
-The element will be injected into the `<body>` element of the [`base`](/03-app#base-html) HTML.
 
 ## HTTP methods
 
@@ -136,5 +109,5 @@ app.use(async (c, next) => {
 Use the `fetch` method to create a `Response`, this is the `Request` handler for your application.
 
 ```ts
-const response = await app.fetch(new Request("https://example.com/"));
+const response = await app.fetch("https://example.com");
 ```

@@ -66,13 +66,13 @@ export class Context<P extends Params = Params> {
 	 *
 	 * ```ts
 	 * (c) => {
-	 * 	c.html("Not found", 404);
+	 * 	c.text("Not found", 404);
 	 * 	c.headers.set("cache-control", "no-cache");
 	 * }
 	 * ```
 	 */
 	notFound: Middleware<P> = (c) => {
-		c.html("Not found", 404);
+		c.text("Not found", 404);
 		c.headers.set("cache-control", "no-cache");
 	};
 
