@@ -218,30 +218,27 @@ const encoder = new TextEncoder();
 export const toStream = (element: JSX.Element) => {
 	const gen = toGenerator(element);
 
-	return new ReadableStream<Uint8Array>(
-		{
-			type: "bytes",
-			async pull(c) {
-				const result = await gen.next();
+	return new ReadableStream<Uint8Array>({
+		type: "bytes",
+		async pull(c) {
+			const result = await gen.next();
 
-				if (result.done) {
-					c.close();
-					gen.return();
-					return;
-				}
-
-				c.enqueue(
-					// need to encode for Node JS (ex: during prerendering) or it will error
-					// doesn't seem to be needed for browsers
-					// faster than piping through a `TextEncoderStream`
-					encoder.encode(result.value.value),
-				);
-			},
-
-			cancel() {
+			if (result.done) {
+				c.close();
 				gen.return();
-			},
+				return;
+			}
+
+			c.enqueue(
+				// need to encode for Node JS (ex: during prerendering) or it will error
+				// doesn't seem to be needed for browsers
+				// faster than piping through a `TextEncoderStream`
+				encoder.encode(result.value.value),
+			);
 		},
-		{ highWaterMark: 4096 },
-	);
+
+		cancel() {
+			gen.return();
+		},
+	});
 };
