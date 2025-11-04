@@ -34,9 +34,12 @@ type AppOptions = {
 	/**
 	 * Basic
 	 * [cross-site request forgery (CSRF)](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF)
-	 * protection that compares the request's `origin` header against its `url.origin`.
+	 * protection that checks the request's `method`, and its
+	 * [`Sec-Fetch-Site`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site)
+	 * and [`Origin`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin)
+	 * headers.
 	 *
-	 * For more robust protection requires a stateful server or a database to store
+	 * More robust protection requires a stateful server or a database to store
 	 * [CSRF tokens](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF#csrf_tokens).
 	 *
 	 * @default true
@@ -255,7 +258,8 @@ export class App {
 		if (
 			c.req.method === "GET" ||
 			c.req.method === "HEAD" ||
-			c.url.origin === c.req.headers.get("origin")
+			c.req.headers.get("sec-fetch-site") === "same-origin" ||
+			c.req.headers.get("origin") === c.url.origin
 		) {
 			return next();
 		}
