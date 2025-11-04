@@ -117,9 +117,9 @@ const NavList = ({ c }: { c: Context }) => {
 
 			<NavHeading>Docs</NavHeading>
 			<ul class="grid gap-1">
-				{docs.getSlugs().map((slug) => {
-					return <NavLink slug={slug} c={c} />;
-				})}
+				{docs.getSlugs().map((slug) => (
+					<NavLink slug={slug} c={c} />
+				))}
 				<NavLink slug={docs.llms.pathname().slice(1)} c={c} />
 			</ul>
 
@@ -174,18 +174,20 @@ const NavLink = (props: {
 	if (!props.slug) return;
 	const href = `/${props.slug}`;
 	const current = href === props.c.url.pathname;
+	const text =
+		props.slug.split("-").slice(1).join(" ") || props.slug.split(".").at(0);
 
 	return (
 		<li>
 			<a
 				class={clsx(
-					"button secondary justify-start capitalize",
+					"button secondary justify-start",
+					text !== "llms" && "capitalize",
 					!current && "ghost",
 				)}
 				href={href}
 			>
-				{props.slug.split("-").slice(1).join(" ") ||
-					props.slug.split(".").at(0)}
+				{text === "llms" ? "LLMs" : text}
 			</a>
 		</li>
 	);
