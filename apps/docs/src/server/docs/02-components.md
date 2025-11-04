@@ -152,7 +152,7 @@ const Component = () => <p>element</p>;
 const stream = ovr.toStream(Component);
 
 const response = new Response(stream, {
-	"Content-Type": "text/html; charset=utf-8",
+	"content-type": "text/html; charset=utf-8",
 });
 ```
 

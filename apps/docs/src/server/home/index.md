@@ -1,6 +1,6 @@
 ---
 title: ovr
-description: Progressive HTML Rendering
+description: The Streaming Framework
 ---
 
 ## Introduction
@@ -15,7 +15,7 @@ function Component() {
 }
 ```
 
-ovr generates three `Chunk`s of HTML:
+ovr generates three chunks of HTML:
 
 ```ts
 "<p>"; // streamed immediately

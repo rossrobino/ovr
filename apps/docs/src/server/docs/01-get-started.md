@@ -11,7 +11,7 @@ Install the `ovr` package from npm using your preferred package manager.
 npm i ovr
 ```
 
-Alternatively, you can setup ovr with a pre-configured template using [Vite with domco](https://domco.robino.dev). This includes live reload and options for Tailwind, deployment adapters, and more. domco will create a server entry point in `src/server/+app.tsx` with ovr pre-configured.
+Alternatively, you can setup ovr with a pre-configured template using [Vite with domco](https://domco.robino.dev):
 
 ```bash
 npx create-domco@latest --framework=ovr
@@ -34,9 +34,12 @@ Or you can use a comment if you are using ovr in conjunction with another framew
 
 ## Compatibility
 
-ovr can be used in any Fetch API compatible runtime via [`app.fetch`](/03-app#fetch). Here are a few ways to create a Fetch based HTTP server in various JavaScript runtimes.
+ovr uses entirely standard JavaScript APIs, so it can run anywhere.
+
+The ovr `App` server can be used in any Fetch API compatible runtime via [`App.fetch`](/03-app#fetch). Here are a few ways to create a Fetch based HTTP server in various JavaScript runtimes.
 
 - [domco](https://domco.robino.dev) - run `npm create domco` and select `ovr` framework
+- [Nitro](https://nitro.build/)
 - [Cloudflare Vite Plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/) + [vite-ssr-components](https://github.com/yusukebe/vite-ssr-components)
 - [Node + srvx](https://srvx.h3.dev/)
 - [Bun HTTP server](https://bun.sh/docs/api/http)

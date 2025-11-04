@@ -27,7 +27,11 @@ new App({ trailingSlash: "always" });
 
 ### CSRF
 
-TODO
+ovr comes with built-in basic [cross-site request forgery](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF) protection.
+
+```ts
+new App({ csrf: false }); // disables the built-in checks
+```
 
 ## Response
 
