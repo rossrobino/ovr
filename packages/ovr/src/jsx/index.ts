@@ -219,6 +219,7 @@ export const toStream = (element: JSX.Element) => {
 	const gen = toGenerator(element);
 
 	return new ReadableStream<Uint8Array>({
+		type: "bytes",
 		async pull(c) {
 			const result = await gen.next();
 
