@@ -54,6 +54,9 @@ export class Trie<Store> {
 	/** Matched wildcard route */
 	wildcardRoute: Route<Store> | null = null;
 
+	static #paramMatch = /:.+?(?=\/|$)/g;
+	static #paramSplit = /:.+?(?=\/|$)/;
+
 	/**
 	 * @param segment pattern segment
 	 * @param staticChildren static children nodes to add to staticMap
@@ -146,8 +149,8 @@ export class Trie<Store> {
 		const endsWithWildcard = pattern.endsWith("*");
 		if (endsWithWildcard) pattern = pattern.slice(0, -1);
 
-		const paramSegments = pattern.match(/:.+?(?=\/|$)/g) ?? []; // match the params
-		const staticSegments = pattern.split(/:.+?(?=\/|$)/); // split on the params
+		const paramSegments = pattern.match(Trie.#paramMatch) ?? [];
+		const staticSegments = pattern.split(Trie.#paramSplit);
 
 		// if the last segment is a param without a trailing slash
 		// then there will be an empty string, remove
