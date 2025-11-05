@@ -1,5 +1,192 @@
 # ovr
 
+## 5.0.0
+
+### Major Changes
+
+- 41b2c84: feat(jsx)!: prefix `<html>` opening tag with `<!doctype html>`.
+
+  BREAKING CHANGE: If you were manually sending the doctype tag before, you no longer need to.
+
+- 41b2c84: refactor(context)!: Refactor properties on `Context`
+
+  BREAKING CHANGES:
+
+  ### `head` and `layouts`
+
+  Expose `layouts` and `head` directly instead of through helper methods. This provides greater control over which layouts are used for each handler. For example, you can `unshift` the root layout to remove it now instead of just appending.
+
+  ```diff
+  - c.layout(Layout);
+  + c.layouts.push(Layout);
+  ```
+
+  ```diff
+  - c.head(Layout);
+  + c.head.push(Layout);
+  ```
+
+  ### `memo`
+
+  `Context.memo` is now the actual `Memo` instance instead of a wrapper for `memo.use`.
+
+  ```diff
+  - c.memo(fn);
+  + c.memo.use(fn);
+  ```
+
+- 41b2c84: refactor(app)!: Refactor properties between `App` and `Context`.
+
+  BREAKING CHANGES:
+
+  ### base
+
+  Remove `App.base` in favor of setting `Context.base` and default to `""` instead of preset html template.
+
+  If the default HTML template was being used, you will now need to set it instead. The default was rarely used, in most cases you either set your own, or send partials. So this change saves you from having to set it to the empty string before sending partials making it easier for HTMX users for example.
+
+  To keep the old template default, set it within middleware:
+
+  ```tsx
+  import { App } from "ovr";
+
+  const app = new App();
+
+  app.use((c, next) => {
+  	c.base =
+  		'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
+
+  	return next();
+  });
+  ```
+
+  ### trailingSlash
+
+  Trailing slash preference is now set in the `App` config instead of a property.
+
+  ```diff
+  + new App({ trailingSlash: "always" })
+  - app.trailingSlash = "always"
+  ```
+
+  ### notFound
+
+  Custom `notFound` handler is now set exclusively within `Context`, not on the `App`.
+
+  ```diff
+  const app = new App();
+
+  const notFound = (c) => {
+  	// ...
+  };
+
+  - app.notFound = notFound;
+  + app.use((c, next) => {
+  +	c.notFound = notFound;
+  +	return next();
+  + });
+  ```
+
+  ### error
+
+  `error` has been removed in favor of using user middleware instead.
+
+  ```diff
+  const app = new App();
+
+  const errorHandler = (c, error) => {
+  	// ...
+  };
+
+  - app.error = errorHandler;
+  + app.use(async (c, next) => {
+  + 	try {
+  +		await next();
+  +	} catch (error) {
+  +		errorHandler(c, error);
+  +	}
+  + });
+  ```
+
+- 41b2c84: refactor(app)!: Move to web standard APIs.
+
+  ovr now runs more reliably in non-Node runtimes. This change removes reliance on `node:` built-in APIs, specifically `async_hooks` created [various issues](https://github.com/issues/created?issue=oven-sh%7Cbun%7C24199) across platforms.
+
+  BREAKING CHANGES:
+
+  ### Generator type
+
+  Synchronous generators are now distinguished from other iterables by checking if they have a `next` property, instead of `util.types.isGeneratorObject`.
+
+  ### Async Local Storage removal
+  - Without `AsyncLocalStorage`, the `search` option within `Helper.url` and the `search` component prop no longer can take `true` as a value. You must pass in `Context.url.search` manually.
+  - `Context.get` has been removed. You can implement the feature if needed, see below.
+
+  ```tsx
+  import { AsyncLocalStorage } from "node:async_hooks";
+  import { App, type Context } from "ovr";
+
+  const app = new App();
+
+  const storage = new AsyncLocalStorage<Context>();
+
+  /**
+   * Call within the scope of a handler to get the current context.
+   *
+   * @returns `Request` context
+   */
+  const getContext = () => {
+  	const c = App.storage.getStore();
+
+  	if (!c)
+  		throw new ReferenceError(
+  			"Context can only be obtained within a handler.",
+  		);
+
+  	return c;
+  };
+
+  app.get("/", (c) => {
+  	return storage.run(c, async () => {
+  		return <Component />;
+  	});
+  });
+
+  const Component = () => {
+  	const c = getContext();
+  	return <div>{c.url.pathname}</div>;
+  };
+  ```
+
+- 41b2c84: feat(app)! Built-in basic CSRF protection.
+
+  `csrf` middleware is now built in to `App` instead of a separate middleware. Set `options.csrf` to `false` to disable. If you were using the middleware, you can remove.
+
+  In addition, the protection now checks the [`Sec-Fetch-Site`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site) header and falls back to checking the `Origin`.
+
+### Minor Changes
+
+- 41b2c84: feat(app): Align `App.fetch` signature to `window.fetch`.
+
+  The `App.fetch` method now has the same call signature as the standard [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch).
+
+  In addition to inputting a `Request` to `App.fetch`, you can now input a `string` or `URL`. A second `options` parameter is also available to provide options to apply to the request.
+
+  ```ts
+  app.fetch(new Request("http://example.com"));
+
+  // now these also work:
+  app.fetch("http://example.com");
+
+  const url = new URL("http://example.com");
+  app.fetch(url);
+  ```
+
+### Patch Changes
+
+- 41b2c84: fix(context): `Context.redirect` sets Response body to `null`
+- 41b2c84: fix(context): Default `notFound` middleware sets `cache-control` to `no-cache`.
+
 ## 4.6.0
 
 ### Minor Changes
