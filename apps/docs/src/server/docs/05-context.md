@@ -22,9 +22,7 @@ app.get("/api/:id", (c) => {
 
 The context contains methods to build your final `Response`.
 
-### Content types
-
-Easily set the response with common [content type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type) headers.
+Easily set the response with common [content type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type) headers or create a redirect response.
 
 ```tsx
 app.get("/api/:id", (c) => {
@@ -42,7 +40,7 @@ There are also JSX page building properties which leverage streaming JSX.
 
 ```tsx
 app.get("/api/:id", (c) => {
-	// inject elements into <head>
+	// inject elements into <head> of `Context.base`
 	c.head.push(<meta name="description" content="..." />);
 
 	// wrap page content with layout components
@@ -53,9 +51,9 @@ app.get("/api/:id", (c) => {
 });
 ```
 
-## Layouts
+### Layouts
 
-To use the same layout for all pages, create a middleware that sets the layout and apply it globally with [`app.use`](/03-app#global-middleware).
+To use the same layout for all pages, create a middleware that sets the layout and apply it globally with [`App.use`](/03-app#global-middleware).
 
 Since `Context.layouts` expects layout _components_, if you need to pass other props besides `children` to a layout, create a function that returns the layout component.
 
@@ -81,7 +79,6 @@ import { Layout } from "./layout.tsx";
 
 app.use((c, next) => {
 	c.layouts.push(Layout(c));
-
 	return next();
 });
 ```
@@ -109,7 +106,7 @@ c.base = ""; // defaults to empty string (send HTML partials)
 
 ### Memo
 
-Memoize a function to dedupe async operations and cache the results. See [memoization](/07-memo) for more details.
+[Memoize](/07-memo) a function to dedupe async operations and cache the results.
 
 ```tsx
 c.memo.use(fn);
@@ -130,6 +127,6 @@ app.get("/api/:id", (c) => {
 		return;
 	}
 
-	return c.html(html);
+	c.html(html);
 });
 ```

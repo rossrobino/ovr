@@ -21,9 +21,11 @@ async function Data({ c, id }: { c: Context; id: number }) {
 
 This will deduplicate multiple calls to the same function with the with the same arguments and cache the result. Every time `<Data />` is called with the same `id`, the result will be reused.
 
+> In JavaScript, [objects are a reference type](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects#comparing_objects). If the memoized function requires an object as an argument, you'll need to ensure you pass the exact same object reference to retrieve the same result.
+
 ## Create your own cache
 
-The `Memo` class can also be utilized outside of the application context if you need to cache across requests. It's generally safer to cache per request using `Context.memo`---especially for user specific or sensitive information. But if you have a long running server and need to cache public data, you can create a `Memo` outside of the app.
+The `Memo` class can also be utilized outside of the application context if you need to cache across requests. Although, it's generally safer to cache per request using `Context.memo`---especially for user specific or sensitive information.
 
 ```ts
 import { Memo } from "ovr";

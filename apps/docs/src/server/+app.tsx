@@ -24,7 +24,7 @@ const preload = chunk.src.assets.map((path) => (
 const notFound: Middleware = (c) => {
 	c.head.push(<Head title="Not Found" description="Content not found" />);
 
-	return c.page(
+	c.page(
 		<>
 			<h1>Not Found</h1>
 
@@ -54,7 +54,7 @@ app.use(async (c, next) => {
 
 if (import.meta.env.DEV) {
 	app.get("/backpressure", async (c) => {
-		// need to make each chunk very large to observe pull stop
+		// need to make each chunk is very large to observe pull stop
 		// log something in the Context.page => pull method to see
 		const res = await fetch("http://localhost:5173/demo/memory");
 
@@ -69,7 +69,7 @@ if (import.meta.env.DEV) {
 			if (done) break;
 		}
 
-		return c.res("done");
+		c.res("done");
 	});
 }
 

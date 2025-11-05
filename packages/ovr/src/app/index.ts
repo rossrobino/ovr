@@ -264,7 +264,7 @@ export class App {
 			return next();
 		}
 
-		return c.text("Forbidden", 403);
+		c.text("Forbidden", 403);
 	}
 
 	/** @returns Trailing slash middleware */

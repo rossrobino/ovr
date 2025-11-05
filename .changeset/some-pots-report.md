@@ -51,7 +51,7 @@ app.use(async (c, next) => {
 	try {
 		await next();
 	} catch (error) {
-		return c.text("Internal server error", 500);
+		c.text("Internal server error", 500);
 	}
 });
 ```

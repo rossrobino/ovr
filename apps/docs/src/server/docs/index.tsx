@@ -54,7 +54,7 @@ export const page = new Get("/:slug", (c) => {
 
 	if (md) {
 		return c.res(getMd(result), {
-			headers: { "Content-Type": "text/markdown; charset=UTF-8" },
+			headers: { "content-type": "text/markdown; charset=UTF-8" },
 		});
 	}
 

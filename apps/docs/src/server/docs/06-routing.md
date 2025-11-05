@@ -3,13 +3,15 @@ title: Routing
 description: Trie-based routing in ovr.
 ---
 
-ovr's router offers efficient and fast route matching, supporting static paths, parameters, and wildcards. Utilizing a [trie](https://en.wikipedia.org/wiki/Radix_tree) structure means that performance does not degrade as you add more routes.
+ovr's router offers efficient and fast route matching, supporting static paths, parameters, and wildcards. Utilizing a [trie](https://en.wikipedia.org/wiki/Radix_tree) structure ensures performance does not degrade as you add more routes.
 
 The router is forked and adapted from [memoirist](https://github.com/SaltyAom/memoirist) and [@medley/router](https://github.com/medleyjs/router).
 
 ## Parameters
 
-Create a parameter for a route using the colon before a path segment. `/api/:id` will create a `params` object on the `Context` with a property of `id` containing the actual path segment requested.
+Create a parameter for a route using the colon before a path segment.
+
+The pattern `/api/:id` creates a `params` object on the `Context` with a property of `id` containing the actual path segment requested.
 
 ```ts
 app.post("/api/:id", (c) => {
@@ -52,7 +54,7 @@ More specific matches are prioritized. The following pathnames would match the c
 
 ## Create your own router
 
-`App` is built using the `Trie` and `Route` classes. You don't need to access these if you are using `App`, but you can build your own router using the them.
+`App` is built using the `Trie` and `Route` classes. You won't need to access these if you are using `App`, but you can build your own router using the them.
 
 ```ts
 import { Route, Trie } from "ovr";

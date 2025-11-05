@@ -23,7 +23,7 @@ test("context", () => {
 		)
 		.get("/api/:id/", (c) => {
 			expect(c.params.id).toBeDefined();
-			return c.json(c.params);
+			c.json(c.params);
 		})
 		.get("/wild/*", (c) => {
 			expect(c.params["*"]).toBeDefined();
@@ -70,7 +70,7 @@ test("context", () => {
 	});
 
 	app.on(["POST", "GET"], "/multi-method", async (c) => {
-		return c.text(c.req.method);
+		c.text(c.req.method);
 	});
 
 	app.get("/memo", (c) => {
