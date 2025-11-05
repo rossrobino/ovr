@@ -10,7 +10,7 @@ BREAKING CHANGES:
 
 Remove `App.base` in favor of setting `Context.base` and default to `""` instead of preset html template.
 
-If the default HTML template was being used, you will now need to set it instead. The default was rarely used, in most cases you either set your own, or send partials. So this change saves you from having to set it to the empty string before sending partials.
+If the default HTML template was being used, you will now need to set it instead. The default was rarely used, in most cases you either set your own, or send partials. So this change saves you from having to set it to the empty string before sending partials making it easier for HTMX users for example.
 
 To keep the old template default, set it within middleware:
 
