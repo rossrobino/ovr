@@ -98,7 +98,7 @@ const TOC = ({ c }: { c: Context }) => {
 
 const HomeLink = () => {
 	return (
-		<a href="/" class="pl-2 font-bold no-underline">
+		<a href="/" class="pl-2 text-lg font-bold no-underline">
 			ovr
 		</a>
 	);
