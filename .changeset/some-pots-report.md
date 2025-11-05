@@ -38,20 +38,39 @@ Trailing slash preference is now set in the `App` config instead of a property.
 
 ### notFound
 
-`notFound` is now set exclusively within `Context`, not on the `App`.
+Custom `notFound` handler is now set exclusively within `Context`, not on the `App`.
+
+```diff
+const app = new App();
+
+const notFound = (c) => {
+	// ...
+};
+
+- app.notFound = notFound;
++ app.use((c, next) => {
++	c.notFound = notFound;
++	return next();
++ });
+```
 
 ### error
 
 `error` has been removed in favor of using user middleware instead.
 
-```ts
+```diff
 const app = new App();
 
-app.use(async (c, next) => {
-	try {
-		await next();
-	} catch (error) {
-		c.text("Internal server error", 500);
-	}
-});
+const errorHandler = (c, error) => {
+	// ...
+};
+
+- app.error = errorHandler;
++ app.use(async (c, next) => {
++ 	try {
++		await next();
++	} catch (error) {
++		errorHandler(c, error);
++	}
++ });
 ```

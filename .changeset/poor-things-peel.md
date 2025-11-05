@@ -2,4 +2,4 @@
 "ovr": patch
 ---
 
-fix(context): Default `notFound` middleware sets cache-control to `no-cache`.
+fix(context): Default `notFound` middleware sets `cache-control` to `no-cache`.

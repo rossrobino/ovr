@@ -4,7 +4,7 @@
 
 refactor(app)!: Move to web standard APIs.
 
-ovr now runs more reliably in non-NodeJS runtimes. Removes reliance on `node:` built-in APIs, specifically `async_hooks` created various issues across platforms.
+ovr now runs more reliably in non-Node runtimes. This change removes reliance on `node:` built-in APIs, specifically `async_hooks` created [various issues](https://github.com/issues/created?issue=oven-sh%7Cbun%7C24199) across platforms.
 
 BREAKING CHANGES:
 
@@ -14,8 +14,8 @@ Synchronous generators are now distinguished from other iterables by checking if
 
 ### Async Local Storage removal
 
-- Without Async Local Storage, the `search` option within `Helper.url` and the `search` component prop no longer can take `true` as a value. You must pass in `Context.url.search` manually.
-- `Context.get` has been removed. You can easily implement the feature if needed, see below.
+- Without `AsyncLocalStorage`, the `search` option within `Helper.url` and the `search` component prop no longer can take `true` as a value. You must pass in `Context.url.search` manually.
+- `Context.get` has been removed. You can implement the feature if needed, see below.
 
 ```tsx
 import { AsyncLocalStorage } from "node:async_hooks";
