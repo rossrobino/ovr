@@ -1,12 +1,14 @@
 import * as demos from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as homeResult from "@/server/home/index.md";
+import { GitHub } from "@/ui/github";
 import { Popover } from "@/ui/popover";
 import { SkipLink } from "@/ui/skip-link";
+import { Version } from "@/ui/version";
 import { clsx } from "clsx";
-import { Context, type JSX } from "ovr";
+import { type Context, type JSX } from "ovr";
 
-export const Layout = (props: { children?: JSX.Element }) => {
+export const Layout = (c: Context) => (props: { children?: JSX.Element }) => {
 	return (
 		<drab-prefetch
 			trigger="a[href^='/']:not([data-no-prefetch])"
@@ -25,7 +27,7 @@ export const Layout = (props: { children?: JSX.Element }) => {
 						}}
 					>
 						<div class="flex flex-col gap-4">
-							<NavList />
+							<NavList c={c} />
 						</div>
 					</Popover>
 				</nav>
@@ -34,11 +36,11 @@ export const Layout = (props: { children?: JSX.Element }) => {
 				<div>
 					<nav class="sticky top-0 z-10 hidden max-h-dvh min-w-52 flex-col gap-4 overflow-y-auto p-4 md:flex">
 						<HomeLink />
-						<NavList />
+						<NavList c={c} />
 					</nav>
 				</div>
 				<div class="flex w-full min-w-0 flex-row-reverse justify-between">
-					<TOC />
+					<TOC c={c} />
 					<div class="flex w-full min-w-0 justify-center">
 						<div
 							id="content"
@@ -53,8 +55,8 @@ export const Layout = (props: { children?: JSX.Element }) => {
 	);
 };
 
-const TOC = () => {
-	const { pathname } = Context.get().url;
+const TOC = ({ c }: { c: Context }) => {
+	const { pathname } = c.url;
 
 	let result: ReturnType<typeof docs.getContent>;
 
@@ -110,17 +112,17 @@ const NavHeading = (props: { children: JSX.Element }) => {
 	);
 };
 
-const NavList = () => {
+const NavList = ({ c }: { c: Context }) => {
 	return (
 		<>
 			<hr />
 
 			<NavHeading>Docs</NavHeading>
 			<ul class="grid gap-1">
-				{docs.getSlugs().map((slug) => {
-					return <NavLink slug={slug} />;
-				})}
-				<NavLink slug={docs.llms.pathname().slice(1)} />
+				{docs.getSlugs().map((slug) => (
+					<NavLink slug={slug} c={c} />
+				))}
+				<NavLink slug={docs.llms.pathname().slice(1)} c={c} />
 			</ul>
 
 			<hr />
@@ -138,7 +140,7 @@ const NavList = () => {
 									data-no-prefetch
 									class={clsx(
 										"button secondary justify-start capitalize",
-										demo.pattern !== Context.get().url.pathname && "ghost",
+										demo.pattern !== c.url.pathname && "ghost",
 									)}
 								>
 									{demo.pattern.split("/").at(2)}
@@ -150,38 +152,40 @@ const NavList = () => {
 
 			<hr />
 
-			<ul>
+			<ul class="flex gap-1">
 				<li>
-					<a
-						href="https://github.com/rossrobino/ovr"
-						target="_blank"
-						class="button ghost icon"
-						aria-label="GitHub"
-					>
-						<span class="icon-[lucide--github]"></span>
-					</a>
+					<GitHub />
+				</li>
+				<li>
+					<Version />
 				</li>
 			</ul>
 		</>
 	);
 };
 
-const NavLink = (props: { slug?: string; anchor?: JSX.Element }) => {
+const NavLink = (props: {
+	slug?: string;
+	anchor?: JSX.Element;
+	c: Context;
+}) => {
 	if (!props.slug) return;
 	const href = `/${props.slug}`;
-	const current = href === Context.get().url.pathname;
+	const current = href === props.c.url.pathname;
+	const text =
+		props.slug.split("-").slice(1).join(" ") || props.slug.split(".").at(0);
 
 	return (
 		<li>
 			<a
 				class={clsx(
-					"button secondary justify-start capitalize",
+					"button secondary justify-start",
+					text !== "llms" && "capitalize",
 					!current && "ghost",
 				)}
 				href={href}
 			>
-				{props.slug.split("-").slice(1).join(" ") ||
-					props.slug.split(".").at(0)}
+				{text === "llms" ? "LLMs" : text}
 			</a>
 		</li>
 	);

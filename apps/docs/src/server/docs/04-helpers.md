@@ -30,7 +30,7 @@ const page = new Get("/", () => {
 
 ## Post
 
-There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) handler and corresponding `Form` and `Button` elements. Anytime you need to handle a form submission, use the generated `Form` component from the `Post` helper.
+There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) route and corresponding `Form` and `Button` elements. Anytime you need to handle a form submission, use the generated `Form` component from the `Post` helper.
 
 For `Post`, ovr will automatically generate a unique pathname for the route based on a hash of the middleware provided.
 
@@ -69,9 +69,7 @@ const custom = new Post("/custom/:pattern", (c) => {
 Components created via helpers have the following props available:
 
 - `params` - if the route's pattern has parameters, they must be passed as a prop to properly construct the URL.
-- `search` - [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) to append to the URL.
-  - If `true` the current request's `url.search` will be used (this option can only be used in the context of a request).
-  - Other values are passed into `URLSearchParams` constructor to create the query string.
+- `search` - [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) to append to the URL, passed into `URLSearchParams` constructor to create the query string.
 - `hash` - [fragment hash](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash) appended with a `#` at the end of the URL.
 
 ```tsx
@@ -153,7 +151,7 @@ typeof page.Params; // { name: string }
 
 ### Pattern
 
-The route pattern.
+The pattern the route was created with.
 
 ```ts
 page.pattern; // "/hello/:name"

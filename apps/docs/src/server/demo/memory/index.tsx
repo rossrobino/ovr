@@ -3,7 +3,7 @@ import { Head } from "@/ui/head";
 import { Chunk, Get } from "ovr";
 
 export const memory = new Get("/demo/memory", async (c) => {
-	c.head(<Head {...memoryContent.frontmatter} />);
+	c.head.push(<Head {...memoryContent.frontmatter} />);
 
 	function* OverNineThousand() {
 		// const time = performance.now();

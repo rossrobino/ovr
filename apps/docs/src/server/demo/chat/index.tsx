@@ -8,13 +8,12 @@ async function* Poet(props: { message: string }) {
 	const { OpenAI } = await import("openai");
 	const client = new OpenAI();
 
-	const response = await client.responses.create({
+	const response = client.responses.stream({
 		input: props.message,
 		instructions: "You turn messages into poems.",
 		model: "gpt-5-nano",
 		reasoning: { effort: "minimal" },
 		text: { verbosity: "low" },
-		stream: true,
 	});
 
 	for await (const event of response) {
@@ -23,7 +22,7 @@ async function* Poet(props: { message: string }) {
 }
 
 export const chat = new Get("/demo/chat", (c) => {
-	c.head(<Head {...chatContent.frontmatter} />);
+	c.head.push(<Head {...chatContent.frontmatter} />);
 
 	return (
 		<div>

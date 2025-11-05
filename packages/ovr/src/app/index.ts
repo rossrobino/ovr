@@ -7,11 +7,12 @@ import type {
 import { Context } from "./context.js";
 import { Get } from "./helper/get.js";
 import { Post } from "./helper/post.js";
-import { AsyncLocalStorage } from "node:async_hooks";
+
+export type Next = () => Promise<void>;
 
 export type Middleware<P extends Params = Params> = (
 	context: Context<P>,
-	next: () => Promise<void>,
+	next: Next,
 ) => any;
 
 export type TrailingSlash = "always" | "never" | "ignore";
@@ -28,30 +29,22 @@ type Method =
 	| "PATCH"
 	| (string & {});
 
-type UnmatchedContext<P extends Params = Params> = Omit<Context<P>, "route"> &
-	// route might be defined
-	Partial<Pick<Context<P>, "route">>;
-
-export type ErrorHandler<P extends Params = Params> =
-	| ((context: UnmatchedContext<P>, error: unknown) => any)
-	| null;
-
-export type NotFoundHandler<P extends Params = Params> = (
-	context: UnmatchedContext<P>,
-) => any;
-
-export class App {
-	// allows for users to put other properties on the app
-	[key: string | symbol | number]: any;
-
-	/** Built tries per HTTP method. */
-	#trieMap = new Map<Method, Trie<Middleware[]>>();
-
-	/** Added routes per HTTP method. */
-	#routesMap = new Map<Method, Route<Middleware[]>[]>();
-
-	/** Global middleware. */
-	#use: Middleware[] = [];
+/** `App` configuration options */
+type AppOptions = {
+	/**
+	 * Basic
+	 * [cross-site request forgery (CSRF)](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF)
+	 * protection that checks the request's `method`, and its
+	 * [`Sec-Fetch-Site`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site)
+	 * and [`Origin`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin)
+	 * headers.
+	 *
+	 * More robust protection requires a stateful server or a database to store
+	 * [CSRF tokens](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF#csrf_tokens).
+	 *
+	 * @default true
+	 */
+	csrf?: boolean;
 
 	/**
 	 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
@@ -62,45 +55,32 @@ export class App {
 	 *
 	 * @default "never"
 	 */
-	trailingSlash: TrailingSlash = "never";
+	trailingSlash?: TrailingSlash;
+};
 
-	/**
-	 * Base HTML to inject the `head` and `page` elements into.
-	 *
-	 * @default
-	 *
-	 * ```html
-	 * <!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>
-	 * ```
-	 */
-	base =
-		'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
+export class App {
+	constructor(options?: AppOptions) {
+		const resolved: Required<AppOptions> = {
+			csrf: true,
+			trailingSlash: "never",
+		};
+		Object.assign(resolved, options);
 
-	/**
-	 * Assign a handler to run when an `Error` is thrown.
-	 *
-	 * If not set, `Error` will be thrown. This might be desired
-	 * if your server already includes error handling. Set in `config.start`
-	 * to handle errors globally.
-	 *
-	 * @default null
-	 */
-	error: ErrorHandler = null;
+		if (resolved.csrf === true) this.#use.push(App.#csrf);
 
-	/**
-	 * Middleware to run when no `body` or `status` has been set on the `context`.
-	 * Set to a new function to override the default.
-	 *
-	 * @default
-	 *
-	 * ```ts
-	 * (c) => c.html("Not found", 404)
-	 * ```
-	 */
-	notFound: NotFoundHandler = (c) => c.html("Not found", 404);
+		if (resolved.trailingSlash !== "ignore") {
+			this.#use.push(App.#trailingSlash(resolved.trailingSlash));
+		}
+	}
 
-	/** Stores context per request. */
-	static storage = new AsyncLocalStorage<Context>();
+	/** Built tries per HTTP method. */
+	#trieMap = new Map<Method, Trie<Middleware[]>>();
+
+	/** Added routes per HTTP method. */
+	#routesMap = new Map<Method, Route<Middleware[]>[]>();
+
+	/** Global middleware. */
+	#use: Middleware[] = [];
 
 	/**
 	 * @param helpers `Helper` to add to `App`
@@ -231,70 +211,78 @@ export class App {
 	}
 
 	/**
-	 * @param req [`Request` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
-	 * @returns [`Response` Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+	 * Request a resource from the application.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch)
+	 *
+	 * @param resource [Resource](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch#resource) to fetch
+	 * @param options [Options](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch#options) to apply to the request
+	 * @returns Promise that resolves to the [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) to the request
 	 */
-	fetch = (req: Request): Promise<Response> => {
-		const c = new Context(
-			req,
-			new URL(req.url),
-			this.trailingSlash,
-			this.base,
-			this.error,
-			this.notFound,
-		);
+	fetch = async (
+		resource: RequestInfo | URL,
+		options?: RequestInit,
+	): Promise<Response> => {
+		const c = new Context(new Request(resource, options));
 
-		return App.storage.run(c, async () => {
-			try {
-				// check to see if the method is already built
-				let trie = this.#trieMap.get(req.method);
+		// see if the method is already built
+		let trie = this.#trieMap.get(c.req.method);
 
-				if (!trie) {
-					// check if there are any routes with the method
-					const routes = this.#routesMap.get(req.method);
+		if (!trie) {
+			// check if there are any routes with the method
+			const routes = this.#routesMap.get(c.req.method);
 
-					if (routes) {
-						// build trie
-						trie = new Trie<Middleware[]>();
-						for (const route of routes) trie.add(route);
-						this.#trieMap.set(req.method, trie);
-					}
-				}
-
-				if (trie) {
-					const match = trie.find(c.url.pathname);
-
-					if (match) {
-						Object.assign(c, match);
-
-						const middleware = [...this.#use, ...match.route.store];
-
-						// compose
-						let i = -1;
-						const dispatch = async (current: number): Promise<void> => {
-							if (current <= i) throw new Error("next() called multiple times");
-							i = current;
-
-							if (middleware[current]) {
-								const result: unknown = await middleware[current](c, () =>
-									dispatch(current + 1),
-								);
-
-								if (result instanceof Response) c.res(result.body, result);
-								else if (result instanceof ReadableStream) c.body = result;
-								else if (result != null) c.page(result);
-							}
-						};
-
-						await dispatch(0);
-					}
-				}
-			} catch (error) {
-				if (c.error) c.error(c, error);
-				else throw error;
+			if (routes) {
+				// build trie
+				trie = new Trie<Middleware[]>();
+				for (const route of routes) trie.add(route);
+				this.#trieMap.set(c.req.method, trie);
 			}
+		}
 
-			return c.build();
-		});
+		if (trie) {
+			const match = trie.find(c.url.pathname);
+
+			if (match) {
+				Object.assign(c, match);
+				return c.build(this.#use.concat(match.route.store));
+			}
+		}
+
+		// no match, just run global middleware
+		return c.build(this.#use);
 	};
+
+	/** Basic CSRF middleware. */
+	static async #csrf(c: Context, next: Next) {
+		if (
+			c.req.method === "GET" ||
+			c.req.method === "HEAD" ||
+			c.req.headers.get("sec-fetch-site") === "same-origin" ||
+			c.req.headers.get("origin") === c.url.origin
+		) {
+			return next();
+		}
+
+		c.text("Forbidden", 403);
+	}
+
+	/** @returns Trailing slash middleware */
+	static #trailingSlash(mode: TrailingSlash) {
+		return async (c: Context, next: Next) => {
+			await next();
+
+			if (c.status && c.status !== 404) return;
+
+			const last = c.url.pathname.at(-1);
+
+			if (mode === "always" && last !== "/") {
+				c.url.pathname += "/";
+				c.redirect(c.url, 308);
+			} else if (mode === "never" && c.url.pathname !== "/" && last === "/") {
+				c.url.pathname = c.url.pathname.slice(0, -1);
+				c.redirect(c.url, 308);
+			}
+		};
+	}
 }

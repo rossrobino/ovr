@@ -10,8 +10,6 @@ import { Get, Post } from "ovr";
 import * as z from "zod";
 
 export const page = new Get("/demo/form", (c) => {
-	c.head(<title>Form</title>);
-
 	return (
 		<post.Form>
 			<div>
@@ -29,6 +27,6 @@ export const post = new Post(async (c) => {
 	const name = z.string().parse(data.get("name"));
 	name; // text input string
 
-	return c.redirect("/", 303);
+	c.redirect("/", 303);
 });
 ```

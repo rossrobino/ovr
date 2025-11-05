@@ -2,20 +2,18 @@ import * as demo from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as home from "@/server/home";
 import { Layout } from "@/server/layout";
+import { FavIcon } from "@/ui/favicon";
+import { FontPreload } from "@/ui/font-preload";
 import { Head } from "@/ui/head";
-import { chunk, html } from "client:page";
-import { App, csrf } from "ovr";
+import { html } from "client:page";
+import { App, type Middleware } from "ovr";
 
 const app = new App();
 
-app.base = html;
+const notFound: Middleware = (c) => {
+	c.head.push(<Head title="Not Found" description="Content not found" />);
 
-app.notFound = (c) => {
-	c.layout(Layout);
-
-	c.head(<Head title="Not Found" description="Content not found" />);
-
-	return c.page(
+	c.page(
 		<>
 			<h1>Not Found</h1>
 
@@ -35,44 +33,17 @@ app.notFound = (c) => {
 	);
 };
 
-const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
-
-app.prerender = [
-	home.page.pathname(),
-	docs.llms.pathname(),
-	...docPrerender,
-	...docPrerender.map((p) => p + ".md"),
-];
-
-app.use(
-	(c, next) => {
-		// preload font
-		c.head(
-			chunk.src.assets.map((path) => (
-				<link
-					rel="preload"
-					href={`/${path}`}
-					as="font"
-					type="font/woff2"
-					crossorigin
-				/>
-			)),
-		);
-
-		c.layout(Layout);
-
-		return next();
-	},
-	csrf({
-		origin: import.meta.env.DEV
-			? "http://localhost:5173"
-			: "https://ovr.robino.dev",
-	}),
-);
+app.use(async (c, next) => {
+	c.base = html;
+	c.layouts.push(Layout(c));
+	c.head.push(<FontPreload />, <FavIcon />);
+	c.notFound = notFound;
+	await next();
+});
 
 if (import.meta.env.DEV) {
 	app.get("/backpressure", async (c) => {
-		// need to make each chunk very large to observe pull stop
+		// need to make each chunk is very large to observe pull stop
 		// log something in the Context.page => pull method to see
 		const res = await fetch("http://localhost:5173/demo/memory");
 
@@ -87,10 +58,20 @@ if (import.meta.env.DEV) {
 			if (done) break;
 		}
 
-		return c.res("done");
+		c.res("done");
 	});
 }
 
 app.add(home, docs.page, docs.llms, demo);
 
-export default app;
+const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
+
+export default {
+	fetch: app.fetch,
+	prerender: [
+		home.page.pathname(),
+		docs.llms.pathname(),
+		...docPrerender,
+		...docPrerender.map((p) => p + ".md"),
+	],
+};

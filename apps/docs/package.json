@@ -22,11 +22,11 @@
 		"zod": "^4.1.12"
 	},
 	"devDependencies": {
-		"@domcojs/vercel": "^3.1.0",
+		"@domcojs/vercel": "^3.1.1",
 		"@iconify-json/lucide": "^1.2.71",
 		"@iconify/tailwind4": "^1.0.6",
 		"@tailwindcss/vite": "^4.1.16",
-		"domco": "^4.5.1",
+		"domco": "^4.5.2",
 		"tailwindcss": "^4.1.16",
 		"vite": "^7.1.12"
 	}

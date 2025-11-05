@@ -3,7 +3,7 @@ import { Head } from "@/ui/head";
 import { Chunk, Get } from "ovr";
 
 export const page = new Get("/", (c) => {
-	c.head(<Head {...result.frontmatter} />);
+	c.head.push(<Head {...result.frontmatter} />);
 
 	return (
 		<>
@@ -25,7 +25,7 @@ export const page = new Get("/", (c) => {
 				data-no-prefetch
 				class="bg-foreground block rounded-md p-5 no-underline transition-shadow hover:shadow-sm"
 			>
-				<h2 class="text-background mt-0 mb-2 text-2xl">Demo</h2>
+				<h2 class="text-background mt-0 mb-1 text-2xl">Demo</h2>
 				<p class="text-muted mb-0 font-light">
 					Check out the demos to see ovr in action.
 				</p>

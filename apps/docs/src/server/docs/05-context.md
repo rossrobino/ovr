@@ -14,7 +14,7 @@ app.get("/api/:id", (c) => {
 	c.req; // original `Request`
 	c.url; // parsed web `URL`
 	c.params; // type-safe route parameters { id: "123" }
-	c.route; // matched `Route` (contains `pattern`, `store`)
+	c.route; // matched `Route` (contains `pattern`, `store`) | null
 });
 ```
 
@@ -22,9 +22,7 @@ app.get("/api/:id", (c) => {
 
 The context contains methods to build your final `Response`.
 
-### Content types
-
-Easily set the response with common [content type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type) headers.
+Easily set the response with common [content type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Type) headers or create a redirect response.
 
 ```tsx
 app.get("/api/:id", (c) => {
@@ -36,38 +34,89 @@ app.get("/api/:id", (c) => {
 });
 ```
 
-### Page builders
+## Page builders
 
-There are also JSX page building methods which leverage streaming JSX.
+There are also JSX page building properties which leverage streaming JSX.
 
 ```tsx
 app.get("/api/:id", (c) => {
-	// inject elements into <head>
-	c.head(<meta name="description" content="..." />);
+	// inject elements into <head> of `Context.base`
+	c.head.push(<meta name="description" content="..." />);
 
 	// wrap page content with layout components
-	c.layout(Layout);
+	c.layouts.push(RootLayout, PageLayout);
 
 	// stream JSX page (same as returning JSX)
 	c.page(<UserProfilePage userId={c.params.id} />);
 });
 ```
 
+> Use `c.page` instead of returning JSX from middleware if you need to `await next()` afterwards or set a custom status on the HTML response.
+
+### Layouts
+
+To use the same layout for all pages, create a middleware that sets the layout and apply it globally with [`App.use`](/03-app#global-middleware).
+
+Since `Context.layouts` expects layout _components_, if you need to pass other props besides `children` to a layout, create a function that returns the layout component.
+
+```tsx
+// layout.tsx
+import type { Context, JSX } from "ovr";
+
+export const Layout = (c: Context) => (props: { children: JSX.Element }) => {
+	return (
+		<>
+			<header>{c.url.pathname}</header>
+			<main>{props.children}</main>
+		</>
+	);
+};
+```
+
+```tsx
+// app.tsx
+import { Layout } from "./layout.tsx";
+
+// ...
+
+app.use((c, next) => {
+	c.layouts.push(Layout(c));
+	return next();
+});
+```
+
+### Not found
+
+Customize the `notFound` handler by reassigning `Context.notFound`.
+
+```ts
+c.notFound = (c) => {
+	c.text("Not found", 404);
+	c.headers.set("cache-control", "no-cache");
+};
+```
+
+### Base HTML
+
+Change the base HTML to inject elements into with the [`Context.head` and `Context.page`](/05-context#page-builders) methods.
+
+```ts
+c.base = ""; // defaults to empty string (send HTML partials)
+```
+
 ## Utilities
 
 ### Memo
 
-Memoize a function to dedupe async operations and cache the results. See [memoization](/07-memo) for more details.
+[Memoize](/07-memo) a function to dedupe async operations and cache the results.
 
 ```tsx
-app.get("/api/:id", (c) => {
-	c.memo(fn);
-});
+c.memo.use(fn);
 ```
 
 ### Entity tag
 
-Generates an [entity tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag) from a hash of the string provided. If the tag matches, the response will be set to [`304: Not Modified`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304) and the funciton will return `true`.
+Generates an [entity tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag) from a hash of the string provided. If the tag matches, the response will be set to [`304: Not Modified`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304) and the function will return `true`.
 
 ```tsx
 app.get("/api/:id", (c) => {
@@ -80,18 +129,6 @@ app.get("/api/:id", (c) => {
 		return;
 	}
 
-	return c.html(html);
+	c.html(html);
 });
-```
-
-## Get
-
-Context can be acquired from anywhere within the scope of a request handler with the `Context.get` method. `get` uses [`AsyncLocalStorage`](https://blog.robino.dev/posts/async-local-storage) to accomplish this and ensure the correct context is only accessed in the scope of the current request. This prevents you from having to prop drill the context to each component from the handler.
-
-```tsx
-import { Context } from "ovr";
-
-function Component() {
-	const c = Context.get(); // current request context
-}
 ```

@@ -2,8 +2,6 @@ import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
 import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
 import { merge } from "./merge-async-generators.js";
-import { setImmediate } from "node:timers/promises";
-import { types } from "node:util";
 
 /** ovr JSX namespace */
 export namespace JSX {
@@ -91,6 +89,8 @@ export async function* jsx<P extends Props = Props>(
 		// otherwise, don't include the attribute
 	}
 
+	if (tag === "html") yield Chunk.safe("<!doctype html>");
+
 	yield Chunk.safe(`<${tag}${attributes}>`);
 
 	if (voidElements.has(tag)) return;
@@ -142,22 +142,9 @@ export async function* toGenerator(
 
 		if (Symbol.iterator in element) {
 			// sync iterable
-			if (types.isGeneratorObject(element)) {
+			if ("next" in element) {
 				// sync generator - lazily resolve, avoids loading all in memory
-				const ms = 8;
-				let deadline = performance.now() + ms;
-
-				for (const children of element) {
-					yield* toGenerator(children);
-
-					if (performance.now() > deadline) {
-						// yields back to the event loop if deadline is reached
-						// to send chunks or check if the request has been cancelled
-						await setImmediate();
-						deadline = performance.now() + ms;
-					}
-				}
-
+				for (const children of element) yield* toGenerator(children);
 				return;
 			}
 
@@ -231,26 +218,41 @@ const encoder = new TextEncoder();
 export const toStream = (element: JSX.Element) => {
 	const gen = toGenerator(element);
 
-	return new ReadableStream<Uint8Array>({
-		async pull(c) {
-			const result = await gen.next();
+	return new ReadableStream<Uint8Array>(
+		{
+			// enables zero-copy transfer from underlying source when queue is empty
+			// https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Using_readable_byte_streams#overview
+			type: "bytes",
+			// `pull` ensures backpressure and cancelled requests stop the generator
+			async pull(c) {
+				const result = await gen.next();
 
-			if (result.done) {
-				c.close();
+				if (result.done) {
+					c.close();
+					gen.return();
+					return;
+				}
+
+				c.enqueue(
+					// need to encode for Node (ex: during prerendering) or it will error
+					// doesn't seem to be needed for browsers
+					// faster than piping through a `TextEncoderStream`
+					encoder.encode(result.value.value),
+				);
+			},
+			cancel() {
 				gen.return();
-				return;
-			}
-
-			c.enqueue(
-				// need to encode for Node JS (ex: during prerendering) or it will error
-				// doesn't seem to be needed for browsers
-				// faster than piping through a `TextEncoderStream`
-				encoder.encode(result.value.value),
-			);
+			},
 		},
-
-		cancel() {
-			gen.return();
+		{
+			// `highWaterMark` defaults to 1
+			// https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream#highwatermark
+			// setting this ensures at least a small buffer is maintained if the
+			// underlying server does not have its own high water mark set
+			// https://blog.cloudflare.com/unpacking-cloudflare-workers-cpu-performance-benchmarks/#inefficient-streams-adapters
+			// in Node, the default is 16kb, so this stacks another 2kb in front
+			// https://nodejs.org/api/http.html#outgoingmessagewritablehighwatermark
+			highWaterMark: 2048,
 		},
-	});
+	);
 };

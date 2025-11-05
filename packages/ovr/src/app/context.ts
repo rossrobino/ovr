@@ -1,41 +1,33 @@
 import { Chunk } from "../jsx/chunk/index.js";
 import { type JSX, toStream } from "../jsx/index.js";
-import type { Params, Route } from "../trie/index.js";
+import { type Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
-import {
-	App,
-	type ErrorHandler,
-	type Middleware,
-	type NotFoundHandler,
-	type TrailingSlash,
-} from "./index.js";
+import { type Middleware } from "./index.js";
 import { Memo } from "./memo/index.js";
 
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
 
 class TagNotFound extends Error {
 	override name = "TagNotFound";
+
 	constructor(tag: string) {
 		super(`No closing ${tag} tag found`);
 	}
 }
 
-class ResponseFinalized extends Error {
-	override name = "ResponseFinalized";
-	constructor(property: string) {
-		super(
-			`Cannot set \`${property}\` after the \`Response\` has been finalized. ` +
-				`This can occur if \`${property}\` is set within a component since ` +
-				"components are evaluated during streaming.",
-		);
-	}
-}
-
 export class Context<P extends Params = Params> {
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request) */
+	/**
+	 * Incoming `Request` to the server.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
+	 */
 	req: Request;
 
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URL) */
+	/**
+	 * Parsed `URL` created from `req.url`.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URL)
+	 */
 	url: URL;
 
 	/**
@@ -46,92 +38,75 @@ export class Context<P extends Params = Params> {
 	 *
 	 * @example { slug: "my-post" }
 	 */
-	params!: P; // set after match
+	params: P = {} as P; // set after match
 
-	/** The matched `Route` instance. */
-	route!: Route<Middleware<P>[]>; // set after match
+	/** Matched `Route` instance. */
+	route: Route<Middleware<P>[]> | null = null;
 
-	#body: BodyInit | null = null;
+	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
+	body: BodyInit | null = null;
 
-	#status?: number;
+	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) */
+	status?: number;
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers) */
 	headers = new Headers();
 
-	#layouts: Layout[] = [];
+	/** `layouts` for the `Page` to be passed into before being injected into the `<body>` */
+	layouts: Layout[] = [];
 
-	#headElements: JSX.Element[] = [];
+	/** `JSX.Element`(s) to add to the head */
+	head: JSX.Element[] = [];
 
-	#trailingSlash: TrailingSlash;
+	/**
+	 * Middleware to run when no `body` or `status` has been set on the `context`.
+	 * Set to a new function to override the default.
+	 *
+	 * @default
+	 *
+	 * ```ts
+	 * (c) => {
+	 * 	c.text("Not found", 404);
+	 * 	c.headers.set("cache-control", "no-cache");
+	 * }
+	 * ```
+	 */
+	notFound: Middleware<P> = (c) => {
+		c.text("Not found", 404);
+		c.headers.set("cache-control", "no-cache");
+	};
 
-	#base: string;
-
-	/** Passed from `app.error` */
-	error: ErrorHandler<P>;
-
-	/** Passed from `app.notFound` */
-	notFound: NotFoundHandler<P>;
+	/**
+	 * Base HTML to inject the `head` and `page` elements into.
+	 *
+	 * If left empty, components will be returned as partials.
+	 *
+	 * @default ""
+	 */
+	base = "";
 
 	/** `Memo` unique to the current `Request` context */
-	#memo = new Memo();
-
-	memo = this.#memo.use;
-
-	/** Check if the `Response` has been built already */
-	#finalized = false;
+	memo = new Memo();
 
 	static readonly #contentType = "content-type";
 	static readonly #headClose = "</head>";
 	static readonly #bodyClose = "</body>";
 
-	constructor(
-		req: Request,
-		url: URL,
-		trailingSlash: TrailingSlash,
-		base: string,
-		error: ErrorHandler<P>,
-		notFound: NotFoundHandler<P>,
-	) {
+	/**
+	 * Creates a new `Context` with the current `Request`.
+	 *
+	 * @param req Request
+	 */
+	constructor(req: Request) {
 		this.req = req;
-		this.url = url;
-		this.#trailingSlash = trailingSlash;
-		this.#base = base;
-		this.error = error;
-		this.notFound = notFound;
-	}
-
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) */
-	get status() {
-		return this.#status;
-	}
-	set status(status) {
-		if (this.#finalized) throw new ResponseFinalized("status");
-		this.#status = status;
-	}
-
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
-	get body() {
-		return this.#body;
-	}
-	set body(body) {
-		if (this.#finalized) throw new ResponseFinalized("body");
-		this.#body = body;
-	}
-
-	/** Passed from `app.base` */
-	get base() {
-		return this.#base;
-	}
-	set base(base) {
-		if (this.#finalized) throw new ResponseFinalized("base");
-		this.#base = base;
+		this.url = new URL(req.url);
 	}
 
 	/**
 	 * Mirrors `new Response()` constructor, set values with one function.
 	 *
 	 * @param body Response BodyInit
-	 * @param init Enhanced ResponseInit
+	 * @param init ResponseInit
 	 */
 	res(
 		body: BodyInit | null,
@@ -209,24 +184,7 @@ export class Context<P extends Params = Params> {
 	 * - [308 Permanent Redirect](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/308)
 	 */
 	redirect(location: string | URL, status: 301 | 302 | 303 | 307 | 308 = 302) {
-		this.headers.set("location", location.toString());
-		this.status = status;
-	}
-
-	/**
-	 * @param Element `JSX.Element` to add to the head
-	 */
-	head(...Element: JSX.Element[]) {
-		if (this.#finalized) throw new ResponseFinalized("head");
-		this.#headElements.push(...Element);
-	}
-
-	/**
-	 * @param Layout `Layout`(s) for the `Page` to be passed into before being injected into the `<body>`
-	 */
-	layout(...Layout: Layout[]) {
-		if (this.#finalized) throw new ResponseFinalized("layout");
-		this.#layouts.push(...Layout);
+		this.res(null, { status, headers: { location: location.toString() } });
 	}
 
 	/**
@@ -236,18 +194,17 @@ export class Context<P extends Params = Params> {
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
 	page(Page: JSX.Element, status?: number) {
-		for (let i = this.#layouts.length - 1; i >= 0; i--) {
-			Page = this.#layouts[i]!({ children: Page });
+		for (let i = this.layouts.length - 1; i >= 0; i--) {
+			// add layouts around the page in reverse order (1st is the root layout)
+			Page = this.layouts[i]!({ children: Page });
 		}
-
-		let stream: ReadableStream<Uint8Array>;
 
 		if (this.base) {
 			// inject into base
 			const elements: JSX.Element[] = this.base.split(Context.#headClose);
 			if (!elements[1]) throw new TagNotFound(Context.#headClose);
 
-			elements.splice(1, 0, this.#headElements, Context.#headClose);
+			elements.splice(1, 0, this.head, Context.#headClose);
 
 			const bodyParts = (elements[3] as string).split(Context.#bodyClose);
 			if (!bodyParts[1]) throw new TagNotFound(Context.#bodyClose);
@@ -263,15 +220,17 @@ export class Context<P extends Params = Params> {
 			elements[3] = bodyParts[0];
 			elements.push(Page, Context.#bodyClose + bodyParts[1]);
 
-			stream = toStream(
-				elements.map((el) => (typeof el === "string" ? Chunk.safe(el) : el)),
+			return this.html(
+				toStream(
+					elements.map((el) => (typeof el === "string" ? Chunk.safe(el) : el)),
+				),
+				status,
 			);
-		} else {
-			// HTML partial - just use the layouts + page
-			stream = toStream(Page);
 		}
 
-		this.html(stream, status);
+		// HTML partial - just use the layouts + page
+		// head elements are ignored if no base is set
+		return this.html(toStream(Page), status);
 	}
 
 	/**
@@ -299,67 +258,46 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * @returns the constructed `Response`
+	 * Modifies the context based on the the return value of middleware.
+	 *
+	 * @param value value returned from middleware
 	 */
-	build() {
-		if (
-			(!this.status || this.status === 404) &&
-			this.#trailingSlash !== "ignore"
-		) {
-			const last = this.url.pathname.at(-1);
-
-			if (this.#trailingSlash === "always" && last !== "/") {
-				this.url.pathname += "/";
-				this.redirect(this.url, 308);
-			} else if (
-				this.#trailingSlash === "never" &&
-				this.url.pathname !== "/" &&
-				last === "/"
-			) {
-				this.url.pathname = this.url.pathname.slice(0, -1);
-				this.redirect(this.url, 308);
-			}
+	#resolveReturn(value: unknown) {
+		if (value instanceof Response) {
+			this.res(value.body, value);
+		} else if (value instanceof ReadableStream) {
+			this.body = value;
+		} else if (value != null) {
+			// nullish are not used so `void` will not render empty page
+			this.page(value);
 		}
-
-		if (!this.body && !this.status) this.notFound(this);
-
-		this.#finalized = true;
-
-		return new Response(this.body, this);
 	}
 
 	/**
-	 * Call within the scope of a handler to get the current context.
+	 * Dispatches the stack of `middleware` provided.
 	 *
-	 * @returns Request context
-	 *
-	 * @example
-	 *
-	 * ```ts
-	 * import { Context } from "ovr";
-	 *
-	 * const app = new Router();
-	 *
-	 * const fn = () => {
-	 * 	const c = Context.get();
-	 * 	// ...
-	 * }
-	 *
-	 * app.get("/", () => {
-	 * 	fn(); // OK
-	 * });
-	 *
-	 * fn() // ReferenceError - outside AsyncLocalStorage scope
-	 * ```
+	 * @param middleware stack to run
+	 * @param i current middleware index (default `0`)
 	 */
-	static get() {
-		const c = App.storage.getStore();
+	async #run(middleware: Middleware<P>[], i = 0) {
+		if (!middleware[i]) return;
 
-		if (!c)
-			throw new ReferenceError(
-				"Context can only be obtained within a handler.",
-			);
+		this.#resolveReturn(
+			await middleware[i](this, () => this.#run(middleware, i + 1)),
+		);
+	}
 
-		return c;
+	/**
+	 * Composes a stack of `middleware` into a `Response`.
+	 *
+	 * @param middleware stack to compose
+	 * @returns constructed `Response`
+	 */
+	async build(middleware: Middleware<P>[]) {
+		await this.#run(middleware);
+
+		if (!this.body && !this.status) this.notFound(this, Promise.resolve);
+
+		return new Response(this.body, this);
 	}
 }

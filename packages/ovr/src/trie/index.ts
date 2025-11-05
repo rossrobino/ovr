@@ -7,6 +7,10 @@ export class Route<Store> {
 	/** Store returned when route is found */
 	store: Store;
 
+	/**
+	 * @param pattern route pattern
+	 * @param store value to store in the patterns final node
+	 */
 	constructor(pattern: string, store: Store) {
 		if (pattern[0] !== "/") {
 			throw new Error(
@@ -49,6 +53,9 @@ export class Trie<Store> {
 
 	/** Matched wildcard route */
 	wildcardRoute: Route<Store> | null = null;
+
+	static #paramMatch = /:.+?(?=\/|$)/g;
+	static #paramSplit = /:.+?(?=\/|$)/;
 
 	/**
 	 * @param segment pattern segment
@@ -142,8 +149,8 @@ export class Trie<Store> {
 		const endsWithWildcard = pattern.endsWith("*");
 		if (endsWithWildcard) pattern = pattern.slice(0, -1);
 
-		const paramSegments = pattern.match(/:.+?(?=\/|$)/g) ?? []; // match the params
-		const staticSegments = pattern.split(/:.+?(?=\/|$)/); // split on the params
+		const paramSegments = pattern.match(Trie.#paramMatch) ?? [];
+		const staticSegments = pattern.split(Trie.#paramSplit);
 
 		// if the last segment is a param without a trailing slash
 		// then there will be an empty string, remove

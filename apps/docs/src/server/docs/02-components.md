@@ -3,10 +3,7 @@ title: Components
 description: Async generator JSX
 ---
 
-While components in ovr are authored like components in frameworks like [React](https://react.dev/), there two main distinctions between ovr and other frameworks:
-
-1. ovr only runs on the _server_, there is no client runtime.
-2. JSX evaluates to an `AsyncGenerator` that yields escaped `Chunk`s of HTML.
+While components in ovr are authored like components in frameworks like [React](https://react.dev/), instead of creating UI elements, JSX evaluates to an `AsyncGenerator` that yields escaped `Chunk`s of HTML.
 
 ## Basic
 
@@ -54,9 +51,9 @@ async function Data() {
 }
 ```
 
-## Generators
+## Generator functions
 
-Components can also be generators for more fine grained control and [memory optimization](/demo/memory). When utilizing generators `yield` values instead of `return`.
+Components can also be generator functions for more fine grained control and [memory optimization](/demo/memory). When utilizing generators `yield` values instead of `return`.
 
 ```tsx
 async function* Generator() {
@@ -111,7 +108,7 @@ function* DataTypes() {
 
 ## Raw HTML
 
-To render HTML directly without escaping, create a new `Chunk` with the second argument `safe` set to `true`.
+To render HTML directly without escaping, use the `Chunk.safe` method.
 
 ```tsx
 import { Chunk } from "ovr";
@@ -119,30 +116,24 @@ import { Chunk } from "ovr";
 const html = "<p>Safe to render</p>";
 
 function Component() {
-	return <div>{new Chunk(html, true)}</div>;
+	return <div>{Chunk.safe(html)}</div>;
 }
-```
-
-Or use the `Chunk.safe` helper function:
-
-```tsx
-<div>{Chunk.safe(html)}</div>
 ```
 
 ## Running components
 
-To evaluate components (for example, if you aren't using `App` or need to call them separately), you can use these functions.
+To evaluate components (for example, if you aren't using [`App`](/03-app) or need to call them separately), you can use these functions.
 
 ### toGenerator
 
 Convert any `JSX.Element` into `AsyncGenerator<Chunk>` with `toGenerator`.
 
 ```tsx
-import { toGenerator } from "ovr";
+import * as ovr from "ovr";
 
 const Component = () => <p>element</p>;
 
-const gen = toGenerator(Component);
+const gen = ovr.toGenerator(<Component />);
 
 for await (const chunk of gen) {
 	// ...
@@ -154,14 +145,14 @@ for await (const chunk of gen) {
 Turn a `JSX.Element` into a `ReadableStream<Uint8Array>`, this pipes the result of `toGenerator` into a `ReadableStream`.
 
 ```tsx
-import { toStream } from "ovr";
+import * as ovr from "ovr";
 
 const Component = () => <p>element</p>;
 
-const stream = toStream(Component);
+const stream = ovr.toStream(<Component />);
 
 const response = new Response(stream, {
-	"Content-Type": "text/html; charset=utf-8",
+	"content-type": "text/html; charset=utf-8",
 });
 ```
 
@@ -170,9 +161,9 @@ const response = new Response(stream, {
 Convert any `JSX.Element` into a `string` of HTML with `toString`. This runs `toGenerator` joins the results into a single string.
 
 ```tsx
-import { toString } from "ovr";
+import * as ovr from "ovr";
 
 const Component = () => <p>element</p>;
 
-const str = await toString(Component);
+const str = await ovr.toString(<Component />);
 ```
