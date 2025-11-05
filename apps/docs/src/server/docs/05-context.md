@@ -51,6 +51,8 @@ app.get("/api/:id", (c) => {
 });
 ```
 
+> Use `c.page` instead of returning JSX from middleware if you need to `await next()` afterwards or set a custom status on the HTML response.
+
 ### Layouts
 
 To use the same layout for all pages, create a middleware that sets the layout and apply it globally with [`App.use`](/03-app#global-middleware).

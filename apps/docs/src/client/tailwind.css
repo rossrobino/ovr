@@ -150,9 +150,27 @@
 		@apply leading-6.5;
 	}
 
+	blockquote {
+		border: var(--border);
+		border-radius: var(--border-radius);
+		background-color: var(--color-muted);
+		padding: var(--size-3);
+		font-style: normal;
+		@apply text-sm;
+
+		code {
+			background-color: var(--color-background);
+			@apply text-xs;
+		}
+
+		p {
+			margin: 0;
+		}
+	}
+
 	p code,
 	li code {
-		@apply border-secondary border shadow-xs;
+		@apply border-secondary border text-nowrap shadow-xs;
 	}
 
 	h1,

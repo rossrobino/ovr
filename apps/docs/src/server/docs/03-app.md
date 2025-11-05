@@ -11,7 +11,7 @@ import { App } from "ovr";
 const app = new App();
 ```
 
-The `App` API is inspired by and works similar to frameworks such as [Hono](https://hono.dev/) and [Express](https://expressjs.com/).
+The `App` API is inspired by and works similar to frameworks such as [Express](http://expressjs.com), [Koa](https://koajs.com), and [Hono](https://hono.dev/).
 
 ## Configuration
 

@@ -133,7 +133,7 @@ import * as ovr from "ovr";
 
 const Component = () => <p>element</p>;
 
-const gen = ovr.toGenerator(Component);
+const gen = ovr.toGenerator(<Component />);
 
 for await (const chunk of gen) {
 	// ...
@@ -149,7 +149,7 @@ import * as ovr from "ovr";
 
 const Component = () => <p>element</p>;
 
-const stream = ovr.toStream(Component);
+const stream = ovr.toStream(<Component />);
 
 const response = new Response(stream, {
 	"content-type": "text/html; charset=utf-8",
@@ -165,5 +165,5 @@ import * as ovr from "ovr";
 
 const Component = () => <p>element</p>;
 
-const str = await ovr.toString(Component);
+const str = await ovr.toString(<Component />);
 ```

@@ -2,24 +2,13 @@ import * as demo from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as home from "@/server/home";
 import { Layout } from "@/server/layout";
+import { FavIcon } from "@/ui/favicon";
+import { FontPreload } from "@/ui/font-preload";
 import { Head } from "@/ui/head";
-import { chunk, html } from "client:page";
+import { html } from "client:page";
 import { App, type Middleware } from "ovr";
 
 const app = new App();
-
-const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
-
-// preload font
-const preload = chunk.src.assets.map((path) => (
-	<link
-		rel="preload"
-		href={`/${path}`}
-		as="font"
-		type="font/woff2"
-		crossorigin
-	/>
-));
 
 const notFound: Middleware = (c) => {
 	c.head.push(<Head title="Not Found" description="Content not found" />);
@@ -47,7 +36,7 @@ const notFound: Middleware = (c) => {
 app.use(async (c, next) => {
 	c.base = html;
 	c.layouts.push(Layout(c));
-	c.head.push(preload);
+	c.head.push(<FontPreload />, <FavIcon />);
 	c.notFound = notFound;
 	await next();
 });
@@ -74,6 +63,8 @@ if (import.meta.env.DEV) {
 }
 
 app.add(home, docs.page, docs.llms, demo);
+
+const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
 
 export default {
 	fetch: app.fetch,

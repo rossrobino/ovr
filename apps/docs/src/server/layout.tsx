@@ -1,8 +1,10 @@
 import * as demos from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as homeResult from "@/server/home/index.md";
+import { GitHub } from "@/ui/github";
 import { Popover } from "@/ui/popover";
 import { SkipLink } from "@/ui/skip-link";
+import { Version } from "@/ui/version";
 import { clsx } from "clsx";
 import { type Context, type JSX } from "ovr";
 
@@ -96,7 +98,7 @@ const TOC = ({ c }: { c: Context }) => {
 
 const HomeLink = () => {
 	return (
-		<a href="/" class="pl-2 text-lg font-bold no-underline">
+		<a href="/" class="pl-2 font-bold no-underline">
 			ovr
 		</a>
 	);
@@ -150,16 +152,12 @@ const NavList = ({ c }: { c: Context }) => {
 
 			<hr />
 
-			<ul>
+			<ul class="flex gap-1">
 				<li>
-					<a
-						href="https://github.com/rossrobino/ovr"
-						target="_blank"
-						class="button ghost icon"
-						aria-label="GitHub"
-					>
-						<span class="icon-[lucide--github]"></span>
-					</a>
+					<GitHub />
+				</li>
+				<li>
+					<Version />
 				</li>
 			</ul>
 		</>
