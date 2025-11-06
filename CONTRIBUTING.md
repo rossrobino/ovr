@@ -16,7 +16,3 @@ ovr is open source with the MIT license. Feel free to create an issue on GitHub 
   - Classes and types are PascalCase
   - File names are kebab-case
 - Prefer arrow functions over the `function` keyword.
-- Web standard APIs are exposed publicly, not Node.
-  - For example, the `Request` is exposed within `Context` as the web standard request not the Node version.
-- Node APIs can be used privately if needed they are supported across Deno, Bun, and Cloudflare.
-  - For example, `setImmediate` is faster than `setTimeout` and is used internally.
