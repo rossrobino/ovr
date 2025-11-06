@@ -39,7 +39,7 @@ ovr uses entirely standard JavaScript APIs, so it can run anywhere.
 The ovr `App` server can be used in any Fetch API compatible runtime via [`App.fetch`](/03-app#fetch). Here are a few ways to create a Fetch based HTTP server in various JavaScript runtimes.
 
 - [domco](https://domco.robino.dev) - run `npm create domco` and select `ovr` framework
-- [Nitro](https://nitro.build/)
+- [Nitro](https://nitro.build/) - [example repo](https://github.com/rossrobino/nitro-ovr)
 - [Cloudflare Vite Plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/) + [vite-ssr-components](https://github.com/yusukebe/vite-ssr-components)
 - [Node + srvx](https://srvx.h3.dev/)
 - [Bun HTTP server](https://bun.sh/docs/api/http)
