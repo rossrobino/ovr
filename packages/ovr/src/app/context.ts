@@ -3,7 +3,6 @@ import { type JSX, toStream } from "../jsx/index.js";
 import { type Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import { type Middleware } from "./index.js";
-import { Memo } from "./memo/index.js";
 
 type Layout = (props: { children: JSX.Element }) => JSX.Element;
 
@@ -84,9 +83,6 @@ export class Context<P extends Params = Params> {
 	 * @default ""
 	 */
 	base = "";
-
-	/** `Memo` unique to the current `Request` context */
-	memo = new Memo();
 
 	static readonly #contentType = "content-type";
 	static readonly #headClose = "</head>";

@@ -1,6 +1,7 @@
 export class Chunk {
 	static #attr = /[&"<]/g;
 	static #content = /[&<]/g;
+	static #map = { "&": "&amp;", '"': "&quot;", "<": "&lt;" } as const;
 
 	/** Safe value to render */
 	value: string;
@@ -24,10 +25,10 @@ export class Chunk {
 	}
 
 	/**
-	 * @param chunks Chunks to append to the end of the chunk
+	 * @param chunk Chunk to append to the end of the chunk
 	 */
-	concat(...chunks: Chunk[]) {
-		this.value += chunks.join("");
+	concat(chunk: Chunk) {
+		this.value += chunk;
 	}
 
 	/**
@@ -50,30 +51,12 @@ export class Chunk {
 	 * @returns Escaped string of HTML
 	 */
 	static escape(html: string, attr?: boolean) {
-		// adapted from https://github.com/sveltejs/svelte/blob/main/packages/svelte/src/escaping.js
-		const regex = attr ? Chunk.#attr : Chunk.#content;
-
-		// search starts at beginning of the string
-		regex.lastIndex = 0;
-		// tracks the position of the last successful match in the input string
-		let start = 0;
-		let result = "";
-
-		// since `g` flag is used, regex maintains state with each loop,
-		// checking from the lastIndex onward each time
-		while (regex.test(html)) {
-			// index of the match
-			const i = regex.lastIndex - 1;
-			const match = html[i];
-
-			result +=
-				// everything that didn't match during this test
-				html.slice(start, i) +
-				// replacement
-				(match === "&" ? "&amp;" : match === '"' ? "&quot;" : "&lt;");
-			start = regex.lastIndex;
-		}
-
-		return result + html.slice(start);
+		// adapted from https://github.com/remix-run/remix/blob/1a2fcffb50101b789abde35a5edcbcb28e740587/packages/html-template/src/lib/safe-html.ts#L24
+		return html.replace(
+			attr ? Chunk.#attr : Chunk.#content,
+			(c) =>
+				// @ts-expect-error - private method type error
+				Chunk.#map[c],
+		);
 	}
 }

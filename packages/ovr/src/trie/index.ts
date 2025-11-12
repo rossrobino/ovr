@@ -8,13 +8,15 @@ export class Route<Store> {
 	store: Store;
 
 	/**
+	 * Create a new route.
+	 *
 	 * @param pattern route pattern
 	 * @param store value to store in the patterns final node
 	 */
 	constructor(pattern: string, store: Store) {
 		if (pattern[0] !== "/") {
 			throw new Error(
-				`Invalid route: ${pattern} - route pattern must begin with "/"`,
+				`Invalid route: ${pattern} - pattern must begin with "/"`,
 			);
 		}
 
@@ -33,6 +35,11 @@ class ParamNode<Store> {
 	/** Static child node */
 	staticChild: Trie<Store> | null = null;
 
+	/**
+	 * Create a new parameter node.
+	 *
+	 * @param name Name of the parameter.
+	 */
 	constructor(name: string) {
 		this.name = name;
 	}
@@ -52,12 +59,14 @@ export class Trie<Store> {
 	route: Route<Store> | null = null;
 
 	/** Matched wildcard route */
-	wildcardRoute: Route<Store> | null = null;
+	wildcard: Route<Store> | null = null;
 
 	static #paramMatch = /:.+?(?=\/|$)/g;
 	static #paramSplit = /:.+?(?=\/|$)/;
 
 	/**
+	 * Create a new trie.
+	 *
 	 * @param segment pattern segment
 	 * @param staticChildren static children nodes to add to staticMap
 	 */
@@ -83,7 +92,7 @@ export class Trie<Store> {
 		clone.staticMap = this.staticMap;
 		clone.paramChild = this.paramChild;
 		clone.route = this.route;
-		clone.wildcardRoute = this.wildcardRoute;
+		clone.wildcard = this.wildcard;
 
 		return clone;
 	}
@@ -246,7 +255,7 @@ export class Trie<Store> {
 				route;
 		} else if (endsWithWildcard) {
 			// final segment is a wildcard
-			current.wildcardRoute ??= route;
+			current.wildcard ??= route;
 		} else {
 			// final segment is static
 			current.route ??= route;
@@ -273,8 +282,7 @@ export class Trie<Store> {
 			// reached the end of the path
 			if (this.route) return { route: this.route, params: {} };
 
-			if (this.wildcardRoute)
-				return { route: this.wildcardRoute, params: { "*": "" } };
+			if (this.wildcard) return { route: this.wildcard, params: { "*": "" } };
 
 			return null;
 		}
@@ -330,9 +338,9 @@ export class Trie<Store> {
 		}
 
 		// check for wildcard leaf
-		if (this.wildcardRoute) {
+		if (this.wildcard) {
 			return {
-				route: this.wildcardRoute,
+				route: this.wildcard,
 				params: { "*": pathname.slice(this.segment.length) },
 			};
 		}

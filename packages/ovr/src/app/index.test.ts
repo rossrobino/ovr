@@ -72,20 +72,6 @@ test("context", () => {
 	app.on(["POST", "GET"], "/multi-method", async (c) => {
 		c.text(c.req.method);
 	});
-
-	app.get("/memo", (c) => {
-		let i = 0;
-
-		const add = c.memo.use((a: number, b: number) => {
-			i++;
-			return a + b;
-		});
-
-		add(1, 1);
-		add(1, 1);
-
-		expect(i).toBe(1);
-	});
 });
 
 test("GET /", async () => {
@@ -220,8 +206,4 @@ test("multi-method", async () => {
 	const text = await res.text();
 
 	expect(text).toBe("GET");
-});
-
-test("memo", async () => {
-	get("/memo");
 });

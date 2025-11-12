@@ -106,14 +106,6 @@ c.base = ""; // defaults to empty string (send HTML partials)
 
 ## Utilities
 
-### Memo
-
-[Memoize](/07-memo) a function to dedupe async operations and cache the results.
-
-```tsx
-c.memo.use(fn);
-```
-
 ### Entity tag
 
 Generates an [entity tag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/ETag) from a hash of the string provided. If the tag matches, the response will be set to [`304: Not Modified`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/304) and the function will return `true`.
