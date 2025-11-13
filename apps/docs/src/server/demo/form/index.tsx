@@ -1,13 +1,14 @@
 import * as formContent from "@/server/demo/form/index.md";
-import { Head } from "@/ui/head";
+import { createLayout } from "@/server/layout";
+import { Meta } from "@/ui/meta";
 import { Chunk, Get, Post } from "ovr";
 import * as z from "zod";
 
 export const form = new Get("/demo/form", (c) => {
-	c.head.push(<Head {...formContent.frontmatter} />);
+	const Layout = createLayout(c);
 
 	return (
-		<>
+		<Layout head={<Meta {...formContent.frontmatter} />}>
 			<h1>{formContent.frontmatter.title}</h1>
 
 			{Chunk.safe(formContent.html)}
@@ -22,7 +23,7 @@ export const form = new Get("/demo/form", (c) => {
 
 				<button>Submit</button>
 			</post.Form>
-		</>
+		</Layout>
 	);
 });
 

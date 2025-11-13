@@ -1,12 +1,13 @@
 import * as result from "@/server/home/index.md";
-import { Head } from "@/ui/head";
+import { createLayout } from "@/server/layout";
+import { Meta } from "@/ui/meta";
 import { Chunk, Get } from "ovr";
 
 export const page = new Get("/", (c) => {
-	c.head.push(<Head {...result.frontmatter} />);
+	const Layout = createLayout(c);
 
 	return (
-		<>
+		<Layout head={<Meta {...result.frontmatter} />}>
 			<h1>{result.frontmatter.title}</h1>
 
 			<p class="text-lg">
@@ -42,7 +43,7 @@ export const page = new Get("/", (c) => {
 					Get Started
 				</a>
 			</div>
-		</>
+		</Layout>
 	);
 });
 

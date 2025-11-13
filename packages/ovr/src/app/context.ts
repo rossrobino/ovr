@@ -1,18 +1,7 @@
-import { Chunk } from "../jsx/chunk/index.js";
 import { type JSX, toStream } from "../jsx/index.js";
 import { type Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import { type Middleware } from "./index.js";
-
-type Layout = (props: { children: JSX.Element }) => JSX.Element;
-
-class TagNotFound extends Error {
-	override name = "TagNotFound";
-
-	constructor(tag: string) {
-		super(`No closing ${tag} tag found`);
-	}
-}
 
 export class Context<P extends Params = Params> {
 	/**
@@ -51,12 +40,6 @@ export class Context<P extends Params = Params> {
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers) */
 	headers = new Headers();
 
-	/** `layouts` for the `Page` to be passed into before being injected into the `<body>` */
-	layouts: Layout[] = [];
-
-	/** `JSX.Element`(s) to add to the head */
-	head: JSX.Element[] = [];
-
 	/**
 	 * Middleware to run when no `body` or `status` has been set on the `context`.
 	 * Set to a new function to override the default.
@@ -75,18 +58,7 @@ export class Context<P extends Params = Params> {
 		c.headers.set("cache-control", "no-cache");
 	};
 
-	/**
-	 * Base HTML to inject the `head` and `page` elements into.
-	 *
-	 * If left empty, components will be returned as partials.
-	 *
-	 * @default ""
-	 */
-	base = "";
-
 	static readonly #contentType = "content-type";
-	static readonly #headClose = "</head>";
-	static readonly #bodyClose = "</body>";
 
 	/**
 	 * Creates a new `Context` with the current `Request`.
@@ -147,7 +119,7 @@ export class Context<P extends Params = Params> {
 	 * @param data passed into JSON.stringify to create the body
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
-	json(data: any, status?: number) {
+	json(data: unknown, status?: number) {
 		this.res(JSON.stringify(data), {
 			status,
 			headers: { [Context.#contentType]: "application/json" },
@@ -184,49 +156,13 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * Creates an HTML response based on the `head` elements, `Layout`(s), and `Page` provided.
+	 * Creates an HTML response with the `Element` provided.
 	 *
-	 * @param Page `JSX.Element` to inject into the `<body>`
+	 * @param element `JSX.Element`
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
-	page(Page: JSX.Element, status?: number) {
-		for (let i = this.layouts.length - 1; i >= 0; i--) {
-			// add layouts around the page in reverse order (1st is the root layout)
-			Page = this.layouts[i]!({ children: Page });
-		}
-
-		if (this.base) {
-			// inject into base
-			const elements: JSX.Element[] = this.base.split(Context.#headClose);
-			if (!elements[1]) throw new TagNotFound(Context.#headClose);
-
-			elements.splice(1, 0, this.head, Context.#headClose);
-
-			const bodyParts = (elements[3] as string).split(Context.#bodyClose);
-			if (!bodyParts[1]) throw new TagNotFound(Context.#bodyClose);
-
-			const userAgent = this.req.headers.get("user-agent");
-			if (userAgent?.includes("Safari") && !userAgent.includes("Chrome")) {
-				// https://bugs.webkit.org/show_bug.cgi?id=252413
-				// https://github.com/sveltejs/kit/issues/10315
-				// https://github.com/remix-run/remix/issues/5804
-				bodyParts[0] += `<div aria-hidden=true style=position:absolute;width:0;height:0;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0>${"\u200b".repeat(200)}</div>`;
-			}
-
-			elements[3] = bodyParts[0];
-			elements.push(Page, Context.#bodyClose + bodyParts[1]);
-
-			return this.html(
-				toStream(
-					elements.map((el) => (typeof el === "string" ? Chunk.safe(el) : el)),
-				),
-				status,
-			);
-		}
-
-		// HTML partial - just use the layouts + page
-		// head elements are ignored if no base is set
-		return this.html(toStream(Page), status);
+	page(element: JSX.Element, status?: number) {
+		return this.html(toStream(element), status);
 	}
 
 	/**

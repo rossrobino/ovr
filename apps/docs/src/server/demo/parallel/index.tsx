@@ -1,8 +1,11 @@
 import * as parallelContent from "@/server/demo/parallel/index.md";
-import { Head } from "@/ui/head";
+import { createLayout } from "@/server/layout";
+import { Meta } from "@/ui/meta";
 import { Chunk, Get } from "ovr";
 
 export const parallel = new Get("/demo/parallel", (c) => {
+	const Layout = createLayout(c);
+
 	const Delay = async ({ ms }: { ms: number }) => {
 		await new Promise((res) => setTimeout(res, ms));
 		return <div class="bg-muted rounded-md p-2">{ms}ms</div>;
@@ -13,10 +16,8 @@ export const parallel = new Get("/demo/parallel", (c) => {
 		return delays.map((ms) => <Delay ms={ms} />);
 	};
 
-	c.head.push(<Head {...parallelContent.frontmatter} />);
-
 	return (
-		<>
+		<Layout head={<Meta {...parallelContent.frontmatter} />}>
 			<h1>{parallelContent.frontmatter.title}</h1>
 
 			{Chunk.safe(parallelContent.html)}
@@ -28,6 +29,6 @@ export const parallel = new Get("/demo/parallel", (c) => {
 			<parallel.Anchor class="button ghost my-2 gap-3">
 				<span class="icon-[lucide--rotate-cw]"></span> Refresh
 			</parallel.Anchor>
-		</>
+		</Layout>
 	);
 });

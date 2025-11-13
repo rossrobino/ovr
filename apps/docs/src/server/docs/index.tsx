@@ -1,6 +1,7 @@
 import type { FrontmatterSchema } from "@/lib/md";
 import * as homeResult from "@/server/home/index.md";
-import { Head } from "@/ui/head";
+import { createLayout } from "@/server/layout";
+import { Meta } from "@/ui/meta";
 import type { Result } from "@robino/md";
 import { clsx } from "clsx";
 import { Chunk, Get } from "ovr";
@@ -53,15 +54,16 @@ export const page = new Get("/:slug", (c) => {
 	if (!result) return;
 
 	if (md) {
+		// .md extensions
 		return c.res(getMd(result), {
 			headers: { "content-type": "text/markdown; charset=UTF-8" },
 		});
 	}
 
-	c.head.push(<Head {...result.frontmatter} />);
+	const Layout = createLayout(c);
 
 	return (
-		<>
+		<Layout head={<Meta {...result.frontmatter} />}>
 			<h1>{result.frontmatter.title}</h1>
 
 			{Chunk.safe(result.html)}
@@ -113,6 +115,6 @@ export const page = new Get("/:slug", (c) => {
 					</div>
 				);
 			}}
-		</>
+		</Layout>
 	);
 });

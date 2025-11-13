@@ -1,3 +1,4 @@
+import "@/client/tailwind.css";
 import "drab/prefetch/define";
 import "drab/share/define";
 

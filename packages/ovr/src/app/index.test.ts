@@ -46,27 +46,7 @@ test("context", () => {
 	});
 
 	app.get("/page", (c) => {
-		c.layouts.push(function* ({ children }) {
-			yield "Layout";
-
-			yield children;
-
-			yield "END LAYOUT";
-		});
-
-		c.head.push("<meta name='description' content='desc'>");
-
-		c.layouts.push(function ({ children }) {
-			return `nested ${children} nested`;
-		});
-
 		c.page("page");
-	});
-
-	app.use(async (c, next) => {
-		c.base =
-			'<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body></html>';
-		await next();
 	});
 
 	app.on(["POST", "GET"], "/multi-method", async (c) => {

@@ -1,4 +1,4 @@
-export const Head = (props: { title: string; description: string }) => {
+export const Meta = (props: { title: string; description: string }) => {
 	return (
 		<>
 			<title>

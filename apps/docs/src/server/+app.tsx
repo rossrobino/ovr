@@ -1,20 +1,17 @@
 import * as demo from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as home from "@/server/home";
-import { Layout } from "@/server/layout";
-import { FavIcon } from "@/ui/favicon";
-import { FontPreload } from "@/ui/font-preload";
-import { Head } from "@/ui/head";
-import { html } from "client:page";
+import { createLayout } from "@/server/layout";
+import { Meta } from "@/ui/meta";
 import { App, type Middleware } from "ovr";
 
 const app = new App();
 
 const notFound: Middleware = (c) => {
-	c.head.push(<Head title="Not Found" description="Content not found" />);
+	const Layout = createLayout(c);
 
 	c.page(
-		<>
+		<Layout head={<Meta title="Not Found" description="Content not found" />}>
 			<h1>Not Found</h1>
 
 			<p>
@@ -28,15 +25,12 @@ const notFound: Middleware = (c) => {
 
 				<a href="/">Return home</a>
 			</p>
-		</>,
+		</Layout>,
 		404,
 	);
 };
 
 app.use(async (c, next) => {
-	c.base = html;
-	c.layouts.push(Layout(c));
-	c.head.push(<FontPreload />, <FavIcon />);
 	c.notFound = notFound;
 	await next();
 });

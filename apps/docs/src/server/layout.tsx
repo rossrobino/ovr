@@ -1,59 +1,92 @@
 import * as demos from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as homeResult from "@/server/home/index.md";
+import { FavIcon } from "@/ui/favicon";
+import { FontPreload } from "@/ui/font-preload";
 import { GitHub } from "@/ui/github";
 import { Popover } from "@/ui/popover";
 import { SkipLink } from "@/ui/skip-link";
 import { Version } from "@/ui/version";
+import { tags } from "client:script";
 import { clsx } from "clsx";
-import { type Context, type JSX } from "ovr";
+import { Chunk, type Context, type JSX } from "ovr";
 
-export const Layout = (c: Context) => (props: { children?: JSX.Element }) => {
+const Assets = () => {
 	return (
-		<drab-prefetch
-			trigger="a[href^='/']:not([data-no-prefetch])"
-			prerender
-			class="block"
-		>
-			<SkipLink />
-			<header class="flex justify-between gap-4 p-4 md:hidden">
-				<HomeLink />
-				<nav>
-					<Popover
-						title="ovr"
-						titleHref="/"
-						trigger={{
-							children: <span class="icon-[lucide--align-justify]"></span>,
-						}}
-					>
-						<div class="flex flex-col gap-4">
-							<NavList c={c} />
-						</div>
-					</Popover>
-				</nav>
-			</header>
-			<main class="flex">
-				<div>
-					<nav class="sticky top-0 z-10 hidden max-h-dvh min-w-52 flex-col gap-4 overflow-y-auto p-4 md:flex">
-						<HomeLink />
-						<NavList c={c} />
-					</nav>
-				</div>
-				<div class="flex w-full min-w-0 flex-row-reverse justify-between">
-					<TOC c={c} />
-					<div class="flex w-full min-w-0 justify-center">
-						<div
-							id="content"
-							class="prose mb-16 w-full max-w-3xl min-w-0 px-4 pt-3.5 pb-4"
-						>
-							{props.children}
-						</div>
-					</div>
-				</div>
-			</main>
-		</drab-prefetch>
+		<>
+			{import.meta.env.DEV && (
+				<link rel="stylesheet" href="/client/tailwind.css" />
+			)}
+			{Chunk.safe(tags)}
+		</>
 	);
 };
+
+export const createLayout =
+	(c: Context<any>) =>
+	(props: { head: JSX.Element; children: JSX.Element }) => {
+		return (
+			<html lang="en">
+				<head>
+					<meta charset="utf-8" />
+					<meta
+						name="viewport"
+						content="width=device-width, initial-scale=1.0"
+					/>
+					<Assets />
+					<FontPreload />
+					<FavIcon />
+					{props.head}
+				</head>
+				<body>
+					<drab-prefetch
+						trigger="a[href^='/']:not([data-no-prefetch])"
+						prerender
+						class="block"
+					>
+						<SkipLink />
+						<header class="flex justify-between gap-4 p-4 md:hidden">
+							<HomeLink />
+							<nav>
+								<Popover
+									title="ovr"
+									titleHref="/"
+									trigger={{
+										children: (
+											<span class="icon-[lucide--align-justify]"></span>
+										),
+									}}
+								>
+									<div class="flex flex-col gap-4">
+										<NavList c={c} />
+									</div>
+								</Popover>
+							</nav>
+						</header>
+						<main class="flex">
+							<div>
+								<nav class="sticky top-0 z-10 hidden max-h-dvh min-w-52 flex-col gap-4 overflow-y-auto p-4 md:flex">
+									<HomeLink />
+									<NavList c={c} />
+								</nav>
+							</div>
+							<div class="flex w-full min-w-0 flex-row-reverse justify-between">
+								<TOC c={c} />
+								<div class="flex w-full min-w-0 justify-center">
+									<div
+										id="content"
+										class="prose mb-16 w-full max-w-3xl min-w-0 px-4 pt-3.5 pb-4"
+									>
+										{props.children}
+									</div>
+								</div>
+							</div>
+						</main>
+					</drab-prefetch>
+				</body>
+			</html>
+		);
+	};
 
 const TOC = ({ c }: { c: Context }) => {
 	const { pathname } = c.url;

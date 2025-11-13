@@ -1,9 +1,10 @@
 import * as memoryContent from "@/server/demo/memory/index.md";
-import { Head } from "@/ui/head";
+import { createLayout } from "@/server/layout";
+import { Meta } from "@/ui/meta";
 import { Chunk, Get } from "ovr";
 
 export const memory = new Get("/demo/memory", async (c) => {
-	c.head.push(<Head {...memoryContent.frontmatter} />);
+	const Layout = createLayout(c);
 
 	function* OverNineThousand() {
 		// const time = performance.now();
@@ -25,7 +26,7 @@ export const memory = new Get("/demo/memory", async (c) => {
 	// }
 
 	return (
-		<>
+		<Layout head={<Meta {...memoryContent.frontmatter} />}>
 			<h1>{memoryContent.frontmatter.title}</h1>
 
 			{Chunk.safe(memoryContent.html)}
@@ -37,6 +38,6 @@ export const memory = new Get("/demo/memory", async (c) => {
 				</div>
 				<OverNineThousand />
 			</div>
-		</>
+		</Layout>
 	);
 });

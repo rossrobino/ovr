@@ -1,5 +1,6 @@
 import * as todoContent from "@/server/demo/todo/index.md";
-import { Head } from "@/ui/head";
+import { createLayout } from "@/server/layout";
+import { Meta } from "@/ui/meta";
 import { Chunk, Context, Get, Post } from "ovr";
 import * as z from "zod";
 
@@ -28,10 +29,10 @@ export const remove = new Post(async (c) => {
 });
 
 export const todo = new Get("/demo/todo", (c) => {
-	c.head.push(<Head {...todoContent.frontmatter} />);
+	const Layout = createLayout(c);
 
 	return (
-		<>
+		<Layout head={<Meta {...todoContent.frontmatter} />}>
 			<h1>Todo</h1>
 
 			<div class="border-muted mb-12 grid max-w-md gap-4 rounded-md border p-4">
@@ -84,7 +85,7 @@ export const todo = new Get("/demo/todo", (c) => {
 			<hr />
 
 			{Chunk.safe(todoContent.html)}
-		</>
+		</Layout>
 	);
 });
 
