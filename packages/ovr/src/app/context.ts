@@ -1,4 +1,4 @@
-import { type JSX, toStream } from "../jsx/index.js";
+import { toStream } from "../jsx/index.js";
 import { type Params, Route } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import { type Middleware } from "./index.js";
@@ -156,16 +156,6 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * Creates an HTML response with the `Element` provided.
-	 *
-	 * @param element `JSX.Element`
-	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
-	 */
-	page(element: JSX.Element, status?: number) {
-		return this.html(toStream(element), status);
-	}
-
-	/**
 	 * Generates an etag from a hash of the string provided.
 	 * If the etag matches, sets the response to not modified.
 	 *
@@ -201,7 +191,7 @@ export class Context<P extends Params = Params> {
 			this.body = value;
 		} else if (value != null) {
 			// nullish are not used so `void` will not render empty page
-			this.page(value);
+			this.html(toStream(value));
 		}
 	}
 

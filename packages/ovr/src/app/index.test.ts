@@ -46,7 +46,7 @@ test("context", () => {
 	});
 
 	app.get("/page", (c) => {
-		c.page("page");
+		return "page";
 	});
 
 	app.on(["POST", "GET"], "/multi-method", async (c) => {

@@ -3,29 +3,31 @@ import * as docs from "@/server/docs";
 import * as home from "@/server/home";
 import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
-import { App, type Middleware } from "ovr";
+import * as ovr from "ovr";
 
-const app = new App();
+const app = new ovr.App();
 
-const notFound: Middleware = (c) => {
+const notFound: ovr.Middleware = (c) => {
 	const Layout = createLayout(c);
 
-	c.page(
-		<Layout head={<Meta title="Not Found" description="Content not found" />}>
-			<h1>Not Found</h1>
+	c.html(
+		ovr.toStream(
+			<Layout head={<Meta title="Not Found" description="Content not found" />}>
+				<h1>Not Found</h1>
 
-			<p>
-				<button
-					type="button"
-					class="mb-6 cursor-pointer"
-					onclick="history.back()"
-				>
-					Back
-				</button>
+				<p>
+					<button
+						type="button"
+						class="mb-6 cursor-pointer"
+						onclick="history.back()"
+					>
+						Back
+					</button>
 
-				<a href="/">Return home</a>
-			</p>
-		</Layout>,
+					<a href="/">Return home</a>
+				</p>
+			</Layout>,
+		),
 		404,
 	);
 };
