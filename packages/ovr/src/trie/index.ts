@@ -130,7 +130,7 @@ export class Trie {
 	 */
 	add(route: Route) {
 		let current: Trie = this;
-		let pattern = route.pattern; // created to not modify the original
+		let pattern = route.method + route.pattern; // created to not modify the original
 
 		const endsWithWildcard = pattern.endsWith("*");
 		if (endsWithWildcard) pattern = pattern.slice(0, -1);

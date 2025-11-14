@@ -77,14 +77,14 @@ export class App {
 		if (resolved.csrf === true) this.#global.push(App.#csrf);
 
 		if (resolved.trailingSlash !== "ignore") {
-			this.#global.push(App.#trailingSlash(resolved.trailingSlash));
+			this.#global.push(App.#createTrailingSlash(resolved.trailingSlash));
 		}
 	}
 
-	/** Built tries per HTTP method. */
-	#trieMap = new Map<Method, Trie>();
+	/** Route trie */
+	#trie = new Trie();
 
-	/** Global middleware. */
+	/** Global middleware */
 	#global: Middleware[] = [];
 
 	/**
@@ -94,13 +94,7 @@ export class App {
 	use(...routes: DeepArray<Use | Record<string, Use>>[]) {
 		for (const route of routes) {
 			if (route instanceof Route) {
-				const trie = this.#trieMap.get(route.method);
-
-				if (trie) {
-					trie.add(route);
-				} else {
-					this.#trieMap.set(route.method, new Trie().add(route));
-				}
+				this.#trie.add(route);
 			} else if (route instanceof Array) {
 				this.use(...route);
 			} else if (typeof route === "function") {
@@ -127,24 +121,19 @@ export class App {
 		options?: RequestInit,
 	): Promise<Response> => {
 		const c = new Context(new Request(resource, options));
+		const match = this.#trie.find(c.req.method + c.url.pathname);
 
-		// see if the method is already built
-		const trie = this.#trieMap.get(c.req.method);
-
-		if (trie) {
-			const match = trie.find(c.url.pathname);
-
-			if (match) {
-				Object.assign(c, match);
-				return c.build(this.#global.concat(match.route.middleware));
-			}
+		if (match) {
+			return Object.assign(c, match).build(
+				this.#global.concat(match.route.middleware),
+			);
 		}
 
 		// no match, just run global middleware
 		return c.build(this.#global);
 	};
 
-	/** Basic CSRF middleware. */
+	/** Basic CSRF middleware */
 	static async #csrf(c: Context, next: Next) {
 		if (
 			c.req.method === "GET" ||
@@ -159,7 +148,7 @@ export class App {
 	}
 
 	/** @returns Trailing slash middleware */
-	static #trailingSlash(mode: TrailingSlash) {
+	static #createTrailingSlash(mode: TrailingSlash) {
 		return async (c: Context, next: Next) => {
 			await next();
 
