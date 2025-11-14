@@ -1,23 +1,22 @@
-import { type Params, Route, Trie } from "../trie/index.js";
-import type {
-	DeepArray,
-	ExtractMultiParams,
-	ExtractParams,
-} from "../types/index.js";
+import { Get, Post, Route } from "../route/index.js";
+import { type Params, Trie } from "../trie/index.js";
+import type { DeepArray } from "../types/index.js";
 import { Context } from "./context.js";
-import { Get } from "./helper/get.js";
-import { Post } from "./helper/post.js";
 
+/** Dispatches the next middleware in the stack */
 export type Next = () => Promise<void>;
 
+/** App middleware */
 export type Middleware<P extends Params = Params> = (
 	context: Context<P>,
 	next: Next,
 ) => any;
 
+/** Trailing slash preference */
 export type TrailingSlash = "always" | "never" | "ignore";
 
-type Method =
+/** HTTP Method */
+export type Method =
 	| "GET"
 	| "HEAD"
 	| "POST"
@@ -28,6 +27,9 @@ type Method =
 	| "TRACE"
 	| "PATCH"
 	| (string & {});
+
+/** Helper type for anything that can be passed into `App.use` */
+type Use = Route | Get | Post | Middleware;
 
 /** `App` configuration options */
 type AppOptions = {
@@ -58,7 +60,13 @@ type AppOptions = {
 	trailingSlash?: TrailingSlash;
 };
 
+/** Web server application. */
 export class App {
+	/**
+	 * Create a new application.
+	 *
+	 * @param options configuration options
+	 */
 	constructor(options?: AppOptions) {
 		const resolved: Required<AppOptions> = {
 			csrf: true,
@@ -66,148 +74,43 @@ export class App {
 		};
 		Object.assign(resolved, options);
 
-		if (resolved.csrf === true) this.#use.push(App.#csrf);
+		if (resolved.csrf === true) this.#global.push(App.#csrf);
 
 		if (resolved.trailingSlash !== "ignore") {
-			this.#use.push(App.#trailingSlash(resolved.trailingSlash));
+			this.#global.push(App.#trailingSlash(resolved.trailingSlash));
 		}
 	}
 
 	/** Built tries per HTTP method. */
-	#trieMap = new Map<Method, Trie<Middleware[]>>();
-
-	/** Added routes per HTTP method. */
-	#routesMap = new Map<Method, Route<Middleware[]>[]>();
+	#trieMap = new Map<Method, Trie>();
 
 	/** Global middleware. */
-	#use: Middleware[] = [];
+	#global: Middleware[] = [];
 
 	/**
-	 * @param helpers `Helper` to add to `App`
+	 * @param routes Route or middleware to use
 	 * @returns `App` instance
 	 */
-	add(...helpers: DeepArray<Get | Post | Record<string, Get | Post>>[]) {
-		for (const helper of helpers) {
-			if (helper instanceof Array) {
-				this.add(...helper);
-			} else if (helper instanceof Get) {
-				this.get(helper.pattern, ...helper.middleware);
-			} else if (helper instanceof Post) {
-				this.post(helper.pattern, ...helper.middleware);
+	use(...routes: DeepArray<Use | Record<string, Use>>[]) {
+		for (const route of routes) {
+			if (route instanceof Route) {
+				const trie = this.#trieMap.get(route.method);
+
+				if (trie) {
+					trie.add(route);
+				} else {
+					this.#trieMap.set(route.method, new Trie().add(route));
+				}
+			} else if (route instanceof Array) {
+				this.use(...route);
+			} else if (typeof route === "function") {
+				this.#global.push(route);
 			} else {
-				this.add(...Object.values(helper));
+				this.use(...Object.values(route));
 			}
 		}
 
 		return this;
-	}
-
-	/**
-	 * Add global middleware.
-	 *
-	 * @param middleware
-	 * @returns `App` instance
-	 */
-	use(...middleware: Middleware[]) {
-		this.#use.push(...middleware);
-		return this;
-	}
-
-	/**
-	 * @param method HTTP method
-	 * @param pattern Route pattern
-	 * @param middleware
-	 * @returns `App` instance
-	 */
-	on<Pattern extends string>(
-		method: Method | Method[],
-		pattern: Pattern,
-		...middleware: Middleware<ExtractParams<Pattern>>[]
-	): this;
-	/**
-	 * @param method HTTP method
-	 * @param patterns Array of route patterns
-	 * @param middleware
-	 * @returns `App` instance
-	 */
-	on<Patterns extends string[]>(
-		method: Method | Method[],
-		patterns: [...Patterns],
-		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
-	): this;
-	on<PatternOrPatterns extends string | string[]>(
-		method: Method | Method[],
-		pattern: PatternOrPatterns,
-		...middleware: Middleware[]
-	) {
-		if (!Array.isArray(method)) method = [method];
-
-		let patterns: string[];
-		if (!Array.isArray(pattern)) patterns = [pattern];
-		else patterns = pattern;
-
-		for (const p of patterns) {
-			const route = new Route(p, middleware);
-
-			for (const m of method) {
-				const routes = this.#routesMap.get(m);
-
-				if (routes) routes.push(route);
-				else this.#routesMap.set(m, [route]);
-			}
-		}
-
-		return this;
-	}
-
-	/**
-	 * @param pattern Route pattern
-	 * @param middleware
-	 * @returns `App` instance
-	 */
-	get<Pattern extends string>(
-		pattern: Pattern,
-		...middleware: Middleware<ExtractParams<Pattern>>[]
-	): this;
-	/**
-	 * @param patterns Array of route patterns
-	 * @param middleware
-	 * @returns `App` instance
-	 */
-	get<Patterns extends string[]>(
-		patterns: [...Patterns],
-		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
-	): this;
-	get<PatternOrPatterns extends string | string[]>(
-		patternOrPatterns: PatternOrPatterns,
-		...middleware: Middleware[]
-	) {
-		return this.on("GET", patternOrPatterns as string, ...middleware);
-	}
-
-	/**
-	 * @param pattern Route pattern
-	 * @param middleware
-	 * @returns the router instance
-	 */
-	post<Pattern extends string>(
-		pattern: Pattern,
-		...middleware: Middleware<ExtractParams<Pattern>>[]
-	): this;
-	/**
-	 * @param patterns Array of route patterns
-	 * @param middleware
-	 * @returns the router instance
-	 */
-	post<Patterns extends string[]>(
-		patterns: [...Patterns],
-		...middleware: Middleware<ExtractMultiParams<Patterns>>[]
-	): this;
-	post<PatternOrPatterns extends string | string[]>(
-		patternOrPatterns: PatternOrPatterns,
-		...middleware: Middleware[]
-	): this {
-		return this.on("POST", patternOrPatterns as string, ...middleware);
 	}
 
 	/**
@@ -226,31 +129,19 @@ export class App {
 		const c = new Context(new Request(resource, options));
 
 		// see if the method is already built
-		let trie = this.#trieMap.get(c.req.method);
-
-		if (!trie) {
-			// check if there are any routes with the method
-			const routes = this.#routesMap.get(c.req.method);
-
-			if (routes) {
-				// build trie
-				trie = new Trie<Middleware[]>();
-				for (const route of routes) trie.add(route);
-				this.#trieMap.set(c.req.method, trie);
-			}
-		}
+		const trie = this.#trieMap.get(c.req.method);
 
 		if (trie) {
 			const match = trie.find(c.url.pathname);
 
 			if (match) {
 				Object.assign(c, match);
-				return c.build(this.#use.concat(match.route.store));
+				return c.build(this.#global.concat(match.route.middleware));
 			}
 		}
 
 		// no match, just run global middleware
-		return c.build(this.#use);
+		return c.build(this.#global);
 	};
 
 	/** Basic CSRF middleware. */

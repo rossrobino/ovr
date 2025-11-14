@@ -1,3 +1,5 @@
+import { Chunk } from "../../../../apps/docs/dist/client/_immutable/chunks/index.DS8tezsW.js";
+import { Get, Post } from "../route/index.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
@@ -6,8 +8,8 @@ const app = new App({ trailingSlash: "always" });
 const get = (pathname: string) => app.fetch("http://localhost:5173" + pathname);
 
 test("context", () => {
-	app
-		.get(
+	app.use(
+		new Get(
 			"/",
 			async (c, next) => {
 				c.req.headers.set("hello", "world");
@@ -20,38 +22,21 @@ test("context", () => {
 
 				c.text("hello world");
 			},
-		)
-		.get("/api/:id/", (c) => {
+		),
+		new Get("/api/:id/", (c) => {
 			expect(c.params.id).toBeDefined();
 			c.json(c.params);
-		})
-		.get("/wild/*", (c) => {
+		}),
+		new Get("/wild/*", (c) => {
 			expect(c.params["*"]).toBeDefined();
 			c.json(c.params);
-		});
-
-	app.get(["/multi/:param/", "/pattern/:another/"], (c) => {
-		if ("param" in c.params) {
-			expect(c.params.param).toBeDefined();
-			c.text("multi");
-		} else {
-			expect(c.params.another).toBeDefined();
-			c.text("pattern");
-		}
-	});
-
-	app.post("/post/", async (c) => {
-		const formData = await c.req.formData();
-		c.json(formData.get("key"));
-	});
-
-	app.get("/page", (c) => {
-		return "page";
-	});
-
-	app.on(["POST", "GET"], "/multi-method", async (c) => {
-		c.text(c.req.method);
-	});
+		}),
+		new Post("/post/", async (c) => {
+			const formData = await c.req.formData();
+			c.json(formData.get("key"));
+		}),
+		new Get("/page", () => "page"),
+	);
 });
 
 test("GET /", async () => {
@@ -92,16 +77,6 @@ test("POST /post/", async () => {
 	expect(json).toBe("value");
 });
 
-test("GET /multi/param & /pattern/another", async () => {
-	const multi = await get("/multi/param/");
-	const mText = await multi.text();
-	expect(mText).toBe("multi");
-
-	const pat = await get("/pattern/another/");
-	const pText = await pat.text();
-	expect(pText).toBe("pattern");
-});
-
 test("GET /not-found/", async () => {
 	const res = await get("/not-found/");
 	const text = await res.text();
@@ -119,8 +94,7 @@ describe("trailing slash", () => {
 	});
 
 	test("never", async () => {
-		const nev = new App();
-		nev.get("/test", (c) => c.text("test"));
+		const nev = new App().use(new Get("/test", (c) => c.text("test")));
 
 		const res = await nev.fetch(new Request("http://localhost:5173/test/"));
 
@@ -129,10 +103,10 @@ describe("trailing slash", () => {
 	});
 
 	test("ignore", async () => {
-		const ignore = new App({ trailingSlash: "ignore" });
-
-		ignore.get("/nope", (c) => c.text("nope"));
-		ignore.get("/yup/", (c) => c.text("yup"));
+		const ignore = new App({ trailingSlash: "ignore" }).use(
+			new Get("/nope", (c) => c.text("nope")),
+			new Get("/yup/", (c) => c.text("yup")),
+		);
 
 		expect(
 			(await ignore.fetch(new Request("http://localhost:5173/nope"))).status,
@@ -154,19 +128,20 @@ test("html", async () => {
 	const res = await get("/page");
 	const text = await res.text();
 	expect(res.status).toBe(200);
-	expect(text.startsWith("<")).toBe(true);
+	expect(text).toBe("page");
 });
 
 test("etag", async () => {
-	const r = new App();
-	r.get("/etag", (c) => {
-		const text = "hello world";
-		const matched = c.etag("hello");
+	const r = new App().use(
+		new Get("/etag", (c) => {
+			const text = "hello world";
+			const matched = c.etag("hello");
 
-		if (matched) return;
+			if (matched) return;
 
-		c.text(text);
-	});
+			c.text(text);
+		}),
+	);
 
 	const res = await r.fetch(new Request("http://localhost:5173/etag"));
 	expect(res.status).toBe(200);
@@ -179,11 +154,4 @@ test("etag", async () => {
 	);
 	expect(etag.status).toBe(304);
 	expect(await etag.text()).toBe("");
-});
-
-test("multi-method", async () => {
-	const res = await get("/multi-method");
-	const text = await res.text();
-
-	expect(text).toBe("GET");
 });

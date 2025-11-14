@@ -32,13 +32,19 @@ const notFound: ovr.Middleware = (c) => {
 	);
 };
 
-app.use(async (c, next) => {
-	c.notFound = notFound;
-	await next();
-});
+app.use(
+	(c, next) => {
+		c.notFound = notFound;
+		return next();
+	},
+	home,
+	docs.page,
+	docs.llms,
+	demo,
+);
 
 if (import.meta.env.DEV) {
-	app.get("/backpressure", async (c) => {
+	const backpressure = new ovr.Route("GET", "/backpressure", async (c) => {
 		// need to make each chunk is very large to observe pull stop
 		// log something in the Context.page => pull method to see
 		const res = await fetch("http://localhost:5173/demo/memory");
@@ -56,9 +62,9 @@ if (import.meta.env.DEV) {
 
 		c.res("done");
 	});
-}
 
-app.add(home, docs.page, docs.llms, demo);
+	app.use(backpressure);
+}
 
 const docPrerender = docs.getSlugs().map((slug) => "/" + slug);
 

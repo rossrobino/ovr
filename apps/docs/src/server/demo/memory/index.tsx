@@ -1,19 +1,19 @@
 import * as memoryContent from "@/server/demo/memory/index.md";
 import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
-import { Chunk, Get } from "ovr";
+import * as ovr from "ovr";
 
-export const memory = new Get("/demo/memory", async (c) => {
+export const memory = new ovr.Get("/demo/memory", async (c) => {
 	const Layout = createLayout(c);
 
 	function* OverNineThousand() {
-		// const time = performance.now();
+		const time = performance.now();
 
 		for (let i = 0; i < 9_114; i++) {
 			yield <div class="bg-foreground rounded-sm p-0.5" />;
 		}
 
-		// console.log(performance.now() - time);
+		console.log(performance.now() - time);
 	}
 
 	// const time = performance.now();
@@ -29,7 +29,7 @@ export const memory = new Get("/demo/memory", async (c) => {
 		<Layout head={<Meta {...memoryContent.frontmatter} />}>
 			<h1>{memoryContent.frontmatter.title}</h1>
 
-			{Chunk.safe(memoryContent.html)}
+			{ovr.Chunk.safe(memoryContent.html)}
 
 			<div class="flex flex-wrap gap-px">
 				<div class="sr-only">

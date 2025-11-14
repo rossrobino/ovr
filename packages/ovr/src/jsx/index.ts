@@ -1,7 +1,5 @@
-import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
-import type { IntrinsicElements as IE } from "./intrinsic-elements.js";
-import { merge } from "./merge-async-generators.js";
+import type { Element as E, IntrinsicElements as IE } from "./elements.js";
 
 /** ovr JSX namespace */
 export namespace JSX {
@@ -9,20 +7,7 @@ export namespace JSX {
 	export interface IntrinsicElements extends IE {}
 
 	/** ovr Element */
-	export type Element = MaybeFunction<
-		MaybePromise<
-			| string
-			| number
-			| bigint
-			| boolean
-			| object
-			| null
-			| undefined
-			| Symbol
-			| Iterable<Element>
-			| AsyncIterable<Element>
-		>
-	>;
+	export type Element = E;
 }
 
 /** Unknown component props */
@@ -48,6 +33,54 @@ const voidElements = new Set([
 	"track",
 	"wbr",
 ]);
+
+const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
+	index,
+	result: await iterator.next(),
+});
+
+/**
+ * Merges `AsyncGenerator[]` into a single `AsyncGenerator`, resolving all in parallel.
+ * The return of each `AsyncGenerator` is yielded from the generator with `done: true`.
+ *
+ * Adapted from [stack overflow answers](https://stackoverflow.com/questions/50585456).
+ *
+ * @param generators Resolved in parallel.
+ * @yields `IteratorResult` and `index` of the resolved generator.
+ */
+async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
+	const iterators = generators.map((gen) => gen[Symbol.asyncIterator]());
+	const promises = new Map<number, ReturnType<typeof next<T, void>>>();
+
+	for (let i = 0; i < iterators.length; i++) {
+		promises.set(i, next(iterators[i]!, i));
+	}
+
+	let current: Awaited<ReturnType<typeof next>>;
+
+	try {
+		while (promises.size > 0) {
+			yield (current = await Promise.race(promises.values()));
+
+			if (current.result.done) {
+				promises.delete(current.index);
+			} else {
+				promises.set(
+					current.index,
+					next(iterators[current.index]!, current.index),
+				);
+			}
+		}
+	} finally {
+		for (const iterator of iterators) {
+			try {
+				iterator.return();
+			} catch {
+				// could have already returned
+			}
+		}
+	}
+}
 
 /**
  * The main function of the JSX transform cycle, each time JSX is encountered
@@ -106,7 +139,7 @@ export async function* jsx<P extends Props = Props>(
  * @param props containing `children` to render
  * @returns async generator that yields concatenated children
  */
-export async function* Fragment(props: { children?: JSX.Element } = {}) {
+export async function* Fragment(props: { children?: JSX.Element }) {
 	yield* toGenerator(props.children);
 }
 

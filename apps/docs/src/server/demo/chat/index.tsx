@@ -2,7 +2,7 @@ import * as chatContent from "@/server/demo/chat/index.md";
 import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
 import "dotenv/config";
-import { Chunk, Get, Post } from "ovr";
+import * as ovr from "ovr";
 import * as z from "zod";
 
 async function* Poet(props: { message: string }) {
@@ -22,14 +22,14 @@ async function* Poet(props: { message: string }) {
 	}
 }
 
-export const chat = new Get("/demo/chat", (c) => {
+export const chat = new ovr.Get("/demo/chat", (c) => {
 	const Layout = createLayout(c);
 
 	return (
 		<Layout head={<Meta {...chatContent.frontmatter} />}>
 			<h1>{chatContent.frontmatter.title}</h1>
 
-			{Chunk.safe(chatContent.html)}
+			{ovr.Chunk.safe(chatContent.html)}
 
 			<hr />
 
@@ -48,7 +48,7 @@ export const chat = new Get("/demo/chat", (c) => {
 	);
 });
 
-export const stream = new Post(async (c) => {
+export const stream = new ovr.Post(async (c) => {
 	const Layout = createLayout(c);
 
 	const data = await c.req.formData();

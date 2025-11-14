@@ -1,5 +1,22 @@
 // cspell: disable
+import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import type { JSX, Props } from "./index.js";
+
+/** ovr Element */
+export type Element = MaybeFunction<
+	MaybePromise<
+		| string
+		| number
+		| bigint
+		| boolean
+		| object
+		| null
+		| undefined
+		| Symbol
+		| Iterable<Element>
+		| AsyncIterable<Element>
+	>
+>;
 
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 type Attributes<
@@ -707,6 +724,7 @@ type VideoAttributes = Attributes<{
 	width: string | number;
 }>;
 
+/** Standard HTML elements */
 export type IntrinsicElements =
 	// allows custom elements
 	Record<string, Attributes> & {

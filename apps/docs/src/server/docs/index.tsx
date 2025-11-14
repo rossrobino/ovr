@@ -4,7 +4,7 @@ import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
 import type { Result } from "@robino/md";
 import { clsx } from "clsx";
-import { Chunk, Get } from "ovr";
+import * as ovr from "ovr";
 
 export const content = import.meta.glob<Result<typeof FrontmatterSchema>>(
 	`@/server/docs/*.md`,
@@ -33,7 +33,7 @@ const getMd = (result: Result<typeof FrontmatterSchema>) => {
 	}${result.article}`;
 };
 
-export const llms = new Get("/llms.txt", (c) => {
+export const llms = new ovr.Get("/llms.txt", (c) => {
 	c.text(
 		[homeResult, ...Object.values(content), ...Object.values(demos)]
 			.map((result) => getMd(result))
@@ -41,7 +41,7 @@ export const llms = new Get("/llms.txt", (c) => {
 	);
 });
 
-export const page = new Get("/:slug", (c) => {
+export const page = new ovr.Get("/:slug", (c) => {
 	let md = false;
 
 	if (c.params.slug.endsWith(".md")) {
@@ -66,7 +66,7 @@ export const page = new Get("/:slug", (c) => {
 		<Layout head={<Meta {...result.frontmatter} />}>
 			<h1>{result.frontmatter.title}</h1>
 
-			{Chunk.safe(result.html)}
+			{ovr.Chunk.safe(result.html)}
 
 			<hr />
 

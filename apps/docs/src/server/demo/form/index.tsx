@@ -1,17 +1,17 @@
 import * as formContent from "@/server/demo/form/index.md";
 import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
-import { Chunk, Get, Post } from "ovr";
+import * as ovr from "ovr";
 import * as z from "zod";
 
-export const form = new Get("/demo/form", (c) => {
+export const form = new ovr.Get("/demo/form", (c) => {
 	const Layout = createLayout(c);
 
 	return (
 		<Layout head={<Meta {...formContent.frontmatter} />}>
 			<h1>{formContent.frontmatter.title}</h1>
 
-			{Chunk.safe(formContent.html)}
+			{ovr.Chunk.safe(formContent.html)}
 
 			<hr />
 
@@ -27,7 +27,7 @@ export const form = new Get("/demo/form", (c) => {
 	);
 });
 
-export const post = new Post(async (c) => {
+export const post = new ovr.Post(async (c) => {
 	const data = await c.req.formData();
 	const name = z.string().parse(data.get("name"));
 	name; // text input string

@@ -1,9 +1,9 @@
 import * as result from "@/server/home/index.md";
 import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
-import { Chunk, Get } from "ovr";
+import * as ovr from "ovr";
 
-export const page = new Get("/", (c) => {
+export const page = new ovr.Get("/", (c) => {
 	const Layout = createLayout(c);
 
 	return (
@@ -34,7 +34,7 @@ export const page = new Get("/", (c) => {
 
 			<hr />
 
-			{Chunk.safe(result.html)}
+			{ovr.Chunk.safe(result.html)}
 
 			<hr />
 

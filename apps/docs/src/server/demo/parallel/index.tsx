@@ -1,9 +1,9 @@
 import * as parallelContent from "@/server/demo/parallel/index.md";
 import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
-import { Chunk, Get } from "ovr";
+import * as ovr from "ovr";
 
-export const parallel = new Get("/demo/parallel", (c) => {
+export const parallel = new ovr.Get("/demo/parallel", (c) => {
 	const Layout = createLayout(c);
 
 	const Delay = async ({ ms }: { ms: number }) => {
@@ -20,7 +20,7 @@ export const parallel = new Get("/demo/parallel", (c) => {
 		<Layout head={<Meta {...parallelContent.frontmatter} />}>
 			<h1>{parallelContent.frontmatter.title}</h1>
 
-			{Chunk.safe(parallelContent.html)}
+			{ovr.Chunk.safe(parallelContent.html)}
 
 			<div class="grid grid-cols-3 gap-2 sm:grid-cols-6">
 				<Delays />

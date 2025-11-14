@@ -1,5 +1,6 @@
 import { toStream } from "../jsx/index.js";
-import { type Params, Route } from "../trie/index.js";
+import { Route } from "../route/index.js";
+import { type Params } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import { type Middleware } from "./index.js";
 
@@ -29,7 +30,7 @@ export class Context<P extends Params = Params> {
 	params: P = {} as P; // set after match
 
 	/** Matched `Route` instance. */
-	route: Route<Middleware<P>[]> | null = null;
+	route: Route | null = null;
 
 	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
 	body: BodyInit | null = null;

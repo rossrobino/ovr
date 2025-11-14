@@ -9,7 +9,7 @@ import { SkipLink } from "@/ui/skip-link";
 import { Version } from "@/ui/version";
 import { tags } from "client:script";
 import { clsx } from "clsx";
-import { Chunk, type Context, type JSX } from "ovr";
+import * as ovr from "ovr";
 
 const Assets = () => {
 	return (
@@ -17,14 +17,14 @@ const Assets = () => {
 			{import.meta.env.DEV && (
 				<link rel="stylesheet" href="/client/tailwind.css" />
 			)}
-			{Chunk.safe(tags)}
+			{ovr.Chunk.safe(tags)}
 		</>
 	);
 };
 
 export const createLayout =
-	(c: Context<any>) =>
-	(props: { head: JSX.Element; children: JSX.Element }) => {
+	(c: ovr.Context<any>) =>
+	(props: { head: ovr.Element; children: ovr.Element }) => {
 		return (
 			<html lang="en">
 				<head>
@@ -88,7 +88,7 @@ export const createLayout =
 		);
 	};
 
-const TOC = ({ c }: { c: Context }) => {
+const TOC = ({ c }: { c: ovr.Context }) => {
 	const { pathname } = c.url;
 
 	let result: ReturnType<typeof docs.getContent>;
@@ -137,7 +137,7 @@ const HomeLink = () => {
 	);
 };
 
-const NavHeading = (props: { children: JSX.Element }) => {
+const NavHeading = (props: { children: ovr.Element }) => {
 	return (
 		<h2 class="text-muted-foreground pl-2 text-xs font-bold uppercase">
 			{props.children}
@@ -145,7 +145,7 @@ const NavHeading = (props: { children: JSX.Element }) => {
 	);
 };
 
-const NavList = ({ c }: { c: Context }) => {
+const NavList = ({ c }: { c: ovr.Context }) => {
 	return (
 		<>
 			<hr />
@@ -199,8 +199,8 @@ const NavList = ({ c }: { c: Context }) => {
 
 const NavLink = (props: {
 	slug?: string;
-	anchor?: JSX.Element;
-	c: Context;
+	anchor?: ovr.Element;
+	c: ovr.Context;
 }) => {
 	if (!props.slug) return;
 	const href = `/${props.slug}`;

@@ -1,7 +1,8 @@
-import { type JSX, jsx } from "../../jsx/index.js";
-import type { Params } from "../../trie/index.js";
-import type { ExtractParams, InsertParams } from "../../types/index.js";
-import type { Middleware } from "../index.js";
+import type { Method, Middleware } from "../app/index.js";
+import { type JSX, jsx } from "../jsx/index.js";
+import type { Params } from "../trie/index.js";
+import type { ExtractParams, InsertParams } from "../types/index.js";
+import { hash } from "../util/hash.js";
 
 export type UrlOptions<P extends Params> = {
 	/**
@@ -32,7 +33,7 @@ export type UrlOptions<P extends Params> = {
 			params: P;
 		});
 
-export class Helper<Pattern extends string> {
+export class Route<Pattern extends string = string> {
 	/** Extracted parameters type for the pattern */
 	declare readonly Params: ExtractParams<Pattern>;
 
@@ -41,6 +42,8 @@ export class Helper<Pattern extends string> {
 
 	/** GET middleware */
 	middleware: Middleware<any>[]; // any so you can use other middleware
+
+	method: Method;
 
 	/** `<button>` component with preset `formaction` and `formmethod` attributes. */
 	Button: (
@@ -56,10 +59,15 @@ export class Helper<Pattern extends string> {
 	#parts: string[];
 
 	constructor(
-		method: string,
+		method: Method,
 		pattern: Pattern,
 		...middleware: Middleware<ExtractParams<Pattern>>[]
 	) {
+		if (pattern[0] !== "/") {
+			throw new Error(`Invalid pattern: ${pattern} - must begin with "/"`);
+		}
+
+		this.method = method;
 		this.pattern = pattern;
 		this.middleware = middleware;
 		this.#parts = pattern.split("/");
@@ -86,7 +94,7 @@ export class Helper<Pattern extends string> {
 	/**
 	 * Constructs a _relative_ URL for the route.
 	 *
-	 * @param [options] Options with type safe parameters
+	 * @param [options] Options with type safe pathname parameters
 	 * @returns `pathname` + `search` + `hash`
 	 */
 	url(
@@ -152,5 +160,97 @@ export class Helper<Pattern extends string> {
 				return part;
 			})
 			.join("/") as InsertParams<Pattern, Params>;
+	}
+}
+
+export class Get<Pattern extends string = string> extends Route<Pattern> {
+	/** `<a>` component with preset `href` attribute. */
+	Anchor: (
+		props: JSX.IntrinsicElements["a"] & UrlOptions<ExtractParams<Pattern>>,
+	) => JSX.Element;
+
+	/**
+	 * @param pattern Route pattern
+	 * @param middleware GET middleware
+	 *
+	 * @example
+	 *
+	 * ```tsx
+	 * import { Get } from "ovr";
+	 *
+	 * const page = new Get("/", () => {
+	 * 	return <p>Hello world</p>
+	 * });
+	 *
+	 * const Nav = () => {
+	 * 	return <page.Anchor>Home</page.Anchor>
+	 * }
+	 *
+	 * app.add(page); // register
+	 * ```
+	 */
+	constructor(
+		pattern: Pattern,
+		...middleware: Middleware<ExtractParams<Pattern>>[]
+	) {
+		super("GET", pattern, ...middleware);
+
+		this.Anchor = ({ params, search, hash, ...rest }) =>
+			jsx("a", {
+				href: this.url({ params, search, hash } as UrlOptions<
+					ExtractParams<Pattern>
+				>),
+				...rest,
+			});
+	}
+}
+
+export class Post<Pattern extends string = string> extends Route<Pattern> {
+	/**
+	 * @param middleware POST middleware
+	 *
+	 * @example
+	 *
+	 * ```tsx
+	 * import { Post } from "ovr";
+	 *
+	 * const post = new Post((c) => {
+	 * 	console.log("posted");
+	 * 	c.redirect("/", 303);
+	 * });
+	 *
+	 * const page = new Get("/", () => (
+	 * 	<post.Form>
+	 * 		<input type="text" name="name" />
+	 * 		<button>Submit</button>
+	 * 	</post.Form>
+	 * ));
+	 *
+	 * app.add(page, post); // register
+	 * ```
+	 */
+	constructor(...middleware: Middleware<{}>[]);
+	/**
+	 * @param pattern Route pattern
+	 * @param middleware POST middleware
+	 */
+	constructor(
+		pattern: Pattern,
+		...middleware: Middleware<ExtractParams<Pattern>>[]
+	);
+	constructor(
+		patternOrMiddleware: Pattern | Middleware<ExtractParams<Pattern>>,
+		...middleware: Middleware<ExtractParams<Pattern>>[]
+	) {
+		let pattern: Pattern;
+
+		if (typeof patternOrMiddleware === "string") {
+			pattern = patternOrMiddleware;
+		} else {
+			middleware.unshift(patternOrMiddleware);
+			pattern = `/_p/${hash(middleware.join())}` as Pattern;
+		}
+
+		super("POST", pattern, ...middleware);
 	}
 }
