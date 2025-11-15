@@ -24,7 +24,7 @@ const Assets = () => {
 
 export const createLayout =
 	(c: ovr.Context<any>) =>
-	(props: { head: ovr.Element; children: ovr.Element }) => {
+	(props: { head: ovr.JSX.Element; children: ovr.JSX.Element }) => {
 		return (
 			<html lang="en">
 				<head>
@@ -137,7 +137,7 @@ const HomeLink = () => {
 	);
 };
 
-const NavHeading = (props: { children: ovr.Element }) => {
+const NavHeading = (props: { children: ovr.JSX.Element }) => {
 	return (
 		<h2 class="text-muted-foreground pl-2 text-xs font-bold uppercase">
 			{props.children}
@@ -199,7 +199,7 @@ const NavList = ({ c }: { c: ovr.Context }) => {
 
 const NavLink = (props: {
 	slug?: string;
-	anchor?: ovr.Element;
+	anchor?: ovr.JSX.Element;
 	c: ovr.Context;
 }) => {
 	if (!props.slug) return;

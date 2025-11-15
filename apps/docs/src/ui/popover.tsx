@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import type * as ovr from "ovr";
 
-type TriggerProps = ovr.IntrinsicElements["button"];
-type PopoverProps = ovr.IntrinsicElements["div"] & {
+type TriggerProps = ovr.JSX.IntrinsicElements["button"];
+type PopoverProps = ovr.JSX.IntrinsicElements["div"] & {
 	trigger: TriggerProps;
 	titleHref?: string;
 };

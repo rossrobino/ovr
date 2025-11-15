@@ -11,7 +11,7 @@ const notFound: ovr.Middleware = (c) => {
 	const Layout = createLayout(c);
 
 	c.html(
-		ovr.toStream(
+		ovr.render.toStream(
 			<Layout head={<Meta title="Not Found" description="Content not found" />}>
 				<h1>Not Found</h1>
 

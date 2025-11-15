@@ -1,13 +1,27 @@
+import type { MaybeFunction, MaybePromise } from "../types/index.js";
 import { Chunk } from "./chunk/index.js";
-import type { Element as E, IntrinsicElements as IE } from "./elements.js";
+import type { IntrinsicElements as IE } from "./elements.js";
 
 /** ovr JSX namespace */
 export namespace JSX {
 	/** Standard HTML elements */
 	export interface IntrinsicElements extends IE {}
 
-	/** ovr Element */
-	export type Element = E;
+	/** ovr JSX Element */
+	export type Element = MaybeFunction<
+		MaybePromise<
+			| string
+			| number
+			| bigint
+			| boolean
+			| object
+			| null
+			| undefined
+			| Symbol
+			| Iterable<Element>
+			| AsyncIterable<Element>
+		>
+	>;
 }
 
 /** Unknown component props */
@@ -34,8 +48,13 @@ const voidElements = new Set([
 	"wbr",
 ]);
 
-const next = async <T, R>(iterator: AsyncIterator<T, R>, index: number) => ({
-	index,
+/**
+ * @param iterator
+ * @param i index of the iterator within the list
+ * @returns promise containing the index and the next result of the iteration
+ */
+const next = async <T, R>(iterator: AsyncIterator<T, R>, i: number) => ({
+	i,
 	result: await iterator.next(),
 });
 
@@ -63,12 +82,9 @@ async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
 			yield (current = await Promise.race(promises.values()));
 
 			if (current.result.done) {
-				promises.delete(current.index);
+				promises.delete(current.i);
 			} else {
-				promises.set(
-					current.index,
-					next(iterators[current.index]!, current.index),
-				);
+				promises.set(current.i, next(iterators[current.i]!, current.i));
 			}
 		}
 	} finally {
@@ -89,7 +105,7 @@ async function* merge<T>(generators: AsyncGenerator<T, void>[]) {
  *
  * @param tag string or function component
  * @param props object containing all the properties and attributes passed to the element or component
- * @returns `AsyncGenerator` that yields `Chunk`s of HTML
+ * @yields `Chunk`s of HTML
  */
 export async function* jsx<P extends Props = Props>(
 	tag: ((props: P) => JSX.Element) | string,
@@ -97,7 +113,7 @@ export async function* jsx<P extends Props = Props>(
 ) {
 	if (typeof tag === "function") {
 		// component or fragment
-		yield* toGenerator(tag(props));
+		yield* render(tag(props));
 		return;
 	}
 
@@ -128,7 +144,7 @@ export async function* jsx<P extends Props = Props>(
 
 	if (voidElements.has(tag)) return;
 
-	yield* toGenerator(props.children);
+	yield* render(props.children);
 
 	yield Chunk.safe(`</${tag}>`);
 }
@@ -137,19 +153,46 @@ export async function* jsx<P extends Props = Props>(
  * JSX requires a `Fragment` export to resolve `<></>`
  *
  * @param props containing `children` to render
- * @returns async generator that yields concatenated children
+ * @yields concatenated children
  */
 export async function* Fragment(props: { children?: JSX.Element }) {
-	yield* toGenerator(props.children);
+	yield* render(props.children);
 }
 
+/** Single encoder to use across requests. */
+const encoder = new TextEncoder();
+
 /**
+ * Creates an `AsyncGenerator` that renders the `Element`.
+ *
  * @param element
  * @yields `Chunk`s of HTML as the `Element` resolves
  */
-export async function* toGenerator(
-	element: JSX.Element,
-): AsyncGenerator<Chunk, void, unknown> {
+export const render: {
+	(element: JSX.Element): AsyncGenerator<Chunk, void, unknown>;
+
+	/**
+	 * `render` piped into a `ReadableStream`.
+	 * Use `render` when possible to avoid the overhead of the stream.
+	 *
+	 * @param element
+	 * @returns `ReadableStream` of HTML
+	 */
+	toStream(element: JSX.Element): ReadableStream;
+
+	/**
+	 * Converts a `JSX.Element` into a fully concatenated string of HTML.
+	 *
+	 * ### WARNING
+	 *
+	 * This negates streaming benefits and buffers the result into a string.
+	 * Use `render` whenever possible.
+	 *
+	 * @param element
+	 * @returns Concatenated HTML
+	 */
+	toString(element: JSX.Element): Promise<string>;
+} = async function* (element) {
 	// modifications
 	// these are required to allow functions to be used as children
 	// instead of creating a separate component to use them
@@ -169,7 +212,7 @@ export async function* toGenerator(
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
 			// any async iterable - lazily resolve
-			for await (const children of element) yield* toGenerator(children);
+			for await (const children of element) yield* render(children);
 			return;
 		}
 
@@ -177,13 +220,13 @@ export async function* toGenerator(
 			// sync iterable
 			if ("next" in element) {
 				// sync generator - lazily resolve, avoids loading all in memory
-				for (const children of element) yield* toGenerator(children);
+				for (const children of element) yield* render(children);
 				return;
 			}
 
 			// other iterable - array, set, etc.
 			// process children in parallel
-			const generators = Array.from(element, toGenerator);
+			const generators = Array.from(element, render);
 			const n = generators.length;
 			const queue = new Array<Chunk | null>(n);
 			const complete = new Uint8Array(n);
@@ -191,9 +234,9 @@ export async function* toGenerator(
 
 			for await (const m of merge(generators)) {
 				if (m.result.done) {
-					complete[m.index] = 1;
+					complete[m.i] = 1;
 
-					if (m.index === current) {
+					if (m.i === current) {
 						while (++current < n) {
 							if (queue[current]) {
 								// yield whatever is in the next queue even if it hasn't completed yet
@@ -205,12 +248,12 @@ export async function* toGenerator(
 							if (!complete[current]) break;
 						}
 					}
-				} else if (m.index === current) {
+				} else if (m.i === current) {
 					yield m.result.value; // stream the current value directly
 				} else {
 					// queue the value for later
-					if (queue[m.index]) queue[m.index]!.concat(m.result.value);
-					else queue[m.index] = m.result.value;
+					if (queue[m.i]) queue[m.i]!.concat(m.result.value);
+					else queue[m.i] = m.result.value;
 				}
 			}
 
@@ -222,34 +265,13 @@ export async function* toGenerator(
 
 	// primitive or other object
 	yield new Chunk(element);
-}
+};
 
-/**
- * Converts a `JSX.Element` into a fully concatenated string of HTML.
- *
- * ### WARNING
- *
- * This negates streaming benefits and buffers the result into a string.
- * Use `toGenerator` whenever possible.
- *
- * @param element
- * @returns Concatenated HTML
- */
-export const toString = async (element: JSX.Element) =>
-	(await Array.fromAsync(toGenerator(element))).join("");
+render.toString = async (element: JSX.Element) =>
+	(await Array.fromAsync(render(element))).join("");
 
-/** Single encoder to use across requests. */
-const encoder = new TextEncoder();
-
-/**
- * `toGenerator` piped into a `ReadableStream`.
- * Use `toGenerator` when possible to avoid the overhead of the stream.
- *
- * @param element
- * @returns `ReadableStream` of HTML
- */
-export const toStream = (element: JSX.Element) => {
-	const gen = toGenerator(element);
+render.toStream = (element: JSX.Element) => {
+	const gen = render(element);
 
 	return new ReadableStream<Uint8Array>(
 		{

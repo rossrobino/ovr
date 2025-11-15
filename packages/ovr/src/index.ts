@@ -1,5 +1,4 @@
-export { jsx, toGenerator, toStream, toString, type JSX } from "./jsx/index.js";
-export type { Element, IntrinsicElements } from "./jsx/elements.js";
+export { jsx, render, type JSX } from "./jsx/index.js";
 export { Chunk } from "./jsx/chunk/index.js";
 export { App, type Middleware, type Next } from "./app/index.js";
 export { Context } from "./app/context.js";

@@ -1,4 +1,4 @@
-import { toStream } from "../jsx/index.js";
+import { render } from "../jsx/index.js";
 import { Route } from "../route/index.js";
 import { type Params } from "../trie/index.js";
 import { hash } from "../util/hash.js";
@@ -197,16 +197,14 @@ export class Context<P extends Params = Params> {
 			() => this.#run(middleware, i + 1), // next
 		);
 
-		// don't assign void return value
-		if (value === undefined) return;
-
 		// resolve the final return value
 		if (value instanceof Response) {
 			this.res(value.body, value);
 		} else if (value instanceof ReadableStream) {
 			this.body = value;
-		} else {
-			this.html(toStream(value));
+		} else if (value !== undefined) {
+			// don't assign void return value
+			this.html(render.toStream(value));
 		}
 	}
 

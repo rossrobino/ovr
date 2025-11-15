@@ -20,7 +20,7 @@ if (import.meta.env.DEV) {
 		}
 	}
 
-	const gen = ovr.toGenerator(<Component />);
+	const gen = ovr.render(<Component />);
 
 	const time = performance.now();
 	for await (const _chunk of gen);

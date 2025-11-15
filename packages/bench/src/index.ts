@@ -15,7 +15,7 @@ function* Component() {
 
 summary(() => {
 	bench("generate 500", async () => {
-		const gen = ovr.toGenerator(ovr.jsx(Component, {}));
+		const gen = ovr.render(ovr.jsx(Component, {}));
 		for await (const _r of gen);
 	}).gc("inner");
 });
