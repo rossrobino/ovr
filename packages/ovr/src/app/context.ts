@@ -72,7 +72,7 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * Mirrors `new Response()` constructor, set values with one function.
+	 * Prepare a response, mirrors `new Response()` constructor
 	 *
 	 * @param body Response BodyInit
 	 * @param init ResponseInit
@@ -153,7 +153,7 @@ export class Context<P extends Params = Params> {
 	 * - [308 Permanent Redirect](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/308)
 	 */
 	redirect(location: string | URL, status: 301 | 302 | 303 | 307 | 308 = 302) {
-		this.res(null, { status, headers: { location: location.toString() } });
+		this.res(null, { status, headers: { location: String(location) } });
 	}
 
 	/**
@@ -162,11 +162,11 @@ export class Context<P extends Params = Params> {
 	 *
 	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag)
 	 *
-	 * @param s string to hash
+	 * @param string string to hash
 	 * @returns `true` if the etag matches, `false` otherwise
 	 */
-	etag(s: string) {
-		const etag = `"${hash(s)}"`;
+	etag(string: string) {
+		const etag = `"${hash(string)}"`;
 
 		this.headers.set("etag", etag);
 
@@ -181,33 +181,33 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * Modifies the context based on the the return value of middleware.
-	 *
-	 * @param value value returned from middleware
-	 */
-	#resolveReturn(value: unknown) {
-		if (value instanceof Response) {
-			this.res(value.body, value);
-		} else if (value instanceof ReadableStream) {
-			this.body = value;
-		} else if (value != null) {
-			// nullish are not used so `void` will not render empty page
-			this.html(toStream(value));
-		}
-	}
-
-	/**
 	 * Dispatches the stack of `middleware` provided.
 	 *
 	 * @param middleware stack to run
 	 * @param i current middleware index (default `0`)
+	 * @returns return value of `middleware[i]`
 	 */
 	async #run(middleware: Middleware<P>[], i = 0) {
-		if (!middleware[i]) return;
+		const mw = middleware[i];
 
-		this.#resolveReturn(
-			await middleware[i](this, () => this.#run(middleware, i + 1)),
+		if (!mw) return; // end of stack
+
+		const value: unknown = await mw(
+			this, // c
+			() => this.#run(middleware, i + 1), // next
 		);
+
+		// don't assign void return value
+		if (value === undefined) return;
+
+		// resolve the final return value
+		if (value instanceof Response) {
+			this.res(value.body, value);
+		} else if (value instanceof ReadableStream) {
+			this.body = value;
+		} else {
+			this.html(toStream(value));
+		}
 	}
 
 	/**

@@ -134,7 +134,7 @@ export class App {
 	};
 
 	/** Basic CSRF middleware */
-	static async #csrf(c: Context, next: Next) {
+	static #csrf(c: Context, next: Next) {
 		if (
 			c.req.method === "GET" ||
 			c.req.method === "HEAD" ||

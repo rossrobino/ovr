@@ -44,7 +44,7 @@ app.use(
 );
 
 if (import.meta.env.DEV) {
-	const backpressure = new ovr.Route("GET", "/backpressure", async (c) => {
+	const backpressure = new ovr.Get("/backpressure", async (c) => {
 		// need to make each chunk is very large to observe pull stop
 		// log something in the Context.page => pull method to see
 		const res = await fetch("http://localhost:5173/demo/memory");
