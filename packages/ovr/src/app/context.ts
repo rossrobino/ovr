@@ -4,20 +4,43 @@ import { type Params } from "../trie/index.js";
 import { hash } from "../util/hash.js";
 import { type Middleware } from "./index.js";
 
+type PreparedResponse = {
+	/**
+	 * `body` used to create the `Response`.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body)
+	 */
+	body?: BodyInit | null;
+
+	/**
+	 * `status` used to create the `Response`.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+	 */
+	status?: number;
+
+	/**
+	 * `Headers` used to create the `Response`.
+	 *
+	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
+	 */
+	headers: Headers;
+};
+
 export class Context<P extends Params = Params> {
 	/**
 	 * Incoming `Request` to the server.
 	 *
 	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Request)
 	 */
-	req: Request;
+	readonly req: Request;
 
 	/**
 	 * Parsed `URL` created from `req.url`.
 	 *
 	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URL)
 	 */
-	url: URL;
+	readonly url: URL;
 
 	/**
 	 * Route pattern parameters
@@ -27,19 +50,13 @@ export class Context<P extends Params = Params> {
 	 *
 	 * @example { slug: "my-post" }
 	 */
-	params: P = {} as P; // set after match
+	readonly params: P = {} as P; // set after match
 
 	/** Matched `Route` instance. */
-	route: Route | null = null;
+	readonly route?: Route;
 
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body) */
-	body: BodyInit | null = null;
-
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) */
-	status?: number;
-
-	/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers) */
-	headers = new Headers();
+	/** Contains the arguments to used create the final `Response`. */
+	readonly res: PreparedResponse = { headers: new Headers() };
 
 	/**
 	 * Middleware to run when no `body` or `status` has been set on the `context`.
@@ -56,7 +73,7 @@ export class Context<P extends Params = Params> {
 	 */
 	notFound: Middleware<P> = (c) => {
 		c.text("Not found", 404);
-		c.headers.set("cache-control", "no-cache");
+		c.res.headers.set("cache-control", "no-cache");
 	};
 
 	static readonly #contentType = "content-type";
@@ -72,46 +89,15 @@ export class Context<P extends Params = Params> {
 	}
 
 	/**
-	 * Prepare a response, mirrors `new Response()` constructor
-	 *
-	 * @param body Response BodyInit
-	 * @param init ResponseInit
-	 */
-	res(
-		body: BodyInit | null,
-		init?: {
-			/**
-			 * [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
-			 *
-			 * @default 200
-			 */
-			status?: number;
-
-			/** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers) */
-			headers?: HeadersInit;
-		},
-	) {
-		this.body = body;
-		this.status = init?.status ?? 200;
-
-		if (init?.headers) {
-			for (const [name, value] of new Headers(init.headers)) {
-				this.headers.set(name, value);
-			}
-		}
-	}
-
-	/**
 	 * Creates an HTML response.
 	 *
 	 * @param body HTML body
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
 	html(body: BodyInit | null, status?: number) {
-		this.res(body, {
-			status,
-			headers: { [Context.#contentType]: "text/html; charset=utf-8" },
-		});
+		this.res.body = body;
+		this.res.status = status;
+		this.res.headers.set(Context.#contentType, "text/html; charset=utf-8");
 	}
 
 	/**
@@ -121,10 +107,9 @@ export class Context<P extends Params = Params> {
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
 	json(data: unknown, status?: number) {
-		this.res(JSON.stringify(data), {
-			status,
-			headers: { [Context.#contentType]: "application/json" },
-		});
+		this.res.body = JSON.stringify(data);
+		this.res.status = status;
+		this.res.headers.set(Context.#contentType, "application/json");
 	}
 
 	/**
@@ -134,10 +119,9 @@ export class Context<P extends Params = Params> {
 	 * @param status [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 	 */
 	text(body: BodyInit, status?: number) {
-		this.res(body, {
-			status,
-			headers: { [Context.#contentType]: "text/plain; charset=utf-8" },
-		});
+		this.res.body = body;
+		this.res.status = status;
+		this.res.headers.set(Context.#contentType, "text/plain; charset=utf-8");
 	}
 
 	/**
@@ -153,7 +137,9 @@ export class Context<P extends Params = Params> {
 	 * - [308 Permanent Redirect](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/308)
 	 */
 	redirect(location: string | URL, status: 301 | 302 | 303 | 307 | 308 = 302) {
-		this.res(null, { status, headers: { location: String(location) } });
+		this.res.body = null;
+		this.res.status = status;
+		this.res.headers.set("location", String(location));
 	}
 
 	/**
@@ -168,11 +154,11 @@ export class Context<P extends Params = Params> {
 	etag(string: string) {
 		const etag = `"${hash(string)}"`;
 
-		this.headers.set("etag", etag);
+		this.res.headers.set("etag", etag);
 
 		if (this.req.headers.get("if-none-match") === etag) {
-			this.body = null;
-			this.status = 304;
+			this.res.body = null;
+			this.res.status = 304;
 
 			return true;
 		}
@@ -199,11 +185,14 @@ export class Context<P extends Params = Params> {
 
 		// resolve the final return value
 		if (value instanceof Response) {
-			this.res(value.body, value);
+			this.res.body = value.body;
+			this.res.status = value.status;
+			for (const [name, header] of value.headers) {
+				this.res.headers.set(name, header);
+			}
 		} else if (value instanceof ReadableStream) {
-			this.body = value;
+			this.res.body = value;
 		} else if (value !== undefined) {
-			// don't assign void return value
 			this.html(render.stream(value));
 		}
 	}
@@ -217,8 +206,10 @@ export class Context<P extends Params = Params> {
 	async build(middleware: Middleware<P>[]) {
 		await this.#run(middleware);
 
-		if (!this.body && !this.status) this.notFound(this, Promise.resolve);
+		if (!this.res.body && !this.res.status) {
+			this.notFound(this, Promise.resolve);
+		}
 
-		return new Response(this.body, this);
+		return new Response(this.res.body, this.res);
 	}
 }

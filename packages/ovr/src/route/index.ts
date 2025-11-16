@@ -4,7 +4,7 @@ import type { Params } from "../trie/index.js";
 import type { ExtractParams, InsertParams } from "../types/index.js";
 import { hash } from "../util/hash.js";
 
-export type UrlOptions<P extends Params> = {
+type UrlOptions<P extends Params> = {
 	/**
 	 * Passed into `URLSearchParams` constructor to create new params.
 	 *
@@ -38,12 +38,13 @@ export class Route<Pattern extends string = string> {
 	declare readonly Params: ExtractParams<Pattern>;
 
 	/** Route pattern */
-	pattern: Pattern;
+	readonly pattern: Pattern;
+
+	/** HTTP method */
+	readonly method: Method;
 
 	/** GET middleware */
 	middleware: Middleware<any>[]; // any so you can use other middleware
-
-	method: Method;
 
 	/** `<button>` component with preset `formaction` and `formmethod` attributes. */
 	Button: (

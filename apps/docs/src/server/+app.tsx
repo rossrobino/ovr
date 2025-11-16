@@ -60,7 +60,7 @@ if (import.meta.env.DEV) {
 			if (done) break;
 		}
 
-		c.res("done");
+		c.text("done");
 	});
 
 	app.use(backpressure);

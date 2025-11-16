@@ -1,50 +1,45 @@
 import { bench, run, summary } from "mitata";
-import * as ovr from "ovr";
+import * as o from "ovr";
 
 async function Async() {
-	return ovr.jsx("p", { children: "Async" });
+	return o.jsx("p", { children: "Async" });
 }
 
 function* Component() {
 	for (let r = 0; r < 500; r++) {
-		yield ovr.jsx("div", {
-			children: [r, ovr.jsx(Async, { class: "text-sm" })],
-		});
+		yield o.jsx("div", { children: [r, o.jsx(Async, { class: "text-sm" })] });
 	}
 }
 
 summary(() => {
 	bench("generate 500", async () => {
-		const gen = ovr.render(ovr.jsx(Component, {}));
+		const gen = o.render(o.jsx(Component, {}));
 		for await (const _r of gen);
 	}).gc("inner");
 });
 
-const app = new ovr.App();
+const app = new o.App();
 
 app.use(
-	new ovr.Get("/", () => "home"),
-	new ovr.Get("/test", () => "test"),
-	new ovr.Get("/:slug", (c) => c.params.slug),
-	new ovr.Get("/test/:slug", (c) => c.params.slug),
-	new ovr.Get("/posts", (c) => c.text("posts")),
-	new ovr.Get(
+	new o.Get("/", () => "home"),
+	new o.Get("/test", () => "test"),
+	new o.Get("/:slug", (c) => c.params.slug),
+	new o.Get("/test/:slug", (c) => c.params.slug),
+	new o.Get("/posts", (c) => c.text("posts")),
+	new o.Get(
 		"/posts/:postId/comments",
 		(c) => `comments for ${c.params.postId}`,
 	),
-	new ovr.Get(
+	new o.Get(
 		"/posts/:postId/comments/:commentId",
 		(c) => `comment ${c.params.commentId} on post ${c.params.postId}`,
 	),
-	new ovr.Get("/api/users", () => "users index"),
-	new ovr.Get("/api/users/:id", (c) => `user ${c.params.id}`),
-	new ovr.Get("/static/*", (c) => `static ${c.params["*"] ?? ""}`),
-	new ovr.Get(
-		"/assets/:type/:name",
-		(c) => `${c.params.type}/${c.params.name}`,
-	),
-	new ovr.Get("/files/:path", (c) => `file ${c.params.path}`),
-	new ovr.Post("/api/users", async (c) => {
+	new o.Get("/api/users", () => "users index"),
+	new o.Get("/api/users/:id", (c) => `user ${c.params.id}`),
+	new o.Get("/static/*", (c) => `static ${c.params["*"] ?? ""}`),
+	new o.Get("/assets/:type/:name", (c) => `${c.params.type}/${c.params.name}`),
+	new o.Get("/files/:path", (c) => `file ${c.params.path}`),
+	new o.Post("/api/users", async (c) => {
 		return c.json({ created: true });
 	}),
 );

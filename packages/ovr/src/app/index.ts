@@ -82,10 +82,10 @@ export class App {
 	}
 
 	/** Route trie */
-	#trie = new Trie();
+	readonly #trie = new Trie();
 
 	/** Global middleware */
-	#global: Middleware[] = [];
+	readonly #global: Middleware[] = [];
 
 	/**
 	 * @param routes Route or middleware to use
@@ -116,7 +116,7 @@ export class App {
 	 * @param options [Options](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch#options) to apply to the request
 	 * @returns Promise that resolves to the [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) to the request
 	 */
-	fetch = async (
+	readonly fetch = async (
 		resource: RequestInfo | URL,
 		options?: RequestInit,
 	): Promise<Response> => {
@@ -152,7 +152,7 @@ export class App {
 		return async (c: Context, next: Next) => {
 			await next();
 
-			if (c.status && c.status !== 404) return;
+			if (c.res.status && c.res.status !== 404) return;
 
 			const last = c.url.pathname.at(-1);
 

@@ -55,9 +55,10 @@ export const page = new ovr.Get("/:slug", (c) => {
 
 	if (md) {
 		// .md extensions
-		return c.res(getMd(result), {
-			headers: { "content-type": "text/markdown; charset=UTF-8" },
-		});
+		c.res.body = getMd(result);
+		c.res.status = 200;
+		c.res.headers.set("content-type", "text/markdown; charset=UTF-8");
+		return;
 	}
 
 	const Layout = createLayout(c);
