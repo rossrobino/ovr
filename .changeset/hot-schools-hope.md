@@ -11,8 +11,8 @@ import * as ovr from "ovr";
 + ovr.render(el);
 
 - ovr.toStream(el);
-+ ovr.render.toStream(el);
++ ovr.render.stream(el);
 
 - ovr.toString(el);
-+ ovr.render.toString(el);
++ ovr.render.string(el);
 ```

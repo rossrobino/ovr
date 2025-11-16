@@ -27,54 +27,31 @@ new App({ trailingSlash: "always" });
 
 ### CSRF
 
-ovr comes with built-in basic [cross-site request forgery](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF) protection.
+ovr comes with basic [cross-site request forgery](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF) protection.
 
 ```ts
-new App({ csrf: false }); // disables the built-in checks
+new App({ csrf: false }); // disables the built-in protection
 ```
 
 ## Response
 
-At the most basic level, you can create a route and return a `Response` from the middleware to handle a request.
+At the most basic level, you can return a `Response` or `ReadableStream` from a `Middleware` function to handle a request.
 
 ```ts
-app.get("/", () => new Response("Hello world"));
+app.use(() => new Response("Hello world"));
 ```
 
-You can also return a `ReadableStream` to use as the `Response.body`.
+## HTML
 
-## JSX
-
-Returning JSX from middleware will generate an HTML streamed response.
+Returning anything else (for example JSX) from middleware will generate an HTML streamed response.
 
 ```tsx
-app.get("/", () => <h1>Hello world</h1>);
-```
-
-## HTTP methods
-
-`app.get` and `app.post` create handlers for the HTTP methods respectively. You can add other or custom methods with `app.on`.
-
-```ts
-// Other or custom methods
-app.on("METHOD", "/pattern", () => {
-	// ...
-});
-```
-
-## Multiple patterns
-
-Add the same middleware to multiple patterns.
-
-```ts
-app.get(["/multi/:param", "/pattern/:another"], (c) => {
-	c.params; // { param: string } | { another: string }
-});
+app.use(() => <h1>Hello world</h1>);
 ```
 
 ## Middleware
 
-When multiple middleware handlers are added to a route, the first middleware will be called, and the `next` middleware can be dispatched within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
+When multiple middleware functions are added to a route, the first middleware will be called, and the `next` middleware can be dispatched within the first by using `await next()`. Middleware is based on [koa-compose](https://github.com/koajs/compose).
 
 ```ts
 app.get(

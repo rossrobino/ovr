@@ -204,7 +204,7 @@ export class Context<P extends Params = Params> {
 			this.body = value;
 		} else if (value !== undefined) {
 			// don't assign void return value
-			this.html(render.toStream(value));
+			this.html(render.stream(value));
 		}
 	}
 

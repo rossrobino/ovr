@@ -69,7 +69,7 @@ function* Features() {
 		},
 		{
 			title: "Type Safe",
-			href: "/04-helpers#pathname",
+			href: "/04-route#pathname",
 			content: "Type safe path parameters, components, and more.",
 		},
 		{

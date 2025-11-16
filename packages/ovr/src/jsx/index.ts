@@ -178,7 +178,7 @@ export const render: {
 	 * @param element
 	 * @returns `ReadableStream` of HTML
 	 */
-	toStream(element: JSX.Element): ReadableStream;
+	stream(element: JSX.Element): ReadableStream;
 
 	/**
 	 * Converts a `JSX.Element` into a fully concatenated string of HTML.
@@ -191,7 +191,7 @@ export const render: {
 	 * @param element
 	 * @returns Concatenated HTML
 	 */
-	toString(element: JSX.Element): Promise<string>;
+	string(element: JSX.Element): Promise<string>;
 } = async function* (element) {
 	// modifications
 	// these are required to allow functions to be used as children
@@ -267,10 +267,10 @@ export const render: {
 	yield new Chunk(element);
 };
 
-render.toString = async (element: JSX.Element) =>
+render.string = async (element: JSX.Element) =>
 	(await Array.fromAsync(render(element))).join("");
 
-render.toStream = (element: JSX.Element) => {
+render.stream = (element: JSX.Element) => {
 	const gen = render(element);
 
 	return new ReadableStream<Uint8Array>(

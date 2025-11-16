@@ -25,6 +25,8 @@ To utilize JSX, add the following options to your `tsconfig.json` to enable the 
 { "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "ovr" } }
 ```
 
+> While the ovr package does not depend on React, it uses the same JSX transform as React that is built into `tsc` and other build tools.
+
 Or you can use a comment if you are using ovr in conjunction with another framework to specify the import source for a specific module where you are using ovr.
 
 ```tsx
@@ -54,7 +56,7 @@ import { serve } from "srvx";
 
 const app = new App();
 
-app.get("/", () => <h1>Hello World</h1>);
+app.use(() => <h1>Hello World</h1>);
 
 serve({ fetch: app.fetch });
 ```

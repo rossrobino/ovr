@@ -3,7 +3,7 @@ import "drab/prefetch/define";
 import "drab/share/define";
 
 if (import.meta.env.DEV) {
-	const ovr = await import("ovr");
+	const o = await import("ovr");
 
 	async function Async() {
 		return <p>Async</p>;
@@ -20,7 +20,7 @@ if (import.meta.env.DEV) {
 		}
 	}
 
-	const gen = ovr.render(<Component />);
+	const gen = o.render(<Component />);
 
 	const time = performance.now();
 	for await (const _chunk of gen);
