@@ -1,5 +1,5 @@
-import { Chunk } from "../../../../apps/docs/dist/client/_immutable/chunks/index.DS8tezsW.js";
-import { Get, Post } from "../route/index.js";
+import { Chunk } from "../chunk/index.js";
+import { Route } from "../route/index.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
@@ -9,7 +9,7 @@ const get = (pathname: string) => app.fetch("http://localhost:5173" + pathname);
 
 test("context", () => {
 	app.use(
-		new Get(
+		Route.get(
 			"/",
 			async (c, next) => {
 				c.req.headers.set("hello", "world");
@@ -23,19 +23,19 @@ test("context", () => {
 				c.text("hello world");
 			},
 		),
-		new Get("/api/:id/", (c) => {
+		Route.get("/api/:id/", (c) => {
 			expect(c.params.id).toBeDefined();
 			c.json(c.params);
 		}),
-		new Get("/wild/*", (c) => {
+		Route.get("/wild/*", (c) => {
 			expect(c.params["*"]).toBeDefined();
 			c.json(c.params);
 		}),
-		new Post("/post/", async (c) => {
+		Route.post("/post/", async (c) => {
 			const formData = await c.req.formData();
 			c.json(formData.get("key"));
 		}),
-		new Get("/page", () => "page"),
+		Route.get("/page/", () => "page"),
 	);
 });
 
@@ -54,10 +54,10 @@ test("GET /api/:id/", async () => {
 });
 
 test("GET /wild/*", async () => {
-	const res = await get("/wild/hello");
+	const res = await get("/wild/hello/");
 	const json = await res.json();
 
-	expect(json["*"]).toBe("hello");
+	expect(json["*"]).toBe("hello/");
 });
 
 test("POST /post/", async () => {
@@ -94,7 +94,7 @@ describe("trailing slash", () => {
 	});
 
 	test("never", async () => {
-		const nev = new App().use(new Get("/test", (c) => c.text("test")));
+		const nev = new App().use(Route.get("/test", (c) => c.text("test")));
 
 		const res = await nev.fetch(new Request("http://localhost:5173/test/"));
 
@@ -104,8 +104,8 @@ describe("trailing slash", () => {
 
 	test("ignore", async () => {
 		const ignore = new App({ trailingSlash: "ignore" }).use(
-			new Get("/nope", (c) => c.text("nope")),
-			new Get("/yup/", (c) => c.text("yup")),
+			Route.get("/nope", (c) => c.text("nope")),
+			Route.get("/yup/", (c) => c.text("yup")),
 		);
 
 		expect(
@@ -125,7 +125,7 @@ describe("trailing slash", () => {
 });
 
 test("html", async () => {
-	const res = await get("/page");
+	const res = await get("/page/");
 	const text = await res.text();
 	expect(res.status).toBe(200);
 	expect(text).toBe("page");
@@ -133,7 +133,7 @@ test("html", async () => {
 
 test("etag", async () => {
 	const r = new App().use(
-		new Get("/etag", (c) => {
+		Route.get("/etag", (c) => {
 			const text = "hello world";
 			const matched = c.etag("hello");
 

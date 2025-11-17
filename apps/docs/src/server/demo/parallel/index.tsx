@@ -3,7 +3,7 @@ import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
 import * as ovr from "ovr";
 
-export const parallel = new ovr.Get("/demo/parallel", (c) => {
+export const parallel = ovr.Route.get("/demo/parallel", (c) => {
 	const Layout = createLayout(c);
 
 	const Delay = async ({ ms }: { ms: number }) => {

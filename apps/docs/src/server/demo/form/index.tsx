@@ -4,7 +4,7 @@ import { Meta } from "@/ui/meta";
 import * as ovr from "ovr";
 import * as z from "zod";
 
-export const form = new ovr.Get("/demo/form", (c) => {
+export const form = ovr.Route.get("/demo/form", (c) => {
 	const Layout = createLayout(c);
 
 	return (
@@ -27,7 +27,7 @@ export const form = new ovr.Get("/demo/form", (c) => {
 	);
 });
 
-export const post = new ovr.Post(async (c) => {
+export const post = ovr.Route.post(async (c) => {
 	const data = await c.req.formData();
 	const name = z.string().parse(data.get("name"));
 	name; // text input string

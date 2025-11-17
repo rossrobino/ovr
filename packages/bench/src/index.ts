@@ -21,25 +21,28 @@ summary(() => {
 const app = new o.App();
 
 app.use(
-	new o.Get("/", () => "home"),
-	new o.Get("/test", () => "test"),
-	new o.Get("/:slug", (c) => c.params.slug),
-	new o.Get("/test/:slug", (c) => c.params.slug),
-	new o.Get("/posts", (c) => c.text("posts")),
-	new o.Get(
+	o.Route.get("/", () => "home"),
+	o.Route.get("/test", () => "test"),
+	o.Route.get("/:slug", (c) => c.params.slug),
+	o.Route.get("/test/:slug", (c) => c.params.slug),
+	o.Route.get("/posts", (c) => c.text("posts")),
+	o.Route.get(
 		"/posts/:postId/comments",
 		(c) => `comments for ${c.params.postId}`,
 	),
-	new o.Get(
+	o.Route.get(
 		"/posts/:postId/comments/:commentId",
 		(c) => `comment ${c.params.commentId} on post ${c.params.postId}`,
 	),
-	new o.Get("/api/users", () => "users index"),
-	new o.Get("/api/users/:id", (c) => `user ${c.params.id}`),
-	new o.Get("/static/*", (c) => `static ${c.params["*"] ?? ""}`),
-	new o.Get("/assets/:type/:name", (c) => `${c.params.type}/${c.params.name}`),
-	new o.Get("/files/:path", (c) => `file ${c.params.path}`),
-	new o.Post("/api/users", async (c) => {
+	o.Route.get("/api/users", () => "users index"),
+	o.Route.get("/api/users/:id", (c) => `user ${c.params.id}`),
+	o.Route.get("/static/*", (c) => `static ${c.params["*"] ?? ""}`),
+	o.Route.get(
+		"/assets/:type/:name",
+		(c) => `${c.params.type}/${c.params.name}`,
+	),
+	o.Route.get("/files/:path", (c) => `file ${c.params.path}`),
+	o.Route.post("/api/users", (c) => {
 		return c.json({ created: true });
 	}),
 );

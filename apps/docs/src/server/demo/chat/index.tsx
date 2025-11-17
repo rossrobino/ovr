@@ -22,7 +22,7 @@ async function* Poet(props: { message: string }) {
 	}
 }
 
-export const chat = new ovr.Get("/demo/chat", (c) => {
+export const chat = ovr.Route.get("/demo/chat", (c) => {
 	const Layout = createLayout(c);
 
 	return (
@@ -48,7 +48,7 @@ export const chat = new ovr.Get("/demo/chat", (c) => {
 	);
 });
 
-export const stream = new ovr.Post(async (c) => {
+export const stream = ovr.Route.post(async (c) => {
 	const Layout = createLayout(c);
 
 	const data = await c.req.formData();

@@ -1,4 +1,4 @@
-import { Context } from "../app/context.js";
+import { Context } from "../context/index.js";
 import { Route } from "../route/index.js";
 import { Trie } from "./index.js";
 import { expect, test } from "vitest";
@@ -6,49 +6,40 @@ import { expect, test } from "vitest";
 const c = new Context(new Request("https://localhost/"));
 
 const trie = new Trie()
-	.add(new Route("GET", "/", () => "/"))
-	.add(new Route("GET", "/static/static", () => "/static/static"))
-	.add(new Route("GET", "/static/:param", () => "/static/:param"))
+	.add(Route.get("/", () => "/"))
+	.add(Route.get("/static/static", () => "/static/static"))
+	.add(Route.get("/static/:param", () => "/static/:param"))
+	.add(Route.get("/static/:param/:another", () => "/static/:param/:another"))
 	.add(
-		new Route(
-			"GET",
-			"/static/:param/:another",
-			() => "/static/:param/:another",
-		),
-	)
-	.add(
-		new Route(
-			"GET",
+		Route.get(
 			"/static/:param/:another/static",
 			() => "/static/:param/:another/static",
 		),
 	)
 	.add(
-		new Route(
-			"GET",
+		Route.get(
 			"/static/:param/:another/static/static",
 			() => "/static/:param/:another/static/static",
 		),
 	)
 	.add(
-		new Route(
-			"GET",
+		Route.get(
 			"/static/:param/:another/static/different",
 			() => "/static/:param/:another/static/different",
 		),
 	)
-	.add(new Route("GET", "/static/fork", () => "/static/fork"))
-	.add(new Route("GET", "/static/fork/:param", () => "/static/fork/:param"))
-	.add(new Route("GET", "/wild/*", () => "/wild/*"));
+	.add(Route.get("/static/fork", () => "/static/fork"))
+	.add(Route.get("/static/fork/:param", () => "/static/fork/:param"))
+	.add(Route.get("/wild/*", () => "/wild/*"));
 
 test("/", () => {
-	const result = trie.find("/");
+	const result = trie.find("GET/");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe("/");
 	expect(result?.params).toStrictEqual({});
 });
 
 test("/static/static", () => {
-	const result = trie.find("/static/static");
+	const result = trie.find("GET/static/static");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe(
 		"/static/static",
 	);
@@ -56,7 +47,7 @@ test("/static/static", () => {
 });
 
 test("/static/:param", () => {
-	const result = trie.find("/static/param");
+	const result = trie.find("GET/static/param");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe(
 		"/static/:param",
 	);
@@ -64,7 +55,7 @@ test("/static/:param", () => {
 });
 
 test("/static/:param/:another", () => {
-	const result = trie.find("/static/param/another");
+	const result = trie.find("GET/static/param/another");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe(
 		"/static/:param/:another",
 	);
@@ -72,7 +63,7 @@ test("/static/:param/:another", () => {
 });
 
 test("/static/:param/:another/static", () => {
-	const result = trie.find("/static/param/another/static");
+	const result = trie.find("GET/static/param/another/static");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe(
 		"/static/:param/:another/static",
 	);
@@ -80,7 +71,7 @@ test("/static/:param/:another/static", () => {
 });
 
 test("/static/:param/:another/static/static", () => {
-	const result = trie.find("/static/param/another/static/static");
+	const result = trie.find("GET/static/param/another/static/static");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe(
 		"/static/:param/:another/static/static",
 	);
@@ -88,7 +79,7 @@ test("/static/:param/:another/static/static", () => {
 });
 
 test("/static/:param/:another/static/different", () => {
-	const result = trie.find("/static/param/another/static/different");
+	const result = trie.find("GET/static/param/another/static/different");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe(
 		"/static/:param/:another/static/different",
 	);
@@ -96,13 +87,13 @@ test("/static/:param/:another/static/different", () => {
 });
 
 test("/static/fork", () => {
-	const result = trie.find("/static/fork");
+	const result = trie.find("GET/static/fork");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe("/static/fork");
 	expect(result?.params).toStrictEqual({});
 });
 
 test("/static/fork/:param", () => {
-	const result = trie.find("/static/fork/param");
+	const result = trie.find("GET/static/fork/param");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe(
 		"/static/fork/:param",
 	);
@@ -110,34 +101,34 @@ test("/static/fork/:param", () => {
 });
 
 test("/wild/*", () => {
-	const result = trie.find("/wild/whatever");
+	const result = trie.find("GET/wild/whatever");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe("/wild/*");
 	expect(result?.params).toStrictEqual({ "*": "whatever" });
 });
 
 test("/nope", () => {
-	const result = trie.find("/nope");
+	const result = trie.find("GET/nope");
 	expect(result).toBe(null);
 });
 
 test("/static//static", () => {
-	const result = trie.find("/static//static");
+	const result = trie.find("GET/static//static");
 	expect(result).toBe(null);
 });
 
 test("Empty path", () => {
-	const result = trie.find("");
+	const result = trie.find("GET");
 	expect(result).toBe(null);
 });
 
 test("/static/ (trailing slash)", () => {
-	const result = trie.find("/static/");
+	const result = trie.find("GET/static/");
 	expect(result).toBe(null);
 });
 
 test("/*", () => {
-	trie.add(new Route("GET", "/*", () => "/*"));
-	const result = trie.find("/whatever");
+	trie.add(Route.get("/*", () => "/*"));
+	const result = trie.find("GET/whatever");
 	expect(result?.route.middleware[0](c, Promise.resolve)).toBe("/*");
 	expect(result?.params).toStrictEqual({ "*": "whatever" });
 });

@@ -16,7 +16,7 @@ const mw: ovr.Middleware = (c, next) => {
 	return next();
 };
 
-const route = new ovr.Get("/", () => "hello world");
+const route = ovr.Route.get("/", () => "hello world");
 
 app.use(mw, route);
 ```

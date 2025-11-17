@@ -4,7 +4,6 @@
 	"type": "module",
 	"scripts": {
 		"check": "tsc --noEmit",
-		"dev": "tsc --watch",
 		"build": "tsc",
 		"start": "tsc && node --expose-gc dist"
 	},

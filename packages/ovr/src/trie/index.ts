@@ -1,10 +1,8 @@
 import type { Route } from "../route/index.js";
 
-export type Params = Record<string, string>;
-
 class ParamNode {
 	/** Name of the parameter (without the colon ":") */
-	name: string;
+	readonly name: string;
 
 	/** Matched route */
 	route: Route | null = null;
@@ -22,9 +20,14 @@ class ParamNode {
 	}
 }
 
+export namespace Trie {
+	/** Params created from the route match */
+	export type Params = Record<string, string>;
+}
+
 export class Trie {
 	/** Unique segment of the pattern trie */
-	segment: string;
+	readonly segment: string;
 
 	/** Static child node map, key is the first character in the segment */
 	staticMap: Map<number, Trie> | null = null;
@@ -38,8 +41,8 @@ export class Trie {
 	/** Matched wildcard route */
 	wildcard: Route | null = null;
 
-	static #paramMatch = /:.+?(?=\/|$)/g;
-	static #paramSplit = /:.+?(?=\/|$)/;
+	static readonly #paramMatch = /:.+?(?=\/|$)/g;
+	static readonly #paramSplit = /:.+?(?=\/|$)/;
 
 	/**
 	 * Create a new trie.
@@ -245,7 +248,7 @@ export class Trie {
 	 * @param pathname Path to find
 	 * @returns `Route` and the matched `params` if found, otherwise `null`
 	 */
-	find(pathname: string): { route: Route; params: Params } | null {
+	find(pathname: string): { route: Route; params: Trie.Params } | null {
 		if (
 			// too short
 			pathname.length < this.segment.length ||

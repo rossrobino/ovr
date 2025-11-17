@@ -2,10 +2,13 @@
 import type { JSX, Props } from "./index.js";
 
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
-type Attributes<
-	P extends Props = Props,
-	Children = JSX.Element, // for void elements `undefined` is passed in here
-> = Partial<{
+/**
+ * HTML Attributes
+ *
+ * @template P Additional props
+ * @template Children For void elements - `undefined` is passed in here
+ */
+type Attributes<P extends Props = Props, Children = JSX.Element> = Partial<{
 	children: Children;
 	accesskey: string;
 	anchor: string;

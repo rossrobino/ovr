@@ -1,33 +1,41 @@
 import { render } from "../jsx/index.js";
+import { type Middleware } from "../middleware/index.js";
 import { Route } from "../route/index.js";
-import { type Params } from "../trie/index.js";
+import { type Trie } from "../trie/index.js";
 import { hash } from "../util/hash.js";
-import { type Middleware } from "./index.js";
 
-type PreparedResponse = {
-	/**
-	 * `body` used to create the `Response`.
-	 *
-	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body)
-	 */
-	body?: BodyInit | null;
+export namespace Context {
+	/** Properties to build the final `Response` with once middleware has run. */
+	export type PreparedResponse = {
+		/**
+		 * `body` used to create the `Response`.
+		 *
+		 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Response/Response#body)
+		 */
+		body?: BodyInit | null;
 
-	/**
-	 * `status` used to create the `Response`.
-	 *
-	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
-	 */
-	status?: number;
+		/**
+		 * `status` used to create the `Response`.
+		 *
+		 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+		 */
+		status?: number;
 
-	/**
-	 * `Headers` used to create the `Response`.
-	 *
-	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
-	 */
-	headers: Headers;
-};
+		/**
+		 * `Headers` used to create the `Response`.
+		 *
+		 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/Headers)
+		 */
+		headers: Headers;
+	};
+}
 
-export class Context<P extends Params = Params> {
+/**
+ * Request context.
+ *
+ * @template Params Parameters created from a route match
+ */
+export class Context<Params extends Trie.Params = Trie.Params> {
 	/**
 	 * Incoming `Request` to the server.
 	 *
@@ -42,21 +50,17 @@ export class Context<P extends Params = Params> {
 	 */
 	readonly url: URL;
 
-	/**
-	 * Route pattern parameters
-	 *
-	 * Given the route pattern `/posts/:slug` is added, a request made to
-	 * `/posts/my-post` creates a `params` object `{ slug: "my-post" }`.
-	 *
-	 * @example { slug: "my-post" }
-	 */
-	readonly params: P = {} as P; // set after match
+	/** Route pattern parameters. */
+	readonly params: Params = {} as Params; // set after match
 
 	/** Matched `Route` instance. */
 	readonly route?: Route;
 
 	/** Contains the arguments to used create the final `Response`. */
-	readonly res: PreparedResponse = { headers: new Headers() };
+	readonly res: Context.PreparedResponse = { headers: new Headers() };
+
+	// for reuse across methods
+	static readonly #contentType = "content-type";
 
 	/**
 	 * Middleware to run when no `body` or `status` has been set on the `context`.
@@ -71,12 +75,10 @@ export class Context<P extends Params = Params> {
 	 * }
 	 * ```
 	 */
-	notFound: Middleware<P> = (c) => {
+	notFound: Middleware<Params> = (c) => {
 		c.text("Not found", 404);
 		c.res.headers.set("cache-control", "no-cache");
 	};
-
-	static readonly #contentType = "content-type";
 
 	/**
 	 * Creates a new `Context` with the current `Request`.
@@ -173,7 +175,7 @@ export class Context<P extends Params = Params> {
 	 * @param i current middleware index (default `0`)
 	 * @returns return value of `middleware[i]`
 	 */
-	async #run(middleware: Middleware<P>[], i = 0) {
+	async #run(middleware: Middleware<Params>[], i = 0) {
 		const mw = middleware[i];
 
 		if (!mw) return; // end of stack
@@ -203,7 +205,7 @@ export class Context<P extends Params = Params> {
 	 * @param middleware stack to compose
 	 * @returns constructed `Response`
 	 */
-	async build(middleware: Middleware<P>[]) {
+	async build(middleware: Middleware<Params>[]) {
 		await this.#run(middleware);
 
 		if (!this.res.body && !this.res.status) {

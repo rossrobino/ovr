@@ -1,38 +1,108 @@
-import type { Method, Middleware } from "../app/index.js";
 import { type JSX, jsx } from "../jsx/index.js";
-import type { Params } from "../trie/index.js";
-import type { ExtractParams, InsertParams } from "../types/index.js";
+import type { Middleware } from "../middleware/index.js";
+import type { Trie } from "../trie/index.js";
+import type { ExtractParams, InsertParams, Method } from "../types/index.js";
 import { hash } from "../util/hash.js";
 
-type UrlOptions<P extends Params> = {
+export namespace Route {
 	/**
-	 * Passed into `URLSearchParams` constructor to create new params.
+	 * Options to construct a relative URL from the route.
 	 *
-	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+	 * @template Params Parameters created from a route match
 	 */
-	search?:
-		| string
-		// Iterable is more accurate than the built in string[][] + URLSearchParams
-		// https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/2070
-		| Iterable<[string, string]>
-		| Record<string, string>;
+	export type URLOptions<Params extends Trie.Params> = {
+		/**
+		 * Passed into `URLSearchParams` constructor to create new params.
+		 *
+		 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+		 */
+		readonly search?:
+			| string
+			// Iterable is more accurate than the built in string[][] + URLSearchParams
+			// https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/2070
+			| Iterable<[string, string]>
+			| Record<string, string>;
+
+		/**
+		 * Hash (fragment) of the URL. `"#"` prefix is added if not present.
+		 *
+		 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash)
+		 */
+		readonly hash?: string;
+	} & (keyof Params extends never
+		? {
+				/** Route pattern does not contain parameters */
+				readonly params?: never;
+			}
+		: {
+				/** Route pattern parameters */
+				readonly params: Params;
+			});
 
 	/**
-	 * Hash (fragment) of the URL. `"#"` prefix is added if not present.
+	 * `<Anchor>` route component type
 	 *
-	 * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash)
+	 * @template Pattern Route pattern
 	 */
-	hash?: string;
-} & (keyof P extends never
-	? {
-			/** Route pattern does not contain parameters */
-			params?: never;
-		}
-	: {
-			/** Route pattern parameters */
-			params: P;
-		});
+	export type Anchor<Pattern extends string> = (
+		props: JSX.IntrinsicElements["a"] & URLOptions<ExtractParams<Pattern>>,
+	) => JSX.Element;
 
+	/**
+	 * `<Button>` route component type
+	 *
+	 * @template Pattern Route pattern
+	 */
+	export type Button<Pattern extends string> = (
+		props: JSX.IntrinsicElements["button"] & URLOptions<ExtractParams<Pattern>>,
+	) => JSX.Element;
+
+	/**
+	 * `<Form>` route component type
+	 *
+	 * @template Pattern Route pattern
+	 */
+	export type Form<Pattern extends string> = (
+		props: JSX.IntrinsicElements["form"] & URLOptions<ExtractParams<Pattern>>,
+	) => JSX.Element;
+}
+
+// these types are needed for proper JSDoc on `get` and `post` return types
+/**
+ * Helper type for a route with a `<Button>` component.
+ *
+ * @template Pattern Route pattern
+ */
+type WithButton<Pattern extends string = string> = {
+	/** `<button>` component with preset `formaction` and `formmethod` attributes */
+	readonly Button: Route.Button<Pattern>;
+};
+
+/**
+ * Helper type for a route with a `<Form>` component.
+ *
+ * @template Pattern Route pattern
+ */
+type WithForm<Pattern extends string = string> = {
+	/** `<form>` component with preset `method` and `action` attributes */
+	readonly Form: Route.Form<Pattern>;
+};
+
+/**
+ * Helper type for a route with a `<Anchor>` component.
+ *
+ * @template Pattern Route pattern
+ */
+type WithAnchor<Pattern extends string = string> = {
+	/** `<a>` component with preset `href` attribute */
+	readonly Anchor: Route.Anchor<Pattern>;
+};
+
+/**
+ * Route to use in the application.
+ *
+ * @template Pattern Route pattern
+ */
 export class Route<Pattern extends string = string> {
 	/** Extracted parameters type for the pattern */
 	declare readonly Params: ExtractParams<Pattern>;
@@ -43,22 +113,19 @@ export class Route<Pattern extends string = string> {
 	/** HTTP method */
 	readonly method: Method;
 
-	/** GET middleware */
+	/** Route middleware stack, runs after global middleware */
 	middleware: Middleware<any>[]; // any so you can use other middleware
-
-	/** `<button>` component with preset `formaction` and `formmethod` attributes. */
-	Button: (
-		props: JSX.IntrinsicElements["button"] & UrlOptions<ExtractParams<Pattern>>,
-	) => JSX.Element;
-
-	/** `<form>` component with preset `method` and `action` attributes. */
-	Form: (
-		props: JSX.IntrinsicElements["form"] & UrlOptions<ExtractParams<Pattern>>,
-	) => JSX.Element;
 
 	/** Pattern parts */
 	#parts: string[];
 
+	/**
+	 * Create a new route.
+	 *
+	 * @param method HTTP Method
+	 * @param pattern Route pattern
+	 * @param middleware Route middleware
+	 */
 	constructor(
 		method: Method,
 		pattern: Pattern,
@@ -72,24 +139,6 @@ export class Route<Pattern extends string = string> {
 		this.pattern = pattern;
 		this.middleware = middleware;
 		this.#parts = pattern.split("/");
-
-		this.Button = ({ params, search, hash, ...rest }) =>
-			jsx("button", {
-				formaction: this.url({ params, search, hash } as UrlOptions<
-					ExtractParams<Pattern>
-				>),
-				formmethod: method,
-				...rest,
-			});
-
-		this.Form = ({ params, search, hash, ...rest }) =>
-			jsx("form", {
-				action: this.url({ params, search, hash } as UrlOptions<
-					ExtractParams<Pattern>
-				>),
-				method,
-				...rest,
-			});
 	}
 
 	/**
@@ -100,8 +149,8 @@ export class Route<Pattern extends string = string> {
 	 */
 	url(
 		...[options]: keyof ExtractParams<Pattern> extends never
-			? [UrlOptions<ExtractParams<Pattern>>] | []
-			: [UrlOptions<ExtractParams<Pattern>>]
+			? [Route.URLOptions<ExtractParams<Pattern>>] | []
+			: [Route.URLOptions<ExtractParams<Pattern>>]
 	) {
 		const pathname = this.pathname(
 			// @ts-expect-error - do not have to pass in {} if no params
@@ -130,6 +179,7 @@ export class Route<Pattern extends string = string> {
 	}
 
 	/**
+	 * @template Params Parameters to create the pathname with
 	 * @param [params] Parameters to insert
 	 * @returns Resolved `pathname` with params
 	 */
@@ -162,84 +212,79 @@ export class Route<Pattern extends string = string> {
 			})
 			.join("/") as InsertParams<Pattern, Params>;
 	}
-}
-
-export class Get<Pattern extends string = string> extends Route<Pattern> {
-	/** `<a>` component with preset `href` attribute. */
-	Anchor: (
-		props: JSX.IntrinsicElements["a"] & UrlOptions<ExtractParams<Pattern>>,
-	) => JSX.Element;
 
 	/**
+	 * @template Pattern Route pattern
+	 * @param route Route to add components to
+	 * @returns Route with added components
+	 */
+	static #withComponents<Pattern extends string>(route: Route<Pattern>) {
+		return Object.assign(route, {
+			/** with component */
+			Button: (({ params, search, hash, ...rest }) =>
+				jsx("button", {
+					formaction: route.url({ params, search, hash } as Route.URLOptions<
+						ExtractParams<Pattern>
+					>),
+					formmethod: route.method,
+					...rest,
+				})) as Route.Button<Pattern>,
+			/** with component? */
+			Form: (({ params, search, hash, ...rest }) =>
+				jsx("form", {
+					action: route.url({ params, search, hash } as Route.URLOptions<
+						ExtractParams<Pattern>
+					>),
+					method: route.method,
+					...rest,
+				})) as Route.Form<Pattern>,
+		});
+	}
+
+	/**
+	 * @template Pattern Route pattern
 	 * @param pattern Route pattern
 	 * @param middleware GET middleware
-	 *
-	 * @example
-	 *
-	 * ```tsx
-	 * import { Get } from "ovr";
-	 *
-	 * const page = new Get("/", () => {
-	 * 	return <p>Hello world</p>
-	 * });
-	 *
-	 * const Nav = () => {
-	 * 	return <page.Anchor>Home</page.Anchor>
-	 * }
-	 *
-	 * app.add(page); // register
-	 * ```
+	 * @returns GET `Route` with added components
 	 */
-	constructor(
+	static get<Pattern extends string>(
 		pattern: Pattern,
 		...middleware: Middleware<ExtractParams<Pattern>>[]
-	) {
-		super("GET", pattern, ...middleware);
+	): Route<Pattern> &
+		WithButton<Pattern> &
+		WithForm<Pattern> &
+		WithAnchor<Pattern> {
+		const route = Route.#withComponents(
+			new Route("GET", pattern, ...middleware),
+		);
 
-		this.Anchor = ({ params, search, hash, ...rest }) =>
-			jsx("a", {
-				href: this.url({ params, search, hash } as UrlOptions<
-					ExtractParams<Pattern>
-				>),
-				...rest,
-			});
+		return Object.assign(route, {
+			Anchor: (({ params, search, hash, ...rest }) =>
+				jsx("a", {
+					href: route.url({ params, search, hash } as Route.URLOptions<
+						ExtractParams<Pattern>
+					>),
+					...rest,
+				})) as Route.Anchor<Pattern>,
+		});
 	}
-}
 
-export class Post<Pattern extends string = string> extends Route<Pattern> {
 	/**
 	 * @param middleware POST middleware
-	 *
-	 * @example
-	 *
-	 * ```tsx
-	 * import { Post } from "ovr";
-	 *
-	 * const post = new Post((c) => {
-	 * 	console.log("posted");
-	 * 	c.redirect("/", 303);
-	 * });
-	 *
-	 * const page = new Get("/", () => (
-	 * 	<post.Form>
-	 * 		<input type="text" name="name" />
-	 * 		<button>Submit</button>
-	 * 	</post.Form>
-	 * ));
-	 *
-	 * app.add(page, post); // register
-	 * ```
+	 * @returns POST `Route` with added components
 	 */
-	constructor(...middleware: Middleware<{}>[]);
+	static post(middleware: Middleware<{}>): Route & WithButton & WithForm;
 	/**
+	 * @template Pattern Route pattern
 	 * @param pattern Route pattern
 	 * @param middleware POST middleware
+	 * @returns POST `Route` with added components
 	 */
-	constructor(
+	static post<Pattern extends string>(
 		pattern: Pattern,
 		...middleware: Middleware<ExtractParams<Pattern>>[]
-	);
-	constructor(
+	): Route<Pattern> & WithButton<Pattern> & WithForm<Pattern>;
+	static post<Pattern extends string>(
 		patternOrMiddleware: Pattern | Middleware<ExtractParams<Pattern>>,
 		...middleware: Middleware<ExtractParams<Pattern>>[]
 	) {
@@ -252,6 +297,6 @@ export class Post<Pattern extends string = string> extends Route<Pattern> {
 			pattern = `/_p/${hash(middleware.join())}` as Pattern;
 		}
 
-		super("POST", pattern, ...middleware);
+		return Route.#withComponents(new Route("POST", pattern, ...middleware));
 	}
 }

@@ -3,15 +3,15 @@ import * as docs from "@/server/docs";
 import * as home from "@/server/home";
 import { createLayout } from "@/server/layout";
 import { Meta } from "@/ui/meta";
-import * as ovr from "ovr";
+import * as o from "ovr";
 
-const app = new ovr.App();
+const app = new o.App();
 
-const notFound: ovr.Middleware = (c) => {
+const notFound: o.Middleware = (c) => {
 	const Layout = createLayout(c);
 
 	c.html(
-		ovr.render.stream(
+		o.render.stream(
 			<Layout head={<Meta title="Not Found" description="Content not found" />}>
 				<h1>Not Found</h1>
 
@@ -44,7 +44,7 @@ app.use(
 );
 
 if (import.meta.env.DEV) {
-	const backpressure = new ovr.Get("/backpressure", async (c) => {
+	const backpressure = o.Route.get("/backpressure", async (c) => {
 		// need to make each chunk is very large to observe pull stop
 		// log something in the Context.page => pull method to see
 		const res = await fetch("http://localhost:5173/demo/memory");

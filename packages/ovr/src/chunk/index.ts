@@ -1,13 +1,14 @@
+/** Chunk containing the HTML from a rendered element */
 export class Chunk {
-	static #attr = /[&"<]/g;
-	static #content = /[&<]/g;
-	static #map = { "&": "&amp;", '"': "&quot;", "<": "&lt;" } as const;
+	static readonly #attr = /[&"<]/g;
+	static readonly #content = /[&<]/g;
+	static readonly #map = { "&": "&amp;", '"': "&quot;", "<": "&lt;" } as const;
 
 	/** Safe value to render */
 	value: string;
 
 	/**
-	 * `Chunk` to send in an HTML stream.
+	 * Chunk containing the HTML from a rendered element.
 	 *
 	 * @param html string of HTML to escape
 	 * @param safe Set to `true` if the HTML is safe and should not be escaped
@@ -32,9 +33,7 @@ export class Chunk {
 	}
 
 	/**
-	 * Wraps `new Chunk("html", true)`.
-	 *
-	 * Use to create a new `Chunk` and bypass escaping.
+	 * Create a new `Chunk` and bypass escaping.
 	 *
 	 * @param html Safe string of HTML
 	 * @returns New _safe_ `Chunk`

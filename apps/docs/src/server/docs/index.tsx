@@ -33,7 +33,7 @@ const getMd = (result: Result<typeof FrontmatterSchema>) => {
 	}${result.article}`;
 };
 
-export const llms = new ovr.Get("/llms.txt", (c) => {
+export const llms = ovr.Route.get("/llms.txt", (c) => {
 	c.text(
 		[homeResult, ...Object.values(content), ...Object.values(demos)]
 			.map((result) => getMd(result))
@@ -41,7 +41,7 @@ export const llms = new ovr.Get("/llms.txt", (c) => {
 	);
 });
 
-export const page = new ovr.Get("/:slug", (c) => {
+export const page = ovr.Route.get("/:slug", (c) => {
 	let md = false;
 
 	if (c.params.slug.endsWith(".md")) {

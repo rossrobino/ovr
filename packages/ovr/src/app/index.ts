@@ -1,74 +1,54 @@
-import { Get, Post, Route } from "../route/index.js";
-import { type Params, Trie } from "../trie/index.js";
+import { Context } from "../context/index.js";
+import type { Middleware } from "../middleware/index.js";
+import { Route } from "../route/index.js";
+import { Trie } from "../trie/index.js";
 import type { DeepArray } from "../types/index.js";
-import { Context } from "./context.js";
 
-/** Dispatches the next middleware in the stack */
-export type Next = () => Promise<void>;
+export namespace App {
+	export namespace Options {
+		/** Trailing slash preference */
+		export type TrailingSlash = "always" | "never" | "ignore";
+	}
 
-/** App middleware */
-export type Middleware<P extends Params = Params> = (
-	context: Context<P>,
-	next: Next,
-) => any;
+	/** Configuration options */
+	export type Options = {
+		/**
+		 * Basic
+		 * [cross-site request forgery (CSRF)](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF)
+		 * protection that checks the request's `method`, and its
+		 * [`Sec-Fetch-Site`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site)
+		 * and [`Origin`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin)
+		 * headers.
+		 *
+		 * More robust protection requires a stateful server or a database to store
+		 * [CSRF tokens](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF#csrf_tokens).
+		 *
+		 * @default true
+		 */
+		readonly csrf?: boolean;
 
-/** Trailing slash preference */
-export type TrailingSlash = "always" | "never" | "ignore";
+		/**
+		 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
+		 * - `"always"` - Not found requests without a trailing slash will be redirected to the same path with a trailing slash
+		 * - `"ignore"` - no redirects (not recommended, bad for SEO)
+		 *
+		 * [Trailing Slash for Frameworks by Bjorn Lu](https://bjornlu.com/blog/trailing-slash-for-frameworks)
+		 *
+		 * @default "never"
+		 */
+		readonly trailingSlash?: Options.TrailingSlash;
+	};
+}
 
-/** HTTP Method */
-export type Method =
-	| "GET"
-	| "HEAD"
-	| "POST"
-	| "PUT"
-	| "DELETE"
-	| "CONNECT"
-	| "OPTIONS"
-	| "TRACE"
-	| "PATCH"
-	| (string & {});
-
-/** Helper type for anything that can be passed into `App.use` */
-type Use = Route | Get | Post | Middleware;
-
-/** `App` configuration options */
-type AppOptions = {
-	/**
-	 * Basic
-	 * [cross-site request forgery (CSRF)](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF)
-	 * protection that checks the request's `method`, and its
-	 * [`Sec-Fetch-Site`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site)
-	 * and [`Origin`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin)
-	 * headers.
-	 *
-	 * More robust protection requires a stateful server or a database to store
-	 * [CSRF tokens](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF#csrf_tokens).
-	 *
-	 * @default true
-	 */
-	csrf?: boolean;
-
-	/**
-	 * - `"never"` - Not found requests with a trailing slash will be redirected to the same path without a trailing slash
-	 * - `"always"` - Not found requests without a trailing slash will be redirected to the same path with a trailing slash
-	 * - `"ignore"` - no redirects (not recommended, bad for SEO)
-	 *
-	 * [Trailing Slash for Frameworks by Bjorn Lu](https://bjornlu.com/blog/trailing-slash-for-frameworks)
-	 *
-	 * @default "never"
-	 */
-	trailingSlash?: TrailingSlash;
-};
-
-/** Web server application. */
+/** Web server application */
 export class App {
 	/**
 	 * Create a new application.
 	 *
 	 * @param options configuration options
 	 */
-	constructor(options?: AppOptions) {
-		const resolved: Required<AppOptions> = {
+	constructor(options?: App.Options) {
+		const resolved: Required<App.Options> = {
 			csrf: true,
 			trailingSlash: "never",
 		};
@@ -91,7 +71,11 @@ export class App {
 	 * @param routes Route or middleware to use
 	 * @returns `App` instance
 	 */
-	use(...routes: DeepArray<Use | Record<string, Use>>[]) {
+	use(
+		...routes: DeepArray<
+			Route | Middleware | Record<string, Route | Middleware>
+		>[]
+	) {
 		for (const route of routes) {
 			if (route instanceof Route) {
 				this.#trie.add(route);
@@ -134,7 +118,7 @@ export class App {
 	};
 
 	/** Basic CSRF middleware */
-	static #csrf(c: Context, next: Next) {
+	static #csrf(c: Middleware.Context, next: Middleware.Next) {
 		if (
 			c.req.method === "GET" ||
 			c.req.method === "HEAD" ||
@@ -148,8 +132,8 @@ export class App {
 	}
 
 	/** @returns Trailing slash middleware */
-	static #createTrailingSlash(mode: TrailingSlash) {
-		return async (c: Context, next: Next) => {
+	static #createTrailingSlash(mode: App.Options.TrailingSlash) {
+		return async (c: Context, next: Middleware.Next) => {
 			await next();
 
 			if (c.res.status && c.res.status !== 404) return;
