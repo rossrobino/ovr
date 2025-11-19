@@ -3,13 +3,16 @@ title: Middleware
 description: Understand how ovr handles each request.
 ---
 
-## Global and route middleware
+## Composition
 
-Use global middleware to add intermediate steps before and after route specific middleware has completed.
+There are two levels of middleware in an ovr application:
 
-## Composition stack???
+1. **Global** - any middleware passed directly to `App.use`
+2. **Route** - middleware added to a specific `Route`
 
-When multiple middleware functions added globally or to a route, the first middleware will be called, and the `next` middleware can be dispatched within the first by using `await next()`.
+For each request, ovr creates an array containing the **global** middleware, then the **matched route**'s middleware (if there is a match).
+
+The first middleware in the array will be called, then you can dispatch the `next` middleware within the first by calling `await next()` or returning `next()`.
 
 > Middleware execution is based on [koa-compose](https://github.com/koajs/compose).
 
@@ -26,13 +29,15 @@ app.use(
 		console.log("2");
 	},
 );
-```
 
-The same [`Context`](/04-context) is passed into each middleware. After all the middleware have been run, the `Context` will `build` and return the final `Response`.
+// 1
+// 2
+// 3
+```
 
 ## Context
 
-`Context` contains context for the current request and helpers to build a `Response`.
+`Context` _(in these docs you'll see it abbreviated as `c`)_ contains context for the current request and helpers to build a `Response`. The same context is passed as the first argument into each middleware function.
 
 ### Request
 
@@ -49,58 +54,54 @@ Route.get("/api/:id", (c) => {
 
 ### Response
 
-#### Prepare
-
-`Context.res` is a `PreparedResponse` that stores the arguments that will be passed into `new Response()` after middleware has executed.
+`Context.res` is a `PreparedResponse` that stores the arguments that will be passed into `new Response()` after middleware has executed. These can be modified directly:
 
 ```ts
 Route.get("/api/:id", (c) => {
-	c.res.body; // BodyInit | null | undefined
-	c.res.status; // number | undefined
-	c.res.headers; // Headers
+	c.res.body = "# Markdown"; // BodyInit | null | undefined
+	c.res.status = 200; // number | undefined
+	c.res.headers.set("content-type", "text/markdown; charset=utf-8"); // Headers
 });
 
 // internally ovr creates the Response with final values:
 new Response(c.res.body, { status: c.res.status, headers: c.res.headers });
 ```
 
-The prepared response can be set in three ways:
+The prepared response can be also be set with helper functions or by returning a value from the middleware.
 
 ```tsx
 Route.get("/api/:id", (c) => {
-	// 1. Assign the values directly
-	c.res.body = "body";
-
-	// 2. Using the following helper functions to set common headers
+	// use helper functions to set common headers
 	c.html(body, status); // HTML
 	c.text(body, status); // plain text
 	c.json(data, status); // JSON
 	c.redirect(location, status); // redirect
 	if (c.etag(str)) return; // ETag - sets 304 if match
 
-	// 3. Returning anything from middleware to be passed into
-	//    `render.stream()` and assigned to c.res.body
-	return <p>streamed</p>;
+	// return anything from middleware (see next section)
+	return <p>stream</p>;
 });
 ```
 
-#### Resolving the return value
+#### Return value
 
-1. Response
+ovr handles the return value from middleware in two ways.
 
-At the most basic level, you can return a `Response` from middleware to handle a request.
+1. **Response**
+
+You can return a `Response` from middleware to handle a request. `Context.res.body`, `Context.res.status` will be set to the returned response's values, and `headers` will be merged into `Context.res.headers`.
 
 ```ts
 app.use(() => new Response("Hello world"));
 ```
 
-2. Other
+2. **Stream**
 
 Any value that is returned from middleware will be passed into [`render.stream`](/02-components#stream) and assigned to `Context.res.body`.
 
-Returning a value sets the content type header to HTML unless it has already been set. HTML will be escaped during the render while other content types will not. This makes it easy to stream other types of content than HTML.
+Returning a value sets the content type header to HTML unless it has already been set. HTML will be escaped during the render while other content types will not.
 
-For example, to create a [server sent event](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events), simply set the content type header and return an async generator function:
+This makes it easy to stream other types of content than HTML. For example, to create a [server sent event](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) stream, simply set the content type header and return a generator function:
 
 ```ts
 // simulate latency
@@ -121,4 +122,4 @@ Route.get("/api/:id", (c) => {
 });
 ```
 
-> You can even use JSX to create streams of other types of content too!
+> JSX can be used to create streams of other types of content too!

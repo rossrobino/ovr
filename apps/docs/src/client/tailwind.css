@@ -170,7 +170,7 @@
 
 	p code,
 	li code {
-		@apply border-secondary border text-nowrap shadow-xs;
+		@apply border-secondary border text-nowrap not-italic shadow-xs;
 	}
 
 	h1,
