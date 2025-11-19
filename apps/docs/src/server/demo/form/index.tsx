@@ -1,5 +1,5 @@
 import * as formContent from "@/server/demo/form/index.md";
-import { createLayout } from "@/server/layout";
+import { createLayout } from "@/ui/layout";
 import { Meta } from "@/ui/meta";
 import * as ovr from "ovr";
 import * as z from "zod";

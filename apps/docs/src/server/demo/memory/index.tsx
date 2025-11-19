@@ -1,5 +1,5 @@
 import * as memoryContent from "@/server/demo/memory/index.md";
-import { createLayout } from "@/server/layout";
+import { createLayout } from "@/ui/layout";
 import { Meta } from "@/ui/meta";
 import * as ovr from "ovr";
 

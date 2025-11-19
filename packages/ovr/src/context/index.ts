@@ -50,35 +50,20 @@ export class Context<Params extends Trie.Params = Trie.Params> {
 	 */
 	readonly url: URL;
 
-	/** Route pattern parameters. */
+	/** Route pattern parameters */
 	readonly params: Params = {} as Params; // set after match
 
-	/** Matched `Route` instance. */
+	/** Matched `Route` instance */
 	readonly route?: Route;
 
-	/** Contains the arguments to used create the final `Response`. */
+	/** Contains the arguments to used create the final `Response` */
 	readonly res: Context.PreparedResponse = { headers: new Headers() };
 
 	// for reuse across methods
 	static readonly #contentType = "content-type";
-
-	/**
-	 * Middleware to run when no `body` or `status` has been set on the `context`.
-	 * Set to a new function to override the default.
-	 *
-	 * @default
-	 *
-	 * ```ts
-	 * (c) => {
-	 * 	c.text("Not found", 404);
-	 * 	c.headers.set("cache-control", "no-cache");
-	 * }
-	 * ```
-	 */
-	notFound: Middleware<Params> = (c) => {
-		c.text("Not found", 404);
-		c.res.headers.set("cache-control", "no-cache");
-	};
+	static readonly #textHtml = "text/html";
+	static readonly #utf8 = "charset=utf-8";
+	static readonly #htmlType = `${Context.#textHtml}; ${Context.#utf8}`;
 
 	/**
 	 * Creates a new `Context` with the current `Request`.
@@ -99,7 +84,7 @@ export class Context<Params extends Trie.Params = Trie.Params> {
 	html(body: BodyInit | null, status?: number) {
 		this.res.body = body;
 		this.res.status = status;
-		this.res.headers.set(Context.#contentType, "text/html; charset=utf-8");
+		this.res.headers.set(Context.#contentType, Context.#htmlType);
 	}
 
 	/**
@@ -123,7 +108,7 @@ export class Context<Params extends Trie.Params = Trie.Params> {
 	text(body: BodyInit, status?: number) {
 		this.res.body = body;
 		this.res.status = status;
-		this.res.headers.set(Context.#contentType, "text/plain; charset=utf-8");
+		this.res.headers.set(Context.#contentType, `text/plain; ${Context.#utf8}`);
 	}
 
 	/**
@@ -180,22 +165,37 @@ export class Context<Params extends Trie.Params = Trie.Params> {
 
 		if (!mw) return; // end of stack
 
-		const value: unknown = await mw(
+		const r = await mw(
 			this, // c
 			() => this.#run(middleware, i + 1), // next
 		);
 
 		// resolve the final return value
-		if (value instanceof Response) {
-			this.res.body = value.body;
-			this.res.status = value.status;
-			for (const [name, header] of value.headers) {
+		if (r instanceof Response) {
+			// overwrite
+			this.res.body = r.body;
+			this.res.status = r.status;
+
+			// merge
+			for (const [name, header] of r.headers) {
 				this.res.headers.set(name, header);
 			}
-		} else if (value instanceof ReadableStream) {
-			this.res.body = value;
-		} else if (value !== undefined) {
-			this.html(render.stream(value));
+		} else if (r !== undefined) {
+			// something to stream
+			const contentType = this.res.headers.get(Context.#contentType);
+
+			this.res.body = render.stream(
+				r,
+				// other defined types are safe
+				Boolean(contentType && !contentType.startsWith(Context.#textHtml)),
+			);
+
+			if (!contentType) {
+				// default to HTML
+				this.res.headers.set(Context.#contentType, Context.#htmlType);
+			}
+
+			// do not overwrite/remove status - that way user can set it before returning
 		}
 	}
 
@@ -208,9 +208,7 @@ export class Context<Params extends Trie.Params = Trie.Params> {
 	async build(middleware: Middleware<Params>[]) {
 		await this.#run(middleware);
 
-		if (!this.res.body && !this.res.status) {
-			this.notFound(this, Promise.resolve);
-		}
+		Object.freeze(this.res);
 
 		return new Response(this.res.body, this.res);
 	}

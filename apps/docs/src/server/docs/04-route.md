@@ -1,18 +1,26 @@
 ---
-title: Helpers
-description: ovr route helpers.
+title: Route
+description: ovr application routes.
 ---
 
-ovr provides helpers to encapsulate a route, allowing you to easily create a route in a separate module from `App`. Helpers are the best way to create pages, API endpoints, links, and forms in an ovr application.
+## Create
+
+Create a route to a specific resource in your application with the `Route` class. Construct the route with an HTTP `method`, the route `pattern`, and the [`middleware`](/05-middleware) to handle the request.
+
+```ts
+import { Route } from "ovr";
+
+const route = new Route("GET", "/", () => "html");
+```
+
+This route handles any `GET` request to the `/` pathname, the middleware will run and create a `Response`.
 
 ## Get
 
-`Get` creates a [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/GET) route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application. Anytime you need to generate a link to a page use the `Anchor` component from the `Get` helper.
+`Route.get` creates a [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/GET) route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application. Anytime you need to generate a link to a route use the `Anchor` component.
 
 ```tsx
-import { Get } from "ovr";
-
-const page = new Get("/", () => {
+const page = Route.get("/", () => {
 	return (
 		<main>
 			{/* <a href="/"> */}
@@ -30,20 +38,18 @@ const page = new Get("/", () => {
 
 ## Post
 
-There is also a `Post` helper that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) route and corresponding `Form` and `Button` elements. Anytime you need to handle a form submission, use the generated `Form` component from the `Post` helper.
+There is also a `Route.post` function that will create a [POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST) route and corresponding `Form` and `Button` elements. Anytime you need to handle a form submission, use the generated `Form` component.
 
-For `Post`, ovr will automatically generate a unique pathname for the route based on a hash of the middleware provided.
+For `Route.post`, ovr will automatically generate a unique pathname for the route based on a hash of the middleware provided.
 
 ```tsx
-import { Get, Post } from "ovr";
-
-const login = new Post(async (c) => {
+const login = Route.post(async (c) => {
 	const data = await c.req.formData();
 	// ...
 	c.redirect("/", 303);
 });
 
-const page = new Get("/", () => {
+const page = Route.get("/", () => {
 	return (
 		<main>
 			{/* <form method="POST" action="/_p/generated-hash"> */}
@@ -59,7 +65,7 @@ const page = new Get("/", () => {
 You can set the pattern manually if you need a stable pattern or if you are using parameters.
 
 ```tsx
-const custom = new Post("/custom/:pattern", (c) => {
+const custom = Route.post("/custom/:pattern", (c) => {
 	// ...
 });
 ```
@@ -73,9 +79,7 @@ Components created via helpers have the following props available:
 - `hash` - [fragment hash](https://developer.mozilla.org/en-US/docs/Web/API/URL/hash) appended with a `#` at the end of the URL.
 
 ```tsx
-import { Get } from "ovr";
-
-const page = new Get("/hello/:name", () => {
+const page = Route.get("/hello/:name", () => {
 	return (
 		// <form method="GET" action="/hello/world?search=param#hash">
 		<page.Form
@@ -89,48 +93,20 @@ const page = new Get("/hello/:name", () => {
 });
 ```
 
-## Add
-
-Use the `add` method to register a helper to your app.
-
-```tsx
-app.add(page); // single
-app.add(page, login); // multiple
-app.add({ page, login }); // object
-app.add([page, login]); // array
-// any combination of these also works
-```
-
-This makes it easy to create a module of helpers,
-
-```tsx
-// home.tsx
-import { Get, Post } from "ovr";
-
-export const page = new Get("/", (c) => {
-	// ...
-});
-
-export const login = new Post((c) => {
-	// ...
-});
-```
-
-and then add them all at once:
-
-```tsx
-// app.tsx
-import * as home from "./home";
-
-app.add(home); // adds all exports
-```
-
 ## Properties
 
-Given the following `Get` helper, a variety of other properties are available to use in addition to the components.
+Given the following `Route`, a variety of other properties are available to use.
 
 ```tsx
-const page = new Get("/hello/:name", (c) => <h1>Hello {c.params.name}</h1>);
+const page = Route.get("/hello/:name", (c) => <h1>Hello {c.params.name}</h1>);
+```
+
+### Method
+
+The route's HTTP method.
+
+```ts
+page.method; // "GET"
 ```
 
 ### Middleware

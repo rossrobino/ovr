@@ -3,9 +3,7 @@ title: Components
 description: Async generator JSX
 ---
 
-While components in ovr are authored like components in frameworks like [React](https://react.dev/), instead of creating UI elements, JSX evaluates to an `AsyncGenerator` that yields escaped `Chunk`s of HTML.
-
-## Basic
+## Basics
 
 If you aren't familiar with components, they are functions that return JSX elements. You can use them to declaratively describe and reuse parts of your HTML.
 
@@ -158,7 +156,7 @@ const response = new Response(stream, {
 
 ### String
 
-Convert any `JSX.Element` into a string of HTML with `render.string`. This runs `render` and joins the results into a single string.
+Convert any `JSX.Element` into a `string` of HTML with `render.string`. This runs `render` and joins the results into a single string.
 
 ```tsx
 import { render } from "ovr";

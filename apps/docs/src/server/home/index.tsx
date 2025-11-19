@@ -1,5 +1,5 @@
 import * as result from "@/server/home/index.md";
-import { createLayout } from "@/server/layout";
+import { createLayout } from "@/ui/layout";
 import { Meta } from "@/ui/meta";
 import * as o from "ovr";
 

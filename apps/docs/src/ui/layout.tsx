@@ -1,3 +1,4 @@
+import * as content from "@/lib/content";
 import * as demos from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as homeResult from "@/server/home/index.md";
@@ -9,7 +10,7 @@ import { SkipLink } from "@/ui/skip-link";
 import { Version } from "@/ui/version";
 import { tags } from "client:script";
 import { clsx } from "clsx";
-import * as ovr from "ovr";
+import * as o from "ovr";
 
 const Assets = () => {
 	return (
@@ -17,14 +18,14 @@ const Assets = () => {
 			{import.meta.env.DEV && (
 				<link rel="stylesheet" href="/client/tailwind.css" />
 			)}
-			{ovr.Chunk.safe(tags)}
+			{o.Chunk.safe(tags)}
 		</>
 	);
 };
 
 export const createLayout =
-	(c: ovr.Context<any>) =>
-	(props: { head: ovr.JSX.Element; children: ovr.JSX.Element }) => {
+	(c: o.Middleware.Context<any>) =>
+	(props: { head: o.JSX.Element; children: o.JSX.Element }) => {
 		return (
 			<html lang="en">
 				<head>
@@ -88,15 +89,15 @@ export const createLayout =
 		);
 	};
 
-const TOC = ({ c }: { c: ovr.Context }) => {
+const TOC = ({ c }: { c: o.Middleware.Context }) => {
 	const { pathname } = c.url;
 
-	let result: ReturnType<typeof docs.getContent>;
+	let result: ReturnType<typeof content.get>;
 
 	if (pathname === "/") {
 		result = homeResult;
 	} else {
-		result = docs.getContent(pathname.slice(1));
+		result = content.get(pathname.slice(1));
 		if (!result) return;
 	}
 
@@ -137,7 +138,7 @@ const HomeLink = () => {
 	);
 };
 
-const NavHeading = (props: { children: ovr.JSX.Element }) => {
+const NavHeading = (props: { children: o.JSX.Element }) => {
 	return (
 		<h2 class="text-muted-foreground pl-2 text-xs font-bold uppercase">
 			{props.children}
@@ -145,14 +146,14 @@ const NavHeading = (props: { children: ovr.JSX.Element }) => {
 	);
 };
 
-const NavList = ({ c }: { c: ovr.Context }) => {
+const NavList = ({ c }: { c: o.Middleware.Context }) => {
 	return (
 		<>
 			<hr />
 
 			<NavHeading>Docs</NavHeading>
 			<ul class="grid gap-1">
-				{docs.getSlugs().map((slug) => (
+				{content.slugs().map((slug) => (
 					<NavLink slug={slug} c={c} />
 				))}
 				<NavLink slug={docs.llms.pathname().slice(1)} c={c} />
@@ -199,8 +200,8 @@ const NavList = ({ c }: { c: ovr.Context }) => {
 
 const NavLink = (props: {
 	slug?: string;
-	anchor?: ovr.JSX.Element;
-	c: ovr.Context;
+	anchor?: o.JSX.Element;
+	c: o.Middleware.Context;
 }) => {
 	if (!props.slug) return;
 	const href = `/${props.slug}`;
