@@ -3,8 +3,6 @@ title: Route
 description: ovr application routes.
 ---
 
-## Create
-
 Create a route to a specific resource in your application with the `Route` class. Construct the route with an HTTP `method`, the route `pattern`, and the [`middleware`](/05-middleware) to handle the request.
 
 ```ts
@@ -13,11 +11,56 @@ import { Route } from "ovr";
 const route = new Route("GET", "/", () => "html");
 ```
 
-This route handles any `GET` request to the `/` pathname, the middleware will run and create a `Response`.
+ovr's built-in router offers efficient matching, supporting static paths, [parameters](#parameters), and [wildcards](#wildcard). Utilizing a [radix trie](https://en.wikipedia.org/wiki/Radix_tree) structure ensures performance does not degrade as more routes are added.
+
+## Parameters
+
+Create a parameter for a route by prefixing a segment with a colon `:`.
+
+The pattern `/api/:id` sets `Context.params.id` to the actual path segment requested, for example `/api/123`. The name of the parameter is extracted from the pattern using TypeScript to ensure `Context.params` always has the correct type.
+
+```ts
+new Route("GET", "/api/:id", (c) => {
+	// matches "/api/123"
+	c.params.id; // "123"
+});
+```
+
+## Wildcard
+
+Use an asterisk `*` to match all remaining segments in the route.
+
+```ts
+new Route("GET", "/files/*", (c) => {
+	c.params["*"]; // matched wildcard path (ex: "images/logo.png")
+});
+```
+
+## Prioritization
+
+Routes are prioritized in this order:
+
+**Static** > **Parametric** > **Wildcard**
+
+Given three routes are added in any order:
+
+```ts
+app.use(new Route("GET", "/hello/*"));
+app.use(new Route("GET", "/hello/world"));
+app.use(new Route("GET", "/hello/:name"));
+```
+
+More specific matches are prioritized. The following pathnames would match the corresponding patterns:
+
+| Pathname            | Pattern        |
+| ------------------- | -------------- |
+| `/hello/world`      | `/hello/world` |
+| `/hello/john`       | `/hello/:name` |
+| `/hello/john/smith` | `/hello/*`     |
 
 ## Get
 
-`Route.get` creates a [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/GET) route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application. Anytime you need to generate a link to a route use the `Anchor` component.
+`Route.get` makes it easy to create a [GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/GET) route and corresponding `Anchor`, `Button`, and `Form` components for it. This ensures if you change the route's pattern, you don't need to update all of the links to it throughout your application. Anytime you need to generate a link to a route use the `Anchor` component.
 
 ```tsx
 const page = Route.get("/", () => {
@@ -151,7 +194,7 @@ page.pathname({ id: "world" });
 // Error: 'id' does not exist in type '{ name: string; }'
 ```
 
-You can create a list of exact pathnames for given params.
+> You can create a list of exact pathnames for given params:
 
 ```ts
 const params = [

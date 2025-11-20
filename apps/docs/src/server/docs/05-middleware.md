@@ -3,6 +3,17 @@ title: Middleware
 description: Understand how ovr handles each request.
 ---
 
+Middleware are functions that are composed together to handle requests. Most middleware will be created within a route but it can also be created on it's own to be used within a route.
+
+```ts
+import type { Middleware } from "ovr";
+
+const mw: Middleware = async (c, next) => {
+	c; // Middleware.Context - request context
+	await next(); // Middleware.Next - dispatch the next middleware in the stack
+};
+```
+
 ## Composition
 
 There are two levels of middleware in an ovr application:
@@ -13,8 +24,6 @@ There are two levels of middleware in an ovr application:
 For each request, ovr creates an array containing the **global** middleware, then the **matched route**'s middleware (if there is a match).
 
 The first middleware in the array will be called, then you can dispatch the `next` middleware within the first by calling `await next()` or returning `next()`.
-
-> Middleware execution is based on [koa-compose](https://github.com/koajs/compose).
 
 ```ts
 app.use(
@@ -37,9 +46,9 @@ app.use(
 
 ## Context
 
-`Context` _(in these docs you'll see it abbreviated as `c`)_ contains context for the current request and helpers to build a `Response`. The same context is passed as the first argument into each middleware function.
+`Context` _(in these docs you'll see it abbreviated as `c`)_ contains context for the current request and helpers to build a `Response`. ovr creates the context with the current request, then passes it as the first argument into each middleware function to be read and modified.
 
-### Request
+## Request
 
 Access information about the current request such as the [`url`](https://developer.mozilla.org/en-US/docs/Web/API/URL) or [`params`](/06-routing#parameters).
 
@@ -52,7 +61,7 @@ Route.get("/api/:id", (c) => {
 });
 ```
 
-### Response
+## Response
 
 `Context.res` is a `PreparedResponse` that stores the arguments that will be passed into `new Response()` after middleware has executed. These can be modified directly:
 
@@ -63,7 +72,7 @@ Route.get("/api/:id", (c) => {
 	c.res.headers.set("content-type", "text/markdown; charset=utf-8"); // Headers
 });
 
-// internally ovr creates the Response with final values:
+// internally, ovr creates the Response with final values:
 new Response(c.res.body, { status: c.res.status, headers: c.res.headers });
 ```
 
@@ -83,7 +92,7 @@ Route.get("/api/:id", (c) => {
 });
 ```
 
-#### Return value
+### Return value
 
 ovr handles the return value from middleware in two ways.
 
@@ -122,4 +131,4 @@ Route.get("/api/:id", (c) => {
 });
 ```
 
-> JSX can be used to create streams of other types of content too!
+> ovr JSX can be used to create streams of other types of content too without using the intrinsic HTML elements.

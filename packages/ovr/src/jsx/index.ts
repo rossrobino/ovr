@@ -115,25 +115,36 @@ export async function* Fragment(props: { children?: JSX.Element }) {
 /** Single encoder to use across requests. */
 const encoder = new TextEncoder();
 
+export namespace render {
+	/** Rendering options */
+	export type Options = {
+		/** Set to `true` to disable escaping for non-HTML use */
+		safe?: boolean;
+	};
+}
+
 /**
  * Creates an `AsyncGenerator` that renders the `Element`.
  *
  * @param element
- * @param safe Set to `true` to disable escaping for non-HTML use
+ * @param options
  * @yields `Chunk`s of HTML as the `Element` resolves
  */
 export const render: {
-	(element: JSX.Element, safe?: boolean): AsyncGenerator<Chunk, void, unknown>;
+	(
+		element: JSX.Element,
+		options?: render.Options,
+	): AsyncGenerator<Chunk, void, unknown>;
 
 	/**
 	 * `render` piped into a `ReadableStream`.
 	 * Use `render` when possible to avoid the overhead of the stream.
 	 *
 	 * @param element
-	 * @param safe Set to `true` to disable escaping for non-HTML use
+	 * @param options
 	 * @returns `ReadableStream` of HTML
 	 */
-	stream(element: JSX.Element, safe?: boolean): ReadableStream;
+	stream(element: JSX.Element, options?: render.Options): ReadableStream;
 
 	/**
 	 * Converts a `JSX.Element` into a fully concatenated string of HTML.
@@ -144,11 +155,11 @@ export const render: {
 	 * Use `render` whenever possible.
 	 *
 	 * @param element
-	 * @param safe Set to `true` to disable escaping for non-HTML use
+	 * @param options
 	 * @returns Concatenated HTML
 	 */
-	string(element: JSX.Element, safe?: boolean): Promise<string>;
-} = async function* (element, safe = false) {
+	string(element: JSX.Element, options?: render.Options): Promise<string>;
+} = async function* (element, options = {}) {
 	// modifications
 	// these are required to allow functions to be used as children
 	// instead of creating a separate component to use them
@@ -168,7 +179,7 @@ export const render: {
 	if (typeof element === "object") {
 		if (Symbol.asyncIterator in element) {
 			// any async iterable - lazily resolve
-			for await (const children of element) yield* render(children, safe);
+			for await (const children of element) yield* render(children, options);
 			return;
 		}
 
@@ -176,13 +187,13 @@ export const render: {
 			// sync iterable
 			if ("next" in element) {
 				// sync generator - lazily resolve, avoids loading all in memory
-				for (const children of element) yield* render(children, safe);
+				for (const children of element) yield* render(children, options);
 				return;
 			}
 
 			// other iterable - array, set, etc.
 			// process children in parallel
-			const generators = Array.from(element, (el) => render(el, safe));
+			const generators = Array.from(element, (el) => render(el, options));
 			const n = generators.length;
 			const queue = new Array<Chunk | null>(n);
 			const complete = new Uint8Array(n);
@@ -220,14 +231,14 @@ export const render: {
 	}
 
 	// primitive or other object
-	yield new Chunk(element, safe);
+	yield new Chunk(element, options.safe);
 };
 
-render.string = async (element: JSX.Element, safe = false) =>
-	(await Array.fromAsync(render(element, safe))).join("");
+render.string = async (element: JSX.Element, options = {}) =>
+	(await Array.fromAsync(render(element, options))).join("");
 
-render.stream = (element: JSX.Element, safe = false) => {
-	const gen = render(element, safe);
+render.stream = (element: JSX.Element, options = {}) => {
+	const gen = render(element, options);
 
 	return new ReadableStream<Uint8Array>(
 		{

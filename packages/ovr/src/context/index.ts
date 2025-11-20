@@ -184,11 +184,12 @@ export class Context<Params extends Trie.Params = Trie.Params> {
 			// something to stream
 			const contentType = this.res.headers.get(Context.#contentType);
 
-			this.res.body = render.stream(
-				r,
+			this.res.body = render.stream(r, {
 				// other defined types are safe
-				Boolean(contentType && !contentType.startsWith(Context.#textHtml)),
-			);
+				safe: Boolean(
+					contentType && !contentType.startsWith(Context.#textHtml),
+				),
+			});
 
 			if (!contentType) {
 				// default to HTML

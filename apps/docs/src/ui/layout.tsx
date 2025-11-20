@@ -24,7 +24,7 @@ const Assets = () => {
 };
 
 export const createLayout =
-	(c: o.Middleware.Context<any>) =>
+	(c: o.Middleware.Context) =>
 	(props: { head: o.JSX.Element; children: o.JSX.Element }) => {
 		return (
 			<html lang="en">
@@ -59,7 +59,7 @@ export const createLayout =
 									}}
 								>
 									<div class="flex flex-col gap-4">
-										<NavList c={c} />
+										<Nav c={c} />
 									</div>
 								</Popover>
 							</nav>
@@ -68,7 +68,7 @@ export const createLayout =
 							<div>
 								<nav class="sticky top-0 z-10 hidden max-h-dvh min-w-52 flex-col gap-4 overflow-y-auto p-4 md:flex">
 									<HomeLink />
-									<NavList c={c} />
+									<Nav c={c} />
 								</nav>
 							</div>
 							<div class="flex w-full min-w-0 flex-row-reverse justify-between">
@@ -146,23 +146,22 @@ const NavHeading = (props: { children: o.JSX.Element }) => {
 	);
 };
 
-const NavList = ({ c }: { c: o.Middleware.Context }) => {
+const Nav = ({ c }: { c: o.Middleware.Context }) => {
 	return (
 		<>
 			<hr />
 
 			<NavHeading>Docs</NavHeading>
-			<ul class="grid gap-1">
+			<NavList>
 				{content.slugs().map((slug) => (
 					<NavLink slug={slug} c={c} />
 				))}
-				<NavLink slug={docs.llms.pathname().slice(1)} c={c} />
-			</ul>
+			</NavList>
 
 			<hr />
 
 			<NavHeading>Demo</NavHeading>
-			<ul class="grid gap-1">
+			<NavList>
 				{Object.values(demos)
 					.sort((a, b) => a.pattern.localeCompare(b.pattern))
 					.map((demo) => {
@@ -182,7 +181,14 @@ const NavList = ({ c }: { c: o.Middleware.Context }) => {
 							</li>
 						);
 					})}
-			</ul>
+			</NavList>
+
+			<hr />
+
+			<NavHeading>Resources</NavHeading>
+			<NavList>
+				<NavLink slug={docs.llms.pathname().slice(1)} c={c} />
+			</NavList>
 
 			<hr />
 
@@ -196,6 +202,10 @@ const NavList = ({ c }: { c: o.Middleware.Context }) => {
 			</ul>
 		</>
 	);
+};
+
+const NavList = (props: { children: o.JSX.Element }) => {
+	return <ul class="grid gap-1">{props.children}</ul>;
 };
 
 const NavLink = (props: {

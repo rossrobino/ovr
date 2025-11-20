@@ -5,7 +5,7 @@ description: Async generator JSX
 
 ## Basics
 
-If you aren't familiar with components, they are functions that return JSX elements. You can use them to declaratively describe and reuse parts of your HTML.
+Components are functions that return a `JSX.Element`. Use them to declaratively describe and reuse parts of your HTML.
 
 Define a `props` object as a parameter for a component to pass arguments to it.
 
@@ -19,6 +19,8 @@ function Component(props: { children?: JSX.Element; color: string }) {
 
 Now the component can be used as it's own tag within other components.
 
+> Use capital letters for components to distinguish them from HTML (or _intrinsic_) elements.
+
 ```tsx
 function Page() {
 	return (
@@ -30,11 +32,11 @@ function Page() {
 }
 ```
 
-Props are passed in as attributes, while `children` is a special prop that is used to reference the element(s) in between the opening and closing tags.
+Props are passed in like an HTML attribute `name={value}`, while `children` is a special prop that is used to reference the element(s) in between the opening and closing tags.
 
-ovr uses aligns with the standard (all lowercase) HTML attributes---attributes will be rendered exactly as they are written.
+ovr aligns with the standard (all lowercase) HTML attributes---all attributes will be rendered exactly as they are written.
 
-If you're coming from React, use `class` and `for` instead of `className` and `htmlFor` respectively. There is also no need to provide a `key` attribute in when rendering lists.
+> If you're coming from React, this means you must use `class` and `for` instead of `className` and `htmlFor` respectively. There is also no need to provide a `key` attribute in when rendering lists.
 
 ## Async
 
@@ -56,7 +58,9 @@ Components can also be generator functions for more fine grained control and [me
 ```tsx
 async function* Generator() {
 	yield <p>start</p>; // streamed immediately
-	await promise;
+
+	await promise; // async work
+
 	yield <p>after</p>;
 }
 ```
@@ -79,9 +83,9 @@ function Page() {
 }
 ```
 
-> The order of your components does not affect when they are evaluated, but it does impact when they will display. If `Username` is the slowest component, `Generator` and `Data` will be queued but only streamed after `Username` completes.
+> The order of your components does not affect when they are evaluated, but it does impact when they will display. If `Username` is the slowest component, `Generator` and `Data` will be queued but only streamed after `Username` completes. This ensures no client-side JavaScript has to run for users to see your content.
 
-## Return Types
+## Return types
 
 You can `return` or `yield` most data types from a component, they will be rendered as you might expect:
 
@@ -104,27 +108,13 @@ function* DataTypes() {
 
 > Check out the [source code](https://github.com/rossrobino/ovr/blob/main/packages/ovr/src/jsx/index.ts) for the `render` function to understand how ovr evaluates each data type.
 
-## Raw HTML
-
-To create a new `Chunk` directly without escaping, use the `Chunk.safe` method.
-
-```tsx
-import { Chunk } from "ovr";
-
-const html = "<p>Safe to render</p>";
-
-function Component() {
-	return <div>{Chunk.safe(html)}</div>;
-}
-```
-
 ## Rendering components
 
-To evaluate components (for example, if you aren't using [`App`](/03-app) or need to call them separately), you can use these functions.
+To evaluate components (for example, if you aren't using returning them from `Middleware` or need to call them separately), you can use these functions.
 
 ### Render
 
-Convert any `JSX.Element` into `AsyncGenerator<Chunk>` with `render`.
+Convert any `JSX.Element` into `AsyncGenerator<Chunk>` with `render`. `render` yields escaped `Chunk`s of HTML.
 
 ```tsx
 import { render } from "ovr";
@@ -134,13 +124,17 @@ const Component = () => <p>element</p>;
 const gen = render(<Component />);
 
 for await (const chunk of gen) {
-	// ...
+	console.log(chunk.value); // value contains the HTML string
 }
 ```
+
+> Set `render.Options.safe` to `true` to bypass HTML escaping to render other types of content: `render(element, { safe: true })`.
 
 ### Stream
 
 Turn a `JSX.Element` into a `ReadableStream` using `render.stream`. This pipes the result of `render` into a `ReadableStream`.
+
+This stream is optimized for generating HTML---it ensures backpressure is properly handled for slower clients and generation stops if the client aborts the request.
 
 ```tsx
 import { render } from "ovr";
@@ -164,4 +158,18 @@ import { render } from "ovr";
 const Component = () => <p>element</p>;
 
 const str = await render.string(<Component />);
+```
+
+## Raw HTML
+
+To create a new `Chunk` directly without escaping, use the `Chunk.safe` method.
+
+```tsx
+import { Chunk } from "ovr";
+
+const html = "<p>Safe to render</p>";
+
+function Component() {
+	return <div>{Chunk.safe(html)}</div>;
+}
 ```
