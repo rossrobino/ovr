@@ -131,10 +131,6 @@ export class Route<Pattern extends string = string> {
 		pattern: Pattern,
 		...middleware: Middleware<ExtractParams<Pattern>>[]
 	) {
-		if (pattern[0] !== "/") {
-			throw new Error(`Invalid pattern: ${pattern} - must begin with "/"`);
-		}
-
 		this.method = method;
 		this.pattern = pattern;
 		this.middleware = middleware;
@@ -188,25 +184,13 @@ export class Route<Pattern extends string = string> {
 	): InsertParams<Pattern, Params> {
 		if (!params) return this.pattern as InsertParams<Pattern, Params>;
 
-		const wild = "*";
-
 		return this.#parts
 			.map((part) => {
 				if (part.startsWith(":")) {
-					const param = part.slice(1);
-
-					if (!(param in params))
-						throw new Error(`Parameter "${param}" did not match pattern.`);
-
-					return params[param as keyof typeof params];
+					return params[part.slice(1) as keyof typeof params];
 				}
 
-				if (part === wild) {
-					if (!(wild in params))
-						throw new Error("No wildcard parameter found.");
-
-					return params[wild];
-				}
+				if (part === "*") return params[part as keyof typeof params];
 
 				return part;
 			})

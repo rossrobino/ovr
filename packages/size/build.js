@@ -6,8 +6,13 @@ const result = await build({
 	output: { format: "esm", minify: true },
 });
 
-const kb = Math.round(result.output[0].code.length / 10) / 100;
+const bytes = result.output[0].code.length;
 
-console.log({ kb });
+const kb = Math.round(bytes / 10) / 100;
 
-await fs.writeFile("src/index.js", `export const kb = ${kb}`);
+console.log({ bytes, kb });
+
+await fs.writeFile(
+	"src/index.js",
+	`export const bytes = ${bytes};\n\nexport const kb = ${kb};\n`,
+);
