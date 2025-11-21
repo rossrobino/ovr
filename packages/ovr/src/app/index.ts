@@ -105,16 +105,11 @@ export class App {
 		options?: RequestInit,
 	): Promise<Response> => {
 		const c = new Context(new Request(resource, options));
-		const match = this.#trie.find(c.req.method + c.url.pathname);
 
-		if (match) {
-			return Object.assign(c, match).build(
-				this.#global.concat(match.route.middleware),
-			);
-		}
-
-		// no match, just run global middleware
-		return c.build(this.#global);
+		return Object.assign(
+			c,
+			this.#trie.find(c.req.method + c.url.pathname), // match
+		).build(this.#global.concat(c.route?.middleware ?? []));
 	};
 
 	/** Basic CSRF middleware */
