@@ -58,7 +58,7 @@ const app = new App();
 
 app.use(() => <h1>Hello World</h1>);
 
-serve({ fetch: app.fetch });
+serve({ fetch: (req) => app.fetch(req) });
 ```
 
 Then can compile `tsx` into `js` with TypeScript, and run the server with Node.

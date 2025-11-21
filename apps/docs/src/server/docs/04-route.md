@@ -5,6 +5,8 @@ description: ovr application routes.
 
 ## Create
 
+ovr's built-in router offers efficient matching, supporting static paths, [parameters](#parameters), and [wildcards](#wildcard). Utilizing a [radix trie](https://en.wikipedia.org/wiki/Radix_tree) structure ensures performance does not degrade as more routes are added.
+
 Create a route to a specific resource in your application with the `Route` class. Construct the route with an HTTP `method`, the route `pattern`, and the [`middleware`](/05-middleware) to handle the request.
 
 ```ts
@@ -12,8 +14,6 @@ import { Route } from "ovr";
 
 const route = new Route("GET", "/", () => "html");
 ```
-
-ovr's built-in router offers efficient matching, supporting static paths, [parameters](#parameters), and [wildcards](#wildcard). Utilizing a [radix trie](https://en.wikipedia.org/wiki/Radix_tree) structure ensures performance does not degrade as more routes are added.
 
 ## Parameters
 

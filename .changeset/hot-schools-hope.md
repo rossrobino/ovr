@@ -5,7 +5,8 @@
 refactor(render)!: Rename `toGenerator` to `render`, move `toStream` and `toString` onto render.
 
 ```diff
-import * as ovr from "ovr";
+- import { toGenerator, toString, toStream } from "ovr";
++ import { render } from "ovr";
 
 - ovr.toGenerator(el);
 + ovr.render(el);

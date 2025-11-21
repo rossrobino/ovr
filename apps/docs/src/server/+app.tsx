@@ -3,11 +3,12 @@ import * as demo from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as home from "@/server/home";
 import * as notFound from "@/server/mw/not-found";
+import * as redirect from "@/server/mw/redirect";
 import * as o from "ovr";
 
 const app = new o.App();
 
-app.use(notFound, home, docs, demo);
+app.use(redirect, notFound, home, docs, demo);
 
 if (import.meta.env.DEV) {
 	app.use(

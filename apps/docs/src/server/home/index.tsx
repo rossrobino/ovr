@@ -73,7 +73,7 @@ function* Features() {
 		},
 		{
 			title: "Fast Routing",
-			href: "/06-routing",
+			href: "/04-route",
 			content: "Code based routing that scales.",
 		},
 		{
