@@ -1,14 +1,25 @@
 import { Chunk } from "../chunk/index.js";
+import type { Middleware } from "../middleware/index.js";
 import { Route } from "../route/index.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
 const app = new App({ trailingSlash: "always" });
 
+const notFound: Middleware = async (c, next) => {
+	await next();
+
+	if (c.res.body === undefined) {
+		c.res.status = 404;
+		c.res.body = "Not found";
+	}
+};
+
 const get = (pathname: string) => app.fetch("http://localhost:5173" + pathname);
 
 test("context", () => {
 	app.use(
+		notFound,
 		Route.get(
 			"/",
 			async (c, next) => {
@@ -104,6 +115,7 @@ describe("trailing slash", () => {
 
 	test("ignore", async () => {
 		const ignore = new App({ trailingSlash: "ignore" }).use(
+			notFound,
 			Route.get("/nope", (c) => c.text("nope")),
 			Route.get("/yup/", (c) => c.text("yup")),
 		);
