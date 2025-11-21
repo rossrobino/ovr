@@ -8,7 +8,7 @@ class ParamNode {
 	route?: Route;
 
 	/** Static child node */
-	static?: Trie;
+	child?: Trie;
 
 	/**
 	 * Create a new parameter node.
@@ -27,7 +27,7 @@ export namespace Trie {
 
 export class Trie {
 	/** Unique segment of the pattern trie */
-	readonly segment: string;
+	readonly seg: string;
 
 	/** Static child node map, key is the first character in the segment */
 	map?: Map<number, Trie>;
@@ -51,13 +51,13 @@ export class Trie {
 	 * @param children static children nodes to add to staticMap
 	 */
 	constructor(segment = "/", children?: Trie[]) {
-		this.segment = segment;
+		this.seg = segment;
 
 		if (children?.length) {
 			this.map ??= new Map();
 
 			for (const child of children) {
-				this.map.set(child.segment.charCodeAt(0), child);
+				this.map.set(child.seg.charCodeAt(0), child);
 			}
 		}
 	}
@@ -92,8 +92,8 @@ export class Trie {
 		Object.assign(
 			this,
 			// "api/" with the above as children
-			new Trie(this.segment.slice(0, charIndex), [
-				this.clone(this.segment.slice(charIndex)), // "posts/"
+			new Trie(this.seg.slice(0, charIndex), [
+				this.clone(this.seg.slice(charIndex)), // "posts/"
 				newChild,
 			]),
 		);
@@ -111,7 +111,7 @@ export class Trie {
 	split(segment: string) {
 		Object.assign(
 			this,
-			new Trie(segment, [this.clone(this.segment.slice(segment.length))]),
+			new Trie(segment, [this.clone(this.seg.slice(segment.length))]),
 		);
 	}
 
@@ -159,21 +159,21 @@ export class Trie {
 					paramSegments[paramIndex++]!.slice(1),
 				);
 
-				if (!paramChild.static) {
+				if (!paramChild.child) {
 					// new - create node with the next static segment
-					current = paramChild.static = new Trie(staticSegment);
+					current = paramChild.child = new Trie(staticSegment);
 					continue; // next segment - no need to check since it's new
 				}
 
 				// there's already a static child - need to check if it's a match
-				current = paramChild.static;
+				current = paramChild.child;
 			}
 
 			// check if the staticSegment matches the current node
 			for (let charIndex = 0; ; ) {
 				if (charIndex === staticSegment.length) {
 					// finished iterating through the staticSegment
-					if (charIndex < current.segment.length) {
+					if (charIndex < current.seg.length) {
 						// too short
 						current.split(staticSegment);
 					}
@@ -181,7 +181,7 @@ export class Trie {
 					break; // next segment
 				}
 
-				if (charIndex === current.segment.length) {
+				if (charIndex === current.seg.length) {
 					// passed the end of the current node
 					if (!current.map) {
 						// new pattern, create new leaf
@@ -210,7 +210,7 @@ export class Trie {
 					break; // next segment
 				}
 
-				if (staticSegment[charIndex] !== current.segment[charIndex]) {
+				if (staticSegment[charIndex] !== current.seg[charIndex]) {
 					// different than the node - fork
 					current = current.fork(charIndex, staticSegment);
 
@@ -241,18 +241,18 @@ export class Trie {
 	 * @returns `Route` and the matched `params` if found, otherwise `null`
 	 */
 	find(pathname: string): { route: Route; params: Trie.Params } | null {
-		const segmentLength = this.segment.length;
+		const segmentLength = this.seg.length;
 
 		if (
 			// too short
 			pathname.length < segmentLength ||
 			// segment does not match current node segment
-			!pathname.startsWith(this.segment)
+			!pathname.startsWith(this.seg)
 		) {
 			return null;
 		}
 
-		if (pathname === this.segment) {
+		if (pathname === this.seg) {
 			// reached the end of the path
 			if (this.route) return { route: this.route, params: {} };
 
@@ -287,10 +287,10 @@ export class Trie {
 						route: this.param.route,
 						params: { [this.param.name]: pathname.slice(segmentLength) },
 					};
-				} else if (this.param.static) {
+				} else if (this.param.child) {
 					// there's a static node after the param
 					// this is how there can be multiple params, "/" in between
-					const result = this.param.static.find(pathname.slice(slashIndex));
+					const result = this.param.child.find(pathname.slice(slashIndex));
 
 					if (result) {
 						// add original params to the result
