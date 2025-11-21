@@ -1,1 +1,1 @@
-export const kb = 8.22
+export const kb = 8.02
