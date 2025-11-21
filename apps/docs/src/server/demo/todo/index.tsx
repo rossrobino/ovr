@@ -1,17 +1,17 @@
 import * as todoContent from "@/server/demo/todo/index.md";
 import { createLayout } from "@/ui/layout";
 import { Meta } from "@/ui/meta";
-import * as o from "ovr";
+import { Chunk, type Middleware, Route } from "ovr";
 import * as z from "zod";
 
-export const add = o.Route.post(async (c) => {
+export const add = Route.post(async (c) => {
 	const todos = getTodos(c);
 	const { text } = await data(c);
 	todos.push({ id: (todos.at(-1)?.id ?? 0) + 1, text, done: false });
 	redirect(c, todos);
 });
 
-export const toggle = o.Route.post(async (c) => {
+export const toggle = Route.post(async (c) => {
 	const todos = getTodos(c);
 	const { id } = await data(c);
 	const current = todos.find((t) => t.id === id);
@@ -19,7 +19,7 @@ export const toggle = o.Route.post(async (c) => {
 	redirect(c, todos);
 });
 
-export const remove = o.Route.post(async (c) => {
+export const remove = Route.post(async (c) => {
 	const todos = getTodos(c);
 	const { id } = await data(c);
 	redirect(
@@ -28,7 +28,7 @@ export const remove = o.Route.post(async (c) => {
 	);
 });
 
-export const todo = o.Route.get("/demo/todo", (c) => {
+export const todo = Route.get("/demo/todo", (c) => {
 	const Layout = createLayout(c);
 
 	return (
@@ -84,7 +84,7 @@ export const todo = o.Route.get("/demo/todo", (c) => {
 
 			<hr />
 
-			{o.Chunk.safe(todoContent.html)}
+			{Chunk.safe(todoContent.html)}
 		</Layout>
 	);
 });
@@ -96,7 +96,7 @@ const TodoSchema = z.object({
 });
 
 const redirect = (
-	c: o.Middleware.Context,
+	c: Middleware.Context,
 	todos: z.infer<(typeof TodoSchema)[]>,
 ) => {
 	const location = new URL(todo.pathname(), c.url);
@@ -104,13 +104,13 @@ const redirect = (
 	c.redirect(location, 303);
 };
 
-const getTodos = (c: o.Middleware.Context) => {
+const getTodos = (c: Middleware.Context) => {
 	const todos = c.url.searchParams.get("todos");
 	if (!todos) return [{ done: false, id: 0, text: "Build a todo app" }];
 	return z.array(TodoSchema).parse(JSON.parse(todos));
 };
 
-const data = async (c: o.Middleware.Context) => {
+const data = async (c: Middleware.Context) => {
 	const data = await c.req.formData();
 	return TodoSchema.parse({ id: data.get("id"), text: data.get("text") });
 };

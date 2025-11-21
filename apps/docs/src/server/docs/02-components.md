@@ -119,7 +119,9 @@ Convert any `JSX.Element` into `AsyncGenerator<Chunk>` with `render`. `render` y
 ```tsx
 import { render } from "ovr";
 
-const Component = () => <p>element</p>;
+function Component() {
+	return <p>element</p>;
+}
 
 const gen = render(<Component />);
 
@@ -139,7 +141,9 @@ This stream is optimized for generating HTML---it ensures backpressure is proper
 ```tsx
 import { render } from "ovr";
 
-const Component = () => <p>element</p>;
+function Component() {
+	return <p>element</p>;
+}
 
 const stream = render.stream(<Component />);
 
@@ -155,7 +159,9 @@ Convert any `JSX.Element` into a `string` of HTML with `render.string`. This run
 ```tsx
 import { render } from "ovr";
 
-const Component = () => <p>element</p>;
+function Component() {
+	return <p>element</p>;
+}
 
 const str = await render.string(<Component />);
 ```

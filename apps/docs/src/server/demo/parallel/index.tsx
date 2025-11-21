@@ -6,15 +6,15 @@ import * as ovr from "ovr";
 export const parallel = ovr.Route.get("/demo/parallel", (c) => {
 	const Layout = createLayout(c);
 
-	const Delay = async ({ ms }: { ms: number }) => {
+	async function Delay({ ms }: { ms: number }) {
 		await new Promise((res) => setTimeout(res, ms));
 		return <div class="bg-muted rounded-md p-2">{ms}ms</div>;
-	};
+	}
 
-	const Delays = () => {
+	function Delays() {
 		const delays = Array.from({ length: 6 }, (_, i) => i * 100);
 		return delays.map((ms) => <Delay ms={ms} />);
-	};
+	}
 
 	return (
 		<Layout head={<Meta {...parallelContent.frontmatter} />}>
