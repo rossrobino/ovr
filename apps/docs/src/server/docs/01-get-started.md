@@ -17,7 +17,7 @@ Alternatively, you can setup ovr with a pre-configured template using [Vite with
 npx create-domco@latest --framework=ovr
 ```
 
-## JSX
+## JSX configuration
 
 To utilize JSX, add the following options to your `tsconfig.json` to enable the JSX transform. TypeScript, Vite, or esbuild will pickup the option from this file.
 

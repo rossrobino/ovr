@@ -2,12 +2,12 @@ import * as content from "@/lib/content";
 import * as demos from "@/server/demo";
 import * as docs from "@/server/docs";
 import * as homeResult from "@/server/home/index.md";
+import * as badge from "@/ui/badge";
 import { FavIcon } from "@/ui/favicon";
 import { FontPreload } from "@/ui/font-preload";
 import { GitHub } from "@/ui/github";
 import { Popover } from "@/ui/popover";
 import { SkipLink } from "@/ui/skip-link";
-import { Version } from "@/ui/version";
 import { tags } from "client:script";
 import { clsx } from "clsx";
 import * as o from "ovr";
@@ -192,12 +192,15 @@ const Nav = ({ c }: { c: o.Middleware.Context }) => {
 
 			<hr />
 
-			<ul class="flex gap-1">
+			<ul class="flex">
 				<li>
 					<GitHub />
 				</li>
 				<li>
-					<Version />
+					<badge.Version />
+				</li>
+				<li>
+					<badge.Size />
 				</li>
 			</ul>
 		</>

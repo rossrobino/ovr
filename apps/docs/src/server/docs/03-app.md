@@ -3,6 +3,8 @@ title: App
 description: Creating an application with ovr.
 ---
 
+## Create
+
 To create a web server with ovr, initialize a new `App` instance:
 
 ```ts

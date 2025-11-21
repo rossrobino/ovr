@@ -11,8 +11,8 @@ export const page = o.Route.get("/", (c) => {
 			<h1>{result.frontmatter.title}</h1>
 
 			<p class="text-lg">
-				A lightweight server framework <strong>built for streaming</strong> with
-				asynchronous generator JSX.
+				A lightweight server framework <strong>optimized for streaming</strong>{" "}
+				with asynchronous generator JSX.
 			</p>
 
 			<hr />
@@ -50,17 +50,10 @@ export const page = o.Route.get("/", (c) => {
 function* Features() {
 	const features = [
 		{
-			title: "Async Generator JSX",
-			href: "/#introduction",
-			content:
-				"Stream HTML with familiar JSX components, no client-side JS required.",
-		},
-		{
 			title: "Performance First",
 			href: "/demo/parallel",
 			noPrefetch: true,
-			content:
-				"Evaluate components in parallel and stream them as they are generated.",
+			content: "Run operations in parallel and stream results on the fly.",
 		},
 		{
 			title: "Lightweight",
@@ -73,7 +66,13 @@ function* Features() {
 			content: "Type safe path parameters, components, and more.",
 		},
 		{
-			title: "Blazing Fast Routing",
+			title: "Async Generator JSX",
+			href: "/#introduction",
+			content:
+				"Stream HTML with familiar JSX components, no client-side JS required.",
+		},
+		{
+			title: "Fast Routing",
 			href: "/06-routing",
 			content: "Code based routing that scales.",
 		},

@@ -3,7 +3,9 @@ title: Middleware
 description: Understand how ovr handles each request.
 ---
 
-Middleware are functions that are composed together to handle requests. Most middleware will be created within a route but it can also be created on it's own to be used within a route.
+## Create
+
+Middleware are functions that are composed together to handle requests. Most middleware will be created inline as an argument when creating a route. Middleware can also be created on it's own to be used globally or to apply to routes.
 
 ```ts
 import type { Middleware } from "ovr";
@@ -13,6 +15,8 @@ const mw: Middleware = async (c, next) => {
 	await next(); // Middleware.Next - dispatch the next middleware in the stack
 };
 ```
+
+> Middleware are just functions, use the `Middleware` type helper to easily type the parameters.
 
 ## Composition
 
@@ -34,9 +38,12 @@ app.use(
 
 		console.log("3");
 	},
-	(c) => {
+	(c, next) => {
 		console.log("2");
+
+		return next(); // or `return` instead of `await`
 	},
+	// ...
 );
 
 // 1
@@ -46,11 +53,11 @@ app.use(
 
 ## Context
 
-`Context` _(in these docs you'll see it abbreviated as `c`)_ contains context for the current request and helpers to build a `Response`. ovr creates the context with the current request, then passes it as the first argument into each middleware function to be read and modified.
+ovr creates `Context` _(in these docs it's abbreviated as `c`)_ with the current request, then passes it as the first argument into each middleware function to be read and modified.
 
 ## Request
 
-Access information about the current request such as the [`url`](https://developer.mozilla.org/en-US/docs/Web/API/URL) or [`params`](/06-routing#parameters).
+`Context.req` contains information about the current request such as the [`url`](https://developer.mozilla.org/en-US/docs/Web/API/URL) or [`params`](/06-routing#parameters).
 
 ```ts
 Route.get("/api/:id", (c) => {
@@ -63,7 +70,9 @@ Route.get("/api/:id", (c) => {
 
 ## Response
 
-`Context.res` is a `PreparedResponse` that stores the arguments that will be passed into `new Response()` after middleware has executed. These can be modified directly:
+`Context.res` is a `PreparedResponse` that stores the arguments that will be passed into `new Response()` after middleware has executed.
+
+These properties can be set directly:
 
 ```ts
 Route.get("/api/:id", (c) => {
@@ -96,9 +105,7 @@ Route.get("/api/:id", (c) => {
 
 ovr handles the return value from middleware in two ways.
 
-1. **Response**
-
-You can return a `Response` from middleware to handle a request. `Context.res.body`, `Context.res.status` will be set to the returned response's values, and `headers` will be merged into `Context.res.headers`.
+1. **Response** - If a `Response` is returned from middleware, `Context.res.body`, `Context.res.status` will be set to the response's values, and its `headers` will be merged into `Context.res.headers`.
 
 ```ts
 app.use(() => new Response("Hello world"));
