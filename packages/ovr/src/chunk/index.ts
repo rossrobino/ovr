@@ -2,7 +2,7 @@
 export class Chunk {
 	static readonly #attr = /[&"<]/g;
 	static readonly #content = /[&<]/g;
-	static readonly #map = { "&": "&amp;", '"': "&quot;", "<": "&lt;" } as const;
+	static readonly #map = { "&": "&amp;", '"': "&quot;", "<": "&lt;" };
 
 	/** Safe value to render */
 	value: string;
@@ -50,7 +50,6 @@ export class Chunk {
 	 * @returns Escaped string of HTML
 	 */
 	static escape(html: string, attr?: boolean) {
-		// adapted from https://github.com/remix-run/remix/blob/1a2fcffb50101b789abde35a5edcbcb28e740587/packages/html-template/src/lib/safe-html.ts#L24
 		return html.replace(
 			attr ? Chunk.#attr : Chunk.#content,
 			(c) =>
