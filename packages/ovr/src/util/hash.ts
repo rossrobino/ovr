@@ -1,9 +1,6 @@
 /**
  * Fast hashing algorithm - [djb2](http://www.cse.yorku.ca/~oz/hash.html)
  *
- * Adapted from
- * [SvelteKit](https://github.com/sveltejs/kit/blob/25d459104814b0c2dc6b4cf73b680378a29d8200/packages/kit/src/runtime/hash.js)
- *
  * @param s String to hash
  * @returns Hashed string
  */

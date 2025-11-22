@@ -19,3 +19,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Portions of this software are based on the following projects, which are also
+licensed under the MIT License:
+
+1. Middleware composition - https://github.com/koajs/compose
+   Copyright (c) 2013 TJ Holowaychuk <tj@apex.sh>
+
+2. djb2 hash util - https://github.com/sveltejs/kit
+   Copyright (c) 2020 SvelteKit contributors
+
+3. HTML escape replacer - https://github.com/remix-run/remix
+   Copyright (c) 2025 Shopify Inc.
