@@ -209,6 +209,15 @@ export class Context<Params extends Trie.Params = Trie.Params> {
 	async build(middleware: Middleware<Params>[]) {
 		await this.#run(middleware);
 
+		if (this.req.method === "HEAD") {
+			if (this.res.body instanceof ReadableStream) {
+				// cancel unused stream to prevent leaks
+				await this.res.body.cancel("HEAD");
+			}
+
+			this.res.body = null;
+		}
+
 		Object.freeze(this.res);
 
 		return new Response(this.res.body, this.res);

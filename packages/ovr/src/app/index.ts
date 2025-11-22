@@ -108,7 +108,11 @@ export class App {
 
 		return Object.assign(
 			c,
-			this.#trie.find(c.req.method + c.url.pathname), // match
+			// match
+			this.#trie.find(
+				// use GET for HEAD requests to find the correct route
+				(c.req.method === "HEAD" ? "GET" : c.req.method) + c.url.pathname,
+			),
 		).build(this.#global.concat(c.route?.middleware ?? []));
 	};
 

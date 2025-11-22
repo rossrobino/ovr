@@ -14,5 +14,5 @@ console.log({ bytes, kb });
 
 await fs.writeFile(
 	"src/index.js",
-	`export const bytes = ${bytes};\n\nexport const kb = ${kb};\n`,
+	`export const bytes = ${bytes};\nexport const kb = ${kb};\n`,
 );

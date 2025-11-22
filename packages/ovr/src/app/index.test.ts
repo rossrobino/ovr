@@ -1,6 +1,6 @@
-import { Chunk } from "../chunk/index.js";
 import type { Middleware } from "../middleware/index.js";
 import { Route } from "../route/index.js";
+import type { Method } from "../types/index.js";
 import { App } from "./index.js";
 import { describe, expect, test } from "vitest";
 
@@ -15,7 +15,8 @@ const notFound: Middleware = async (c, next) => {
 	}
 };
 
-const get = (pathname: string) => app.fetch("http://localhost:5173" + pathname);
+const appFetch = (pathname: string, method: Method = "GET") =>
+	app.fetch("http://localhost:5173" + pathname, { method });
 
 test("context", () => {
 	app.use(
@@ -23,13 +24,13 @@ test("context", () => {
 		Route.get(
 			"/",
 			async (c, next) => {
-				c.req.headers.set("hello", "world");
+				c.res.headers.set("hello", "world");
 				await next();
 			},
 			(c) => {
 				expect(c.url).toBeInstanceOf(URL);
 				expect(c.req).toBeInstanceOf(Request);
-				expect(c.req.headers.get("hello")).toBe("world");
+				expect(c.res.headers.get("hello")).toBe("world");
 
 				c.text("hello world");
 			},
@@ -51,21 +52,29 @@ test("context", () => {
 });
 
 test("GET /", async () => {
-	const res = await get("/");
+	const res = await appFetch("/");
 	const text = await res.text();
 
 	expect(text).toBe("hello world");
 });
 
+test("HEAD /", async () => {
+	const res = await appFetch("/", "HEAD");
+
+	expect(res.status).toBe(200);
+	expect(res.headers.get("hello")).toBe("world");
+	expect(res.body).toBe(null);
+});
+
 test("GET /api/:id/", async () => {
-	const res = await get("/api/123/");
+	const res = await appFetch("/api/123/");
 	const json = await res.json();
 
 	expect(json.id).toBe("123");
 });
 
 test("GET /wild/*", async () => {
-	const res = await get("/wild/hello/");
+	const res = await appFetch("/wild/hello/");
 	const json = await res.json();
 
 	expect(json["*"]).toBe("hello/");
@@ -89,7 +98,7 @@ test("POST /post/", async () => {
 });
 
 test("GET /not-found/", async () => {
-	const res = await get("/not-found/");
+	const res = await appFetch("/not-found/");
 	const text = await res.text();
 
 	expect(text).toBe("Not found");
@@ -98,7 +107,7 @@ test("GET /not-found/", async () => {
 
 describe("trailing slash", () => {
 	test("always", async () => {
-		const res = await get("/api/123");
+		const res = await appFetch("/api/123");
 
 		expect(res.status).toBe(308);
 		expect(res.headers.get("location")).toBe("http://localhost:5173/api/123/");
@@ -137,7 +146,7 @@ describe("trailing slash", () => {
 });
 
 test("html", async () => {
-	const res = await get("/page/");
+	const res = await appFetch("/page/");
 	const text = await res.text();
 	expect(res.status).toBe(200);
 	expect(text).toBe("page");

@@ -78,3 +78,7 @@ Use the `fetch` method to create a `Response`, this is the `Request` handler for
 ```ts
 const response = await app.fetch("https://example.com");
 ```
+
+## Head requests
+
+ovr automatically handles [`HEAD`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/HEAD) requests, each will be routed to the corresponding `GET` route. Middleware will execute but `Context.res.body` will cleaned up and set to `null` before building the final response.
